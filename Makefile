@@ -1,0 +1,23 @@
+#addh = suppl.h learn.h file_export.h par.h params*
+#addc = learn.cc suppl.cc file_export.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                                 
+addhCbonly = par.h params*
+addcCbonly = reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                  
+addh = suppl.h learn.h file_export.h par.h params*
+addc = learn.cc suppl.cc file_export.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                                 
+
+learn: learn.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc   par.h
+	g++  -O2  learn.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc  muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc  -o    $@
+
+cb: cb.cc $(addcCbonly) $(addhCbonly)
+	g++ -O2 $(addcCbonly) cb.cc -o $@
+	g++ -g  $(addcCbonly) cb.cc -o $@_dbg
+
+cb_orig: reach_cb_orig.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc   par.h
+	g++  -O2  reach_cb_orig.cc TrajectoriesAnglesVelocityAcceleration.cc  muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc  -o    $@
+
+cb_orig_dbg: reach_cb_orig.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc   par.h
+	g++  -g  reach_cb_orig.cc TrajectoriesAnglesVelocityAcceleration.cc  muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc  -o    $@
+
+galea: galea.cc galea.h galea_export.h galea_export.cc $(addc) $(addh)
+	g++  -D BUILD_GALEA -O2 $(addc) galea.cc galea_export.cc -o   $@
+	g++  -D BUILD_GALEA -g $(addc) galea.cc galea_export.cc -o   $@_dbg
