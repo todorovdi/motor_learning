@@ -36,8 +36,6 @@ float normFactor = 1.; // to be initalized in main. Used to weight learning
 float *gpe, *gpi, *stn;
 float *d1,*d2;
 
-float * Rpre;
-
 float d2activity = 1.;
     
 float amplInitRand = 0.001;
@@ -56,14 +54,14 @@ float d1_ltp=1., d2_ltp=1., dm_ltp=1.;
 
 
 float **w1, **w2, **wm;
-float **wmBackup, **w2Backup, **w1Backup;
 
 float wcb[6][6]={},dfwx[6][6],dfwy[6][6];
-float cb_learn_rate=10;
 
 float last_y[na] = {};
 
 bool learn_cb = false;
+bool learn_bg = true;
+
 float x_cb_target=0., y_cb_target=0.;
 
 // we want to make monkey touch one of the points that are good
@@ -71,15 +69,6 @@ float x_cb_target=0., y_cb_target=0.;
 // it interacts badly with existing experiment code
 // we have to make a framework that would allow to use the different one
 
-void initWeightNormFactor(unsigned int memoryLen)  // should be called ONLY ONCE
-{
-    float nf = 0.;
-    for(unsigned int i = 0; i<memoryLen; i++)
-    {
-        nf += weightRpre(i); // when we compute it, normFactor should be = 1.
-    }
-    normFactor = 1/nf;
-}
 
 float bg_step(float **w1,float **w2,float **wm,float *x,float *y,float *expl)
 {
@@ -135,11 +124,11 @@ float bg_step(float **w1,float **w2,float **wm,float *x,float *y,float *expl)
 
 		gpe[i]=s(-d2_gpe*d2[i]+gpe_drive);
 		
-		stn[i]=s(-gpe_stn*gpe[i]+stn_drive);
-		gpi_drive=.2;
-		float stn_gpi=1;
+		stn[i]=s(-gpe_stn*gpe[i] + stn_drive + expl[i]);
+		//gpi_drive=.2;  , otherwise 1.7
         if(BGactive)
-		    gpi[i]=s(-d1_gpi*d1[i]+stn_gpi*stn[i]+gpi_drive+expl[i]);
+		    gpi[i]=s(-d1_gpi*d1[i]+stn_gpi*stn[i]+gpi_drive);
+		    //gpi[i]=s(-d1_gpi*d1[i]+stn_gpi*stn[i]+gpi_drive+expl[i]);
         else
             gpi[i]=0;
 		
@@ -205,39 +194,15 @@ float moveHand(float * phi, float * y, float* out)
     // fill phi with some values, based on wht we had in Y
     reach(phi,Y,0,wcb);
     
-    float xcur=(-L1*sin(phi[0])+-L2*sin(phi[1]))+ // V*(1.-2.*rnd())*5.;   
+    float xcur_tmp=(-L1*sin(phi[0])+-L2*sin(phi[1]))+ // V*(1.-2.*rnd())*5.;   
         finalNoiseAmpl*gauss();
-    float ycur=(L1*cos(phi[0])+L2*cos(phi[1]))+  // V*(1.-2.*rnd())*5.;     
+    float ycur_tmp=(L1*cos(phi[0])+L2*cos(phi[1]))+  // V*(1.-2.*rnd())*5.;     
         finalNoiseAmpl*gauss();
 
-    out[0] = xcur;
-    out[1] = ycur;
+    out[0] = xcur_tmp;
+    out[1] = ycur_tmp;
 }
 
-float gauss()
-{
-	static int flag=0;
- 	static float x1, x2, w, y1, y2;
-
- 	if(flag)
- 	{
- 		flag=0;
- 		return y2;
- 	}
- 	flag=1;
- 
-    do 
-    {
-    	x1 = 2.0 * rnd() - 1.0;
-        x2 = 2.0 * rnd() - 1.0;
-        w = x1 * x1 + x2 * x2;
-    } while ( w >= 1.0 );
-
-    w = sqrt( (-2.0 * log( w ) ) / w );
-    y1 = x1 * w;
-    y2 = x2 * w;
-    return y1;
-}
 
 float getRpre(unsigned int k, float R, float * addInfo)  // to be called AFTER bg_learn
 {
@@ -248,95 +213,6 @@ float getRpre(unsigned int k, float R, float * addInfo)  // to be called AFTER b
     return Rpre[k];
 }
 
-void allocMemory()
-{ 
-    w1 = new float*[nc];
-    w2 = new float*[nc];
-    wm = new float*[nc];
-    w1Backup = new float*[nc];
-    w2Backup = new float*[nc];
-    wmBackup = new float*[nc];
-    for(int j=0;j<nc;j++)
-    {
-        w1[j]=new float [na];
-        w2[j]=new float [na];
-        wm[j]=new float [na];
-        w1Backup[j]=new float [na];
-        w2Backup[j]=new float [na];
-        wmBackup[j]=new float [na];
-    }
-
-    gpe = new float[na], gpi = new float[na];
-    stn= new float[na];
-    d1= new float[na], d2= new float[na];
-
-    for(int i=0;i<nc;i++)
-    {
-        for(int j=0;j<na;j++)
-        {
-            wm[i][j]=i==j?0:0;
-            w1Backup[i][j]=wm[i][j];
-            w2Backup[i][j]=wm[i][j];
-            wmBackup[i][j]=wm[i][j];
-        }
-    }
-
-    Rpre = new float[nc];
-}
-
-void freeMemory()
-{
-    for(int j=0;j<nc;j++)
-    {
-        delete w1[j];
-        delete w2[j];
-        delete wm[j];
-        delete w1Backup[j];
-        delete w2Backup[j];
-        delete wmBackup[j];
-    }
-    delete w1;
-    delete w2;
-    delete wm;
-    delete w1Backup;
-    delete w2Backup;
-    delete wmBackup;
-
-    delete gpi;
-    delete gpe;
-    delete d1;
-    delete d2;
-
-    delete Rpre;
-}
-
-void copyWeights(float** wfrom, float ** wto)
-{
-    for(int i=0;i<nc;i++)
-    {
-        for(int j=0;j<na;j++)
-        {
-            wto[i][j]=wfrom[i][j];
-        }
-    }
-}
-
-void backupWeights()
-{
-    copyWeights(wm,wmBackup);
-    copyWeights(w1,w1Backup);
-    copyWeights(w2,w2Backup);
-}
-
-void restoreWeights(bool w12too)
-{
-    copyWeights(wmBackup,wm);
-    if(w12too)
-    { 
-        copyWeights(w1Backup,w1);
-        copyWeights(w2Backup,w2);
-    }
-}
 
 void cblearn(float dx,float dy)
 {
@@ -351,7 +227,7 @@ void initCB(float x0, float y0, float dw, float * yy)
     if(yy == 0)
         yy = last_y;
 
-    x_cb_target = x0;
+    x_cb_target = x0;     // TODO x_cb_target should debend on cues activated
     y_cb_target = y0;
 
 	for(int i=0;i<6;i++) 
@@ -384,41 +260,8 @@ void initCB(float x0, float y0, float dw, float * yy)
         for(int l=0;l<6;l++) 
             wcb[k][l]=0;
 
-    learn_cb = true;
+    //learn_cb = true;
 }
-
-inline bool fzero(float t)
-{
-    return abs(t) < EPS;
-}
-
-void flushWeights(bool wmToo)
-{
-    for(int i=0;i<nc;i++)
-    {
-        for(int j=0;j<na;j++)
-        {
-//#ifdef MATCH_SLAVA
-//            w1[i][j]=0.01*rnd(); 
-//            w2[i][j]=0.01*rnd();
-//#else
-            w1[i][j]=amplInitRand*rnd(); 
-            w2[i][j]=amplInitRand*rnd();
-            if(wmToo)
-                wm[i][j]=i==j?0:0;
-//#endif
-        }
-    }
-}
-
-void flushRpre()
-{
-    for(int i=0;i<nc;i++)
-    {
-        Rpre[i] = 0.;
-    }
-}
-
 
 float makeTrials(unsigned int ntrials, unsigned int memoryLen, float * addInfo, bool flushData, unsigned int indAdd, bool doExport)
 {
@@ -502,10 +345,16 @@ float makeTrials(unsigned int ntrials, unsigned int memoryLen, float * addInfo, 
         } 
 
         //rnd();  // just to follow same seed as Slava's code
-		bg_learn(w1,w2,x,y,(R- Rpre[cueActive]),wm);
+        if(learn_bg)
+		    bg_learn(w1,w2,x,y,(R- Rpre[cueActive]),wm);
 
         if(learn_cb)
-            cblearn(endpt_x-x_cb_target, endpt_y-y_cb_target);
+        { 
+            if( fzero(R) )
+            { cblearn(endpt_x-x_cb_target, endpt_y-y_cb_target); }
+           // else
+           // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
+        }
 
         getRpre(cueActive,R,addInfo);   
 
@@ -526,7 +375,7 @@ int main(int argc, char** argv)
     clock_t start = clock();
     cout<<"Calc started, nc = "<<nc<<" na = "<<na<<" nsessions "<<nsessions<<" numTrials = "<<numTrials<<endl;
     bool presetSeed = false;
-    //unsigned int seed =   1477324525;
+    //unsigned int seed =   1482861418;   presetSeed = true;  
     unsigned int seed =   time(NULL);  presetSeed = false; 
     srand(seed);
     cout<<"seed is "<<seed<<endl;
@@ -604,4 +453,20 @@ void setRpreMax()
     {
         Rpre[i] = 3.;
     }
+}
+
+void setBGlearning(bool bglearns)
+{
+    learn_bg = bglearns;
+}
+
+void setCBlearning(bool cblearns)
+{
+    learn_cb = cblearns;
+}
+
+void setCBtarget(float x, float y)
+{
+    x_cb_target = x;
+    y_cb_target = y;
 }

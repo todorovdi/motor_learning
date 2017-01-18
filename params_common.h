@@ -5,7 +5,7 @@
 
 float y_drive=1.3;  // before 0.9
 float y_d1=2, y_d2=2;
-float d1_gpi=2, gpi_drive=1.7, gpi_y=1.8;
+float d1_gpi=2, gpi_drive=.2, gpi_y=1.8;
 //float gpi_drive = 1.6; //init_gpi_drive - A_exp; // modify gpi_drive
 float d2_gpe=2, gpe_drive=2, gpe_gpi=1.5;
 float tau=1; // time constant for Wilson-Cowan
@@ -33,11 +33,15 @@ float W1max=3;
 float W2max=3;
 float WMmax=3;
 
+////////////// CB
+
+float cb_learn_rate=2; // was 10
 
 ////////////  for the version where STN is a part of the indirect pathway
 
 float stn_drive=1; // control
 float gpe_stn=1;
+float stn_gpi=1;
 
 float d1_drive=0.; 
 float d2_drive=0.; 
@@ -53,7 +57,7 @@ float Rpre_coef = 0.85;
 
 /// arm movement constants
 
-float finalNoiseAmpl = 0.005; // amplitude of noise applied to the final hand position
+float finalNoiseAmpl = 0.005; //0.005; // amplitude of noise applied to the final hand position
 float neuron2armMult = 1.3;  // =S in prev Slava models it was = 1.3
 float initAng[4] ={ -0.832778,	1.16426, 0, 0};
 

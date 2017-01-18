@@ -1,3 +1,5 @@
+// Galea experiment, cerebellum version
+
 #include "learn.h"
 #include "galea_export.h"
 #include "string.h"
@@ -9,7 +11,7 @@
 
 ///////////////
 
-float rewardDist=0.09;  // distance the hand has to reach the success to count
+float rewardDist=0.03;  // distance the hand has to reach the success to count
 int experimentPhase=0;   
 
 /////////////////////////////
@@ -19,7 +21,7 @@ const int multNumTrials = 1; // our model does not work on such small
 //unsigned int nsessions = 15*8; // article - 15 
 //unsigned int nsessions =90; 
 //unsigned int nsessions =30; 
-unsigned int nsessions = 1; 
+unsigned int nsessions = 10; 
 
 const int numTrialsPre   = multNumTrials * 12;
 const int numTrialsAdapt = multNumTrials * 25;
@@ -39,20 +41,24 @@ const float armReachRadius = 0.2;
 float sector_thickness = 0.1;
 float sector_width = 20; // 30   // in degrees
 
-float wmmax_fake_prelearn = 0.4; // 0.65 -- no adaptation (and aftereffects), though w2 reach max values = 3
+float wmmax_fake_prelearn = 0.7; // 0.65 -- no adaptation (and aftereffects), though w2 reach max values = 3
 // 0.6 trying to adapt no success, no aftereffects (bacause of this)
 
 float xcur=0.,ycur=0.;
 
-#define CEREBELLUM_ENABLED
+bool cb_works = false;
 
-#define PRELEARN_EACH_TIME
-//#define DO_FAKE_PRELEARN
+float dirShift = 50;  // in degrees
+
+#define CEREBELLUM_ENABLED
+//#define NO_ACTION_ROTATION
+
+//#define PRELEARN_EACH_TIME
+#define DO_FAKE_PRELEARN
  
-#define SECTOR_REWARD
+//#define SECTOR_REWARD
 //#define HOR_REWARD_SLAVA
 
-float dirShift = 30;  // in degrees
 
 //float directions[8] = {0,45,90,135,180,225,270,315};       // in degrees
 
@@ -95,14 +101,23 @@ float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
 	//ifstream("ini")>>phi0[0]>>phi0[1];
 	float xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
 
-    float target = rot;
-
-    float A=.2;
-    float targetAngle = 2*M_PI*target/360;   // in radians
 
     float x0,y0;
-    x0=xc+A*cos(targetAngle),
-    y0=yc+A*sin(targetAngle);
+    float tmp[4];
+
+#ifdef NO_ACTION_ROTATION
+    float target = rot;
+#else
+    float target = 0; 
+#endif
+
+    //float A=.2;
+    float targetAngle = 2*M_PI*target/360;   // in radians
+
+    x0=xc+armReachRadius*cos(targetAngle),
+    y0=yc+armReachRadius*sin(targetAngle);
+
+    setCBtarget(x0,y0);
 
     
     float phi[4]={};
@@ -112,11 +127,18 @@ float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
     moveHand(phi,y,out);
     xcur = out[0], ycur = out[1];
 
+
+#if not defined(NO_ACTION_ROTATION)
+    float xtmp = xcur - xc, ytmp = ycur -yc;
+    float angle = 2.*M_PI/360.*rot;
+    xcur = xtmp*cos(angle) - ytmp*sin(angle) + xc;
+    ycur = xtmp*sin(angle) + ytmp*cos(angle) + yc;
+#endif
     float sc = rewardDist+0.1;  // to be unrewarded by default
 #if defined (SECTOR_REWARD)
     float dist0=hypot(xcur-xc,ycur-yc); 
-    float xd = (xcur-xc);//  /dist0;    // normalized to lie on a circle
-    float yd = (ycur-yc);//  /dist0;
+    float xd = (xcur-xc);  
+    float yd = (ycur-yc);  
     float angleCur0 = atan( yd/xd) / (2*M_PI) * 360;
     if(xd<0)
         angleCur0 = atan(-xd/yd)/ (2*M_PI) * 360  + (yd>0?90:-90) ;
@@ -127,17 +149,20 @@ float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
     if( fabs(dist0 - armReachRadius)  < sector_thickness )
         sc = dif1;
     else
-        sc = fabs(dif1) > sector_width+0.1 ? dif : sector_width+0.1;
-    *addInfo = -dif1;
+        sc = fabs(dif1) > sector_width+0.1 ? dif1 : sector_width+0.1;
+    addInfo[0] = -dif1;
 #else 
     float dist0=hypot(xcur-x0,ycur-y0);
     sc = dist0;
-    *addInfo = -(xcur-x0);
+    addInfo[0] = -(xcur-x0);
 #endif
+    addInfo[1] = xcur;
+    addInfo[2] = ycur;
 
-#ifdef CEREBELLUM_ENABLED
-    cblearn(0,0);  // how do I know which point I should reach?
-#endif
+//#ifdef CEREBELLUM_ENABLED  // we have learning in learn.cc at the trial end now
+//    if(cb_works)
+//        cblearn(0,0);  // how do I know which point I should reach?
+//#endif
 
     exportArm(k,xcur,ycur,x0,y0,xc,yc,addInfo);
     return sc;
@@ -175,10 +200,14 @@ void prelearn(int n, float * addInfo)
     float wmmax;
 #ifdef DO_FAKE_PRELEARN
     wmmax = wmmax_fake_prelearn;
-    wm[0][15] = wmmax;
+    wm[0][0] = wmmax;
+    xcur = 0.2;
+    ycur = 0.4;
     cout<<"Fake prelearn max weight is "<<wmmax<<endl;
 #else
-    makeTrials(n,memoryLen,addInfo,true,0,false);  // last arg is whether we do export, or not
+    exportInit("prelearn");
+    makeTrials(n,memoryLen,addInfo,true,0,true);  // last arg is whether we do export, or not
+    exportClose();
     //
     wmmax = 0;
     for(int i = 0; i<nc; i++)
@@ -264,12 +293,28 @@ void runExperiment(int argc, char** argv)
         cout<<"num prelearn trials "<<numTrialsPrelearn<<endl;
         prelearn(numTrialsPrelearn, successTemp);
         backupWeights();
+#else
+        xcur = 0.2;
+        ycur = 0.4;
 #endif
 
         // init CB after prelearning
-        float x0 = xcur, y0 = xcur;  // set them to be last reached pts. Works only with real prelearning
+        float x0 = xcur, y0 = ycur;  // set them to be last reached pts. Works only with real prelearning
         // y should be valid as well, but we flush y before doing a trial and not after, so should be ok
+    
+        cb_works = true;
+        cout<<"x0 and y0 are "<<x0<<" "<<y0<<endl;
+
+#ifdef DO_FAKE_PRELEARN
+        float yylast[na] = {}; 
+        yylast[0] = 0.9;
+        initCB(x0,y0,1.,yylast);
+#else
         initCB(x0,y0,1.);
+#endif
+
+        setBGlearning(false);
+        setCBlearning(true);
 
         
         exportInit("galea");

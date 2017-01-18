@@ -61,6 +61,7 @@ extern float d1_ltp, d2_ltp;
 
 extern float stn_drive; 
 extern float gpe_stn;
+extern float stn_gpi;
 
 extern float d1_drive;
 extern float d2_drive;
@@ -83,18 +84,32 @@ extern unsigned int memoryLen; // currently not used
 
 extern float Rpre_coef;
 
+///////////////// CB related
+
+extern float cb_learn_rate; // was 10
+
+////////////////// system vars
+
+extern float * Rpre;
+extern float amplInitRand;
+inline bool fzero(float t){return abs(t) < EPS;}
+extern float **wmBackup, **w2Backup, **w1Backup;
+
 ///////////////////////////////////////
 ////////////////// Functions to be called by your experiment
 ///////////////////////////////////////
 
 float makeTrials(unsigned int numTrials, unsigned int memoryLen, float * addInfo, bool flushWeights=true, unsigned int indAdd=0, bool doExport=true);
 // indAdd -- add this number to the index when 1) calcRpre 2) output results to file
+void setCBtarget(float x, float y);
 void inactivateBG();  
 void activateBG();
 void activate_disease_PD();
 void activate_disease_HD();
 void inactivate_disease_PD();
 void inactivate_disease_HD();
+void setBGlearning(bool bglearns);
+void setCBlearning(bool cblearns);
 
 void flushWeights(bool wmToo);
 void flushRpre();
