@@ -37,7 +37,7 @@ float *gpe, *gpi, *stn;
 float *d1,*d2;
 
 float d2activity = 1.;
-    
+
 float amplInitRand = 0.001;
 
 const int na=100; // number of actions
@@ -55,7 +55,8 @@ float d1_ltp=1., d2_ltp=1., dm_ltp=1.;
 
 float **w1, **w2, **wm;
 
-float wcb[6][6]={},dfwx[6][6],dfwy[6][6];
+float wcb[6][6]={};
+float dfwx[6][6],dfwy[6][6];
 
 float last_y[na] = {};
 
@@ -183,7 +184,7 @@ void bg_learn(float **w1,float **w2,float* x,float* y,float DA,float **wm)
         }
 }
 
-float moveHand(float * phi, float * y, float* out)  
+float moveHand(float * phi, float * y, float* out, float ffield)  
 {
     float Y[na];
     float th=0.;
@@ -192,7 +193,7 @@ float moveHand(float * phi, float * y, float* out)
 
     //////  ACTION  /////////
     // fill phi with some values, based on wht we had in Y
-    reach(phi,Y,0,wcb);
+    reach(phi,Y,ffield,wcb);
     
     float xcur_tmp=(-L1*sin(phi[0])+-L2*sin(phi[1]))+ // V*(1.-2.*rnd())*5.;   
         finalNoiseAmpl*gauss();
@@ -221,7 +222,8 @@ void cblearn(float dx,float dy)
             wcb[i][j]-=cb_learn_rate*(dx*dfwx[i][j]+dy*dfwy[i][j]);
 }
 
-void initCB(float x0, float y0, float dw, float * yy)
+void initCB(float x0, float y0, float dw, float * yy, float coef)
+    // coef is the coef of the addition to the existing value
 {
     float endpt[2];
     if(yy == 0)
@@ -247,11 +249,11 @@ void initCB(float x0, float y0, float dw, float * yy)
             //x[0]=a; x[1]=b;
             
             // it influences update of DR which is basically some precalc * neuron activity
-            moveHand(initAng,yy,endpt);
+            moveHand(initAng,yy,endpt,0.);
 
             // compute error vector
-            dfwx[i][j]=(endpt[0]-x0)/dw; 
-            dfwy[i][j]=(endpt[1]-y0)/dw;
+            dfwx[i][j]= (1-coef)*dfwx[i][j] + coef*(endpt[0]-x0)/dw; 
+            dfwy[i][j]= (1-coef)*dfwy[i][j] + coef* (endpt[1]-y0)/dw;
         }
 
     // flush cb weights so that they do not influence normal movements
@@ -269,6 +271,7 @@ float makeTrials(unsigned int ntrials, unsigned int memoryLen, float * addInfo, 
     {
         flushWeights(true);
         flushRpre();
+        flushCB();
     }
 
 	float x[nc]={},y[na]={};

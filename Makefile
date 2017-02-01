@@ -21,3 +21,7 @@ cb_orig_dbg: reach_cb_orig.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.
 galea: galea.cc galea.h galea_export.h galea_export.cc $(addc) $(addh)
 	g++  -D BUILD_GALEA -O2 $(addc) galea.cc galea_export.cc -o   $@
 	g++  -D BUILD_GALEA -g $(addc) galea.cc galea_export.cc -o   $@_dbg
+
+force_field: force_field.cc force_field.h force_field_export.h force_field_export.cc $(addc) $(addh)
+	g++  -D BUILD_FORCE_FIELD -O2 $(addc) force_field.cc force_field_export.cc -o   $@
+	g++  -D BUILD_FORCE_FIELD -g $(addc) force_field.cc force_field_export.cc -o   $@_dbg

@@ -1,0 +1,21 @@
+3 groups
+asymptote when hit the same location several times
+error-clamp set cursor position to the target center and reward regardless of
+movement
+
+NA, BE+VE, BE (no asymptote, both types of errors and only binary error)
+
+NA group protocol
+baseline, 45 rotation with which feedback?, error clamp washout
+
+BE+VE
+baseline, 30 deg rotation, asympt, 45 rotation, error clamp, washout
+
+BE
+baseline, 30 deg rotation, asympt (here and only here BE recives
+binary feedback), 45 rotation, error clamp, washout
+ 
+Not sure our model with sequential connection between CB and BG it can work this
+way
+
+I am not even sure mathematics can really adapt

@@ -87,6 +87,7 @@ extern float Rpre_coef;
 ///////////////// CB related
 
 extern float cb_learn_rate; // was 10
+extern float dfwx[6][6],dfwy[6][6];
 
 ////////////////// system vars
 
@@ -113,11 +114,12 @@ void setCBlearning(bool cblearns);
 
 void flushWeights(bool wmToo);
 void flushRpre();
+void flushCB();
 void setRpre(float * rpre);
 void setRpreMax();
 
 void cblearn(float xdif, float ydif);
-void initCB(float x0, float y0, float dw, float * yy = 0);
+void initCB(float x0, float y0, float dw, float * yy = 0, float coef = 1.);
 
 /////////////// internal functions of the model
 
@@ -143,7 +145,7 @@ inline float weightRpre(unsigned int tau) // number of steps back. Should be pos
 int turnOnCues(float * cues);
 float getSuccess(float * x,float * y,unsigned int k,float *addInfo);  // precise meaning of success differs from experiment to experiment
 float getReward(float success, float * x,float * y, float & param);  
-float moveHand(float * phi0, float * y, float* out);  
+float moveHand(float * phi0, float * y, float* out, float ffield);  
 
 void runExperiment(int argc, char** argv);
 

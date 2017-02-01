@@ -11,7 +11,7 @@
 //// experiment-specific constants
 ///////////////////////////////////////////
 
-enum experimentPhases {PRE1=0, PRE2=1, ADAPT1=2, POST1=3,  ADAPT2=4, POST2=5, PRELEARN=6};
+enum experimentPhases {PRE1=0, PRE2=1, ADAPT1=2, POST1=3,  ADAPT2=4, POST2=5, PRELEARN=6, PRE3=7};
 
 extern const int numBasicCues;
 extern int experimentPhase;   // 0 means prelearning, 1 means showing RC, 2 means showing NC

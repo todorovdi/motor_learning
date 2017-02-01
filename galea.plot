@@ -21,7 +21,7 @@ err =     "./output_galea/galea_errors.dat"
 set multi lay 2,2
 
 set xtics 0,5,100
-set x2tics ("PRE2" 12, "ADAPT1" 24, "POST1" 49, "ADAPT2" 61, "POST2" 79) 
+set x2tics ("PRE2" 12, "ADAPT1" 24, "POST1" 49, "PRE3" 61, "ADAPT2" 73, "POST2" 98) 
 
 set grid
 set title "Dynamics of neurons"
@@ -78,6 +78,11 @@ set title "Reaching points POST"
 set ylabel "Y"
 set grid
 plot [-.5:.5][0:.8]arm u 4:5 w p pt 7 ps 0.8 lc 0, arm u 7:8 w p pt 7 ps 1, arm every ::49::61 u 2:3:1 w p pt 7 ps .3 lc palette z           
+
+set title "Reaching points ADAPT2"
+set ylabel "Y"
+set grid
+plot [-.5:.5][0:.8]arm u 4:5 w p pt 7 ps 1 lc 0, arm u 7:8 w p pt 7 ps 1, arm every ::73::98 u 2:3:1 w p pt 7 ps .3 lc palette z           
 
 
 unset multi
