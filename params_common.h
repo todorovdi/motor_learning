@@ -58,7 +58,7 @@ float Rpre_coef = 0.85;
 /// arm movement constants
 
 float finalNoiseAmpl = 0.005; //0.005; // amplitude of noise applied to the final hand position
-float neuron2armMult = 1.2;  // =S in prev Slava models it was = 1.3
+float neuron2armMult = 1.3;  // =S in prev Slava models it was = 1.3
 float initAng[4] ={ -0.832778,	1.16426, 0, 0};
 
 ////////////////////////////////////////

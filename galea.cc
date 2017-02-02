@@ -21,7 +21,7 @@ const int multNumTrials = 1; // our model does not work on such small
 //unsigned int nsessions = 15*8; // article - 15 
 //unsigned int nsessions =90; 
 //unsigned int nsessions =30; 
-unsigned int nsessions = 12; 
+unsigned int nsessions = 1; 
 
 const int numTrialsPre   = multNumTrials * 12;
 const int numTrialsAdapt = multNumTrials * 25;
@@ -45,12 +45,10 @@ const float armReachRadius = 0.2;
 float sector_thickness = 0.1;
 float sector_width = 20; // 30   // in degrees
 
-float wmmax_fake_prelearn = 0.7; // 0.65 -- no adaptation (and aftereffects), though w2 reach max values = 3
+float wmmax_fake_prelearn = 0.4; // 0.65 -- no adaptation (and aftereffects), though w2 reach max values = 3
 // 0.6 trying to adapt no success, no aftereffects (bacause of this)
 
 float xcur=0.,ycur=0.;
-
-bool cb_works = false;
 
 float targetAdapt2 = 90;  // in degrees
 float dirShift = 30;  // in degrees
@@ -120,18 +118,7 @@ float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
             break;
     }
 
-    // TODO: put out from trial cycle
-    // read from AllD cortical data 
-	float phi0[2]={ -0.832778,	1.16426};
-
-    // just take two float numbers from file (-0.8 and 1.16)
-	//ifstream("ini")>>phi0[0]>>phi0[1];
-	float xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
-
-
     float x0,y0;
-    float tmp[4];
-
 
     //float A=.2;
     float targetAngle = 2*M_PI*target/360;   // in radians
@@ -139,14 +126,10 @@ float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
     x0=xc+armReachRadius*cos(targetAngle),
     y0=yc+armReachRadius*sin(targetAngle);
 
-    setCBtarget(x0,y0);
-
-    
-    float phi[4]={};
-    phi[0]=phi0[0]; phi[1]=phi0[1]; phi[2]=0; phi[3]=0;
+    //setCBtarget(x0,y0);
 
     float out[2];
-    moveHand(phi,y,out,0.);
+    moveHand(y,out,0.);
     xcur = out[0], ycur = out[1];
 
 
@@ -176,15 +159,11 @@ float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
 #else 
     float dist0=hypot(xcur-x0,ycur-y0);
     sc = dist0;
-    addInfo[0] = -(xcur-x0);
+    //addInfo[0] = -(xcur-x0);
+    addInfo[0] = dist0;
 #endif
     addInfo[1] = xcur;
     addInfo[2] = ycur;
-
-//#ifdef CEREBELLUM_ENABLED  // we have learning in learn.cc at the trial end now
-//    if(cb_works)
-//        cblearn(0,0);  // how do I know which point I should reach?
-//#endif
 
     exportArm(k,xcur,ycur,x0,y0,xc,yc,addInfo);
     return sc;
@@ -227,6 +206,21 @@ int turnOnCues(float * x)
     return cueInd;
 }
 
+int deg2action(float degAngle)
+{
+    return int(float(degAngle) / 360. * 100.);
+}
+
+void initCBdir(float degAngle)       // sets matrix update rule relative to the direction
+{
+    float x0=xc+armReachRadius*cos(degAngle);
+    float y0=yc+armReachRadius*sin(degAngle);
+
+    float yylast[na] = {}; 
+    yylast[deg2action(degAngle)] = 1.;
+    initCB(x0,y0,1.,yylast);
+}
+
 void prelearn(int n, float * addInfo)
 {
     experimentPhase = PRELEARN;
@@ -234,11 +228,11 @@ void prelearn(int n, float * addInfo)
 #ifdef DO_FAKE_PRELEARN
     wmmax = wmmax_fake_prelearn;
     wm[0][0] = wmmax;
-        int dirInd = int(float(dirShift) / 360. * 100.);
+        int dirInd = deg2action(dirShift);
     wm[1][dirInd] = wmmax;
-        dirInd = int(float(targetAdapt2) / 360. * 100.);
+        dirInd = deg2action(targetAdapt2);
     wm[2][dirInd] = wmmax;
-        dirInd = int(float(targetAdapt2+dirShift) / 360. * 100.);
+        dirInd = deg2action(targetAdapt2+dirShift);
     wm[3][dirInd] = wmmax;
 
     xcur = 0.2;
@@ -341,23 +335,10 @@ void runExperiment(int argc, char** argv)
         ycur = 0.4;
 #endif
 
-        // init CB after prelearning
-        float x0 = xcur, y0 = ycur;  // set them to be last reached pts. Works only with real prelearning
-        // y should be valid as well, but we flush y before doing a trial and not after, so should be ok
-    
-        cb_works = true;
-        cout<<"x0 and y0 are "<<x0<<" "<<y0<<endl;
-
-#ifdef DO_FAKE_PRELEARN
-        float yylast[na] = {}; 
-        yylast[0] = 0.9;
-        initCB(x0,y0,1.,yylast);
-#else
-        initCB(x0,y0,1.);
-#endif
-
         setBGlearning(false);
         setCBlearning(true);
+
+        setCBlearning(false);
 
         
         exportInit("galea");
@@ -369,6 +350,7 @@ void runExperiment(int argc, char** argv)
         float rpre = 3.;
         setRpre(&rpre);
 
+        initCBdir(0);
         experimentPhase = PRE1;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsPre,memoryLen,addInfo[i],false,0);
@@ -379,50 +361,57 @@ void runExperiment(int argc, char** argv)
         makeTrials(numTrialsPre,memoryLen,addInfo[i],false,offset);
         offset+= numTrialsPre;
 
+        initCBdir(dirShift);
         experimentPhase = ADAPT1;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsAdapt,memoryLen,addInfo[i],false,offset);
         offset += numTrialsAdapt;
 
+        initCBdir(0);
         experimentPhase = POST1;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsPost,memoryLen,addInfo[i],false,offset);
         offset += numTrialsPost;
 
+
+
         // learn how to correct differnt action. Each next is less important than the prev
-#ifdef CB_MULTI_POINT_INIT
-#ifdef DO_FAKE_PRELEARN
-        cout<<"   multi point cb init"<<endl;
-        float coef = 1;
-        int compind = 0;
-
-        yylast[compActionIndices[compind]] = 0.9;
-        initCB(xcompass[compind],ycompass[compind],1.,yylast,coef);
-        yylast[compActionIndices[compind]] = 0.0;
-        compind++;
-
-        coef = 0.3;
-        for(; compind<4; compind++)
-        { 
-            yylast[compActionIndices[compind]] = 0.9;
-            initCB(xcompass[compind],ycompass[compind],1.,yylast,coef);
-            yylast[compActionIndices[compind]] = 0.0;
-        } 
-#else
-        initCB(x0,y0,1.);
-#endif
-#endif //CB_MULTI_POINT_INIT
+//#ifdef CB_MULTI_POINT_INIT
+//#ifdef DO_FAKE_PRELEARN
+//        cout<<"   multi point cb init"<<endl;
+//        float coef = 1;
+//        int compind = 0;
+//
+//        yylast[compActionIndices[compind]] = 0.9;
+//        initCB(xcompass[compind],ycompass[compind],1.,yylast,coef);
+//        yylast[compActionIndices[compind]] = 0.0;
+//        compind++;
+//
+//        coef = 0.3;
+//        for(; compind<4; compind++)
+//        { 
+//            yylast[compActionIndices[compind]] = 0.9;
+//            initCB(xcompass[compind],ycompass[compind],1.,yylast,coef);
+//            yylast[compActionIndices[compind]] = 0.0;
+//        } 
+//#else
+//        initCB(x0,y0,1.);
+//#endif
+//#endif //CB_MULTI_POINT_INIT
         
+        initCBdir(targetAdapt2);
         experimentPhase = PRE3;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsPre,memoryLen,addInfo[i],false,offset);
         offset+= numTrialsPre;
 
+        initCBdir(targetAdapt2+dirShift);
         experimentPhase = ADAPT2;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsAdapt,memoryLen,addInfo[i],false,offset);
         offset += numTrialsAdapt;
         
+        initCBdir(targetAdapt2);
         experimentPhase = POST2;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsPost,memoryLen,addInfo[i],false,offset);

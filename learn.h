@@ -88,6 +88,8 @@ extern float Rpre_coef;
 
 extern float cb_learn_rate; // was 10
 extern float dfwx[6][6],dfwy[6][6];
+extern float xc,yc;
+extern float phi0[2];
 
 ////////////////// system vars
 
@@ -132,7 +134,7 @@ void freeMemory();
 
 void initWeightNormFactor(unsigned int memoryLen);  // should be called ONLY ONCE
 float gauss();
-
+void initHand();
 
 inline float rnd() { return 1.*rand()/(RAND_MAX+1.); } 
 inline float s(float x) { return x>0?tanh(x):0; }
@@ -145,7 +147,7 @@ inline float weightRpre(unsigned int tau) // number of steps back. Should be pos
 int turnOnCues(float * cues);
 float getSuccess(float * x,float * y,unsigned int k,float *addInfo);  // precise meaning of success differs from experiment to experiment
 float getReward(float success, float * x,float * y, float & param);  
-float moveHand(float * phi0, float * y, float* out, float ffield);  
+float moveHand(float * y, float* out, float ffield);  
 
 void runExperiment(int argc, char** argv);
 

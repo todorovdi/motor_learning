@@ -65,6 +65,9 @@ bool learn_bg = true;
 
 float x_cb_target=0., y_cb_target=0.;
 
+float xc,yc;
+float phi0[2];
+
 // we want to make monkey touch one of the points that are good
 // thus we need to output it somehow
 // it interacts badly with existing experiment code
@@ -184,7 +187,7 @@ void bg_learn(float **w1,float **w2,float* x,float* y,float DA,float **wm)
         }
 }
 
-float moveHand(float * phi, float * y, float* out, float ffield)  
+float moveHand(float * y, float* out, float ffield)  
 {
     float Y[na];
     float th=0.;
@@ -193,6 +196,9 @@ float moveHand(float * phi, float * y, float* out, float ffield)
 
     //////  ACTION  /////////
     // fill phi with some values, based on wht we had in Y
+    
+    float phi[4]={};
+    phi[0]=phi0[0]; phi[1]=phi0[1]; phi[2]=0; phi[3]=0;
     reach(phi,Y,ffield,wcb);
     
     float xcur_tmp=(-L1*sin(phi[0])+-L2*sin(phi[1]))+ // V*(1.-2.*rnd())*5.;   
@@ -243,17 +249,14 @@ void initCB(float x0, float y0, float dw, float * yy, float coef)
             // set only current weight nonzero
             wcb[i][j]=dw;
 
-            float phi[4]={};
-            for(int ii=0; ii<4; ii++)
-                phi[ii] = initAng[ii];
             //x[0]=a; x[1]=b;
             
             // it influences update of DR which is basically some precalc * neuron activity
-            moveHand(initAng,yy,endpt,0.);
+            moveHand(yy,endpt,0.);
 
             // compute error vector
-            dfwx[i][j]= (1-coef)*dfwx[i][j] + coef*(endpt[0]-x0)/dw; 
-            dfwy[i][j]= (1-coef)*dfwy[i][j] + coef* (endpt[1]-y0)/dw;
+            dfwx[i][j]= (1-coef)*dfwx[i][j] + coef*(endpt[0]-x_cb_target)/dw; 
+            dfwy[i][j]= (1-coef)*dfwy[i][j] + coef* (endpt[1]-y_cb_target)/dw;
         }
 
     // flush cb weights so that they do not influence normal movements
@@ -373,6 +376,14 @@ float makeTrials(unsigned int ntrials, unsigned int memoryLen, float * addInfo, 
     return 0;
 }
 
+void initHand()
+{
+	float phi0[2]={ -0.832778,	1.16426};
+
+	ifstream("ini")>>phi0[0]>>phi0[1];
+	xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
+}
+
 int main(int argc, char** argv)
 {
     clock_t start = clock();
@@ -384,6 +395,8 @@ int main(int argc, char** argv)
     cout<<"seed is "<<seed<<endl;
     if(presetSeed)
         cout<<"WARNING: PRESET SEED IS ACTIVE!!!!"<<endl;
+
+    initHand();
 
     initWeightNormFactor(memoryLen);
     

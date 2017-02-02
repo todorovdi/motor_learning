@@ -20,10 +20,10 @@ err =     "./output_galea/galea_errors.dat"
 
 set multi lay 2,2
 
+set grid
 set xtics 0,5,100
 set x2tics ("PRE2" 12, "ADAPT1" 24, "POST1" 49, "PRE3" 61, "ADAPT2" 73, "POST2" 98) 
 
-set grid
 set title "Dynamics of neurons"
 #set ytics 0,20,500
 set ylabel "M1    D1    D2    GPe    GPi"
@@ -35,6 +35,7 @@ set ylabel "W1,2,M 0->j"
 #plot weights2 matrix index 0 w image
 plot weights2 u 2:1:3 matrix w image
 
+set xtics -0.4,0.1,0.4
 set title "Reaching points"
 set ylabel "Y"
 set grid
@@ -43,11 +44,15 @@ plot [-.5:.5][0:.8]arm u 4:5 w p pt 7 ps 1 lc 0, arm u 7:8 w p pt 7 ps 1, arm u 
 #unset ytics
 
 #set yrange [-120:120]
-set yrange [-0.2:0.2]
+#set yrange [-0.25:0.25]
+set yrange [0:0.25]
 set key
 set xtics 0,10,100
+unset grid
+set grid x2tics
 #set title "error (in degrees) -- averaged"
-set title "error (in distance units) -- averaged"
+set title "unsigned error (in distance units) -- averaged"
+#set title "x-coord error, signed (in distance units) -- averaged"
 plot err smooth unique with yerrorbars
 
 #set yrange [-0.3:0.3]

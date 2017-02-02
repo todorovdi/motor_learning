@@ -119,8 +119,7 @@ void reach_init()
 		{
 			for(int j=0;j<6;j++) 
 			{ 
-				
-                              AllD_CorticalData >> DR_Al_Di[d][i][j]; 
+                AllD_CorticalData >> DR_Al_Di[d][i][j]; 
 			}
 		}
 	}	

@@ -1,5 +1,6 @@
 file galea_dbg
-break learn.cc:338
+break learn.cc:329
+run
 disp {*y@10}
 disp {sc,R}
 disp {endpt_x,endpt_y,x_cb_target,y_cb_target}

@@ -9,7 +9,7 @@ unsigned int nsessions = 10; // article -- 15
 unsigned int prelearnNumTrials = 1; // 200 
 
 //const float ffield = -2;
-const float ffield = -6.0;
+const float ffield = -2.0;
 
 ///////////////
 
@@ -80,29 +80,15 @@ float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
             break;
     }
 
-    // TODO: put out from trial cycle
-    // read from AllD cortical data 
-	float phi0[2]={ -0.832778,	1.16426};
-
-    // just take two float numbers from file (-0.8 and 1.16)
-	//ifstream("ini")>>phi0[0]>>phi0[1];
-	float xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
-
-
     float x0,y0;
     float tmp[4];
     getTargetPoints(x,xc,yc,tmp);
     x0 = tmp[0];
     y0 = tmp[1];
     
-    float phi[4]={};
-    phi[0]=phi0[0]; phi[1]=phi0[1]; phi[2]=0; phi[3]=0;
-    float Y[na],th=.00;
-
     //////  ACTION  /////////
-    // fill phi with some values, based on wht we had in Y
     float out[2];
-    moveHand(phi,y,out,forceField);
+    moveHand(y,out,forceField);
     xcur = out[0], ycur = out[1];
 
     //cout<<"x0 and y0 are "<<x0<<" "<<x1<<" not centered are "<<x0-xc<<" "<<y0-yc<<endl;
@@ -279,7 +265,7 @@ void runOneCurlDir(int midPhase, const char * prefix)
 
     float yylast[na] = {}; 
 #ifdef DO_FAKE_PRELEARN
-    yylast[0] = 0.9;
+    yylast[0] = 1;
     initCB(x0,y0,1.,yylast);
 #else
     initCB(x0,y0,1.);
