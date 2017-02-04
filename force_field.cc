@@ -5,7 +5,7 @@
 //#include "params_force_field.h"
 #include "params_common.h"
 
-unsigned int nsessions = 10; // article -- 15 
+unsigned int nsessions = 1; // article -- 15 
 unsigned int prelearnNumTrials = 1; // 200 
 
 //const float ffield = -2;

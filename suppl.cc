@@ -79,7 +79,7 @@ void allocMemory()
     {
         for(int j=0;j<na;j++)
         {
-            wm[i][j]=i==j?0:0;
+            wm[i][j]=0;
             w1Backup[i][j]=wm[i][j];
             w2Backup[i][j]=wm[i][j];
             wmBackup[i][j]=wm[i][j];

@@ -23,18 +23,16 @@ const int multNumTrials = 1; // our model does not work on such small
 //unsigned int nsessions =30; 
 unsigned int nsessions = 1; 
 
-const int numTrialsPre   = multNumTrials * 12;
-const int numTrialsAdapt = multNumTrials * 25;
+const int numTrialsPre   = multNumTrials * 20;
+const int numTrialsAdapt = multNumTrials * 50;
 //const int numTrialsAdapt2 = multNumTrials * 18;
-const int numTrialsPost  = multNumTrials * 12;
-//unsigned int numTrials = 2*numTrialsPre + numTrialsAdapt + numTrialsAdapt2 + 2*numTrialsPost; 
-unsigned int numTrials = 3*numTrialsPre + 2*numTrialsAdapt + 2*numTrialsPost; 
+const int numTrialsPost  = multNumTrials * 20;
 //unsigned int numTrialsPrelearn = 1200;
 unsigned int numTrialsPrelearn = 500;
 
 int nc=4; // number of cues
 
-const char * phasesNames[] = { "PRE1", "PRE2", "ADAPT1", "POST1", "ADAPT2", "POST2", "PRELEARN", "PRE3" };
+const char * phasesNames[] = { "PRE1", "PRE2", "ADAPT1", "POST1", "ADAPT2", "POST2", "PRELEARN" };
 
 // RIGHT, TOP, LEFT, BOTTOM
 const float xcompass[] = {0.2, 0., -0.2, 0.};
@@ -45,21 +43,34 @@ const float armReachRadius = 0.2;
 float sector_thickness = 0.1;
 float sector_width = 20; // 30   // in degrees
 
-float wmmax_fake_prelearn = 0.4; // 0.65 -- no adaptation (and aftereffects), though w2 reach max values = 3
+float wmmax_fake_prelearn = 0.9; // 0.65 -- no adaptation (and aftereffects), though w2 reach max values = 3
 // 0.6 trying to adapt no success, no aftereffects (bacause of this)
 
 float xcur=0.,ycur=0.;
 
-float targetAdapt2 = 90;  // in degrees
-float dirShift = 30;  // in degrees
+float targetPre1 = 70;  // in degrees
+float targetPre2 = targetPre1;  // in degrees
+float dirShift = 90;  // in degrees
+
+#define TWO_PARTS
+
+//unsigned int numTrials = 2*numTrialsPre + numTrialsAdapt + numTrialsAdapt2 + 2*numTrialsPost; 
+#ifdef TWO_PARTS
+unsigned int numTrials = 2*numTrialsPre + 2*numTrialsAdapt + 2*numTrialsPost; 
+#else
+unsigned int numTrials = numTrialsPre + numTrialsAdapt + numTrialsPost;
+#endif 
+
+
 
 #define CEREBELLUM_ENABLED
-#define CB_MULTI_POINT_INIT
+//#define BG_ENABLED
 
-
-////#define NO_ACTION_ROTATION
+////#define NO_ENDPOINT_ROTATION
 //
-#define ACTION_ROTATION
+#define ACTION_CHANGE_SECOND
+//#define ACTION_CHANGE
+#define ENDPOINT_ROTATION
 //#define TARGET_ROTATION
 
 //#define PRELEARN_EACH_TIME
@@ -80,38 +91,38 @@ float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
     {
         case PRE1:
             rot = 0;
+            target = targetPre1;
             break;
         case PRE2:
             // Do something to mimic this simuations, occurin at random
             rot = 0;
+            target = targetPre2; 
             break;
         case ADAPT1:
             // Do something to mimic this simuations, occurin at random
             rot = dirShift;
 #ifdef TARGET_ROTATION
-            target = rot;
+            target = targetPre1+rot;
 #else
-            target = 0; 
+            target = targetPre1; 
 #endif
             break;
         case POST1:
             rot = 0;
-            break;
-        case PRE3:
-            rot = 0;
-            target = targetAdapt2;
+            target = targetPre1;
             break;
         case ADAPT2:
-            rot = dirShift;
-#ifdef TARGET_ROTATION
-            target = targetAdapt2 + rot;
-#else
-            target = targetAdapt2; 
-#endif
+            //rot = dirShift;
+            rot = 0;
+//#ifdef TARGET_ROTATION
+//            target = targetPre2 + dirShift;
+//#else
+            target = targetPre2; 
+//#endif
             break;
         case POST2:
             rot = 0;
-            target = targetAdapt2;
+            target = targetPre2;
             break;
         case PRELEARN:
             rot =0;
@@ -132,8 +143,12 @@ float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
     moveHand(y,out,0.);
     xcur = out[0], ycur = out[1];
 
+    // save "table" point coordinates
+    addInfo[3] = xcur;
+    addInfo[4] = ycur;
 
-#if defined(ACTION_ROTATION)
+
+#if defined(ENDPOINT_ROTATION)
     float xtmp = xcur - xc, ytmp = ycur -yc;
     float angle = 2.*M_PI/360.*rot;
     xcur = xtmp*cos(angle) - ytmp*sin(angle) + xc;
@@ -191,13 +206,15 @@ float getReward(float sc, float * x,float * y, float& t)
 int turnOnCues(float * x)
 {
     // flush
-    unsigned char cueInd = 0;     
+    int cueInd=-100;     
     for(int i=0; i<nc; i++)
         x[i] = 0.;
 
-    if(experimentPhase == ADAPT1) 
+    if(experimentPhase == PRE1 || experimentPhase == POST1) 
+        cueInd = 0;
+    else if(experimentPhase == ADAPT1) 
         cueInd = 1;
-    else if (experimentPhase == PRE3 || experimentPhase == POST2) 
+    else if (experimentPhase == PRE2 || experimentPhase == POST2) 
         cueInd = 2;
     else if (experimentPhase == ADAPT2) 
         cueInd = 3;
@@ -211,14 +228,15 @@ int deg2action(float degAngle)
     return int(float(degAngle) / 360. * 100.);
 }
 
-void initCBdir(float degAngle)       // sets matrix update rule relative to the direction
+void initCBdir(float degAngle,bool flushW)       // sets matrix update rule relative to the direction
 {
-    float x0=xc+armReachRadius*cos(degAngle);
-    float y0=yc+armReachRadius*sin(degAngle);
+    float radAngle = 2*M_PI*degAngle/360;
+    float x0=xc+armReachRadius*cos(radAngle);
+    float y0=yc+armReachRadius*sin(radAngle);
 
     float yylast[na] = {}; 
     yylast[deg2action(degAngle)] = 1.;
-    initCB(x0,y0,1.,yylast);
+    initCB(x0,y0,yylast,1.,flushW);
 }
 
 void prelearn(int n, float * addInfo)
@@ -227,18 +245,32 @@ void prelearn(int n, float * addInfo)
     float wmmax;
 #ifdef DO_FAKE_PRELEARN
     wmmax = wmmax_fake_prelearn;
-    wm[0][0] = wmmax;
-        int dirInd = deg2action(dirShift);
-    wm[1][dirInd] = wmmax;
-        dirInd = deg2action(targetAdapt2);
-    wm[2][dirInd] = wmmax;
-        dirInd = deg2action(targetAdapt2+dirShift);
-    wm[3][dirInd] = wmmax;
+    int dirIndPre1 = deg2action(targetPre1);
+    int dirIndAdapt1 = deg2action(targetPre1+dirShift);
+    int dirIndPre2 = deg2action(targetPre2);
+    int dirIndAdapt2 = deg2action(targetPre2+dirShift);
+
+    wm[0][dirIndPre1] = wmmax;
+    wm[2][dirIndPre2] = wmmax;
+
+
+#ifdef ACTION_CHANGE
+    wm[1][dirIndAdapt1] = wmmax;
+#else 
+    wm[1][dirIndPre1] = wmmax;
+#endif
+
+#ifdef ACTION_CHANGE_SECOND
+    wm[3][dirIndAdapt2] = wmmax;
+#else
+    wm[3][dirIndPre2] = wmmax;
+#endif
+
 
     xcur = 0.2;
     ycur = 0.4;
     cout<<"Fake prelearn max weight is "<<wmmax<<endl;
-#else
+#else  // DO_FAKE_PRELEARN
     setBGlearning(true);
     setCBlearning(false);
 
@@ -257,7 +289,7 @@ void prelearn(int n, float * addInfo)
     }
 
     cout<<"True prelearn max weight is "<<wmmax<<endl;
-#endif
+#endif    // DO_FAKE_PRELEARN
 }
 
 
@@ -336,11 +368,16 @@ void runExperiment(int argc, char** argv)
 #endif
 
         setBGlearning(false);
-        setCBlearning(true);
-
         setCBlearning(false);
 
-        
+#ifdef   BG_ENABLED
+        setBGlearning(true);
+#endif
+
+#ifdef   CEREBELLUM_ENABLED
+        setCBlearning(true);
+#endif
+
         exportInit("galea");
 
         // if we did prelearn above
@@ -350,24 +387,21 @@ void runExperiment(int argc, char** argv)
         float rpre = 3.;
         setRpre(&rpre);
 
-        initCBdir(0);
+        initCBdir(targetPre1,true);
         experimentPhase = PRE1;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsPre,memoryLen,addInfo[i],false,0);
         int offset = numTrialsPre;
 
-        experimentPhase = PRE2;
-        cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        makeTrials(numTrialsPre,memoryLen,addInfo[i],false,offset);
-        offset+= numTrialsPre;
-
-        initCBdir(dirShift);
+#ifdef TARGET_ROTATION
+        initCBdir(targetPre1+dirShift,false);
+#endif
         experimentPhase = ADAPT1;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsAdapt,memoryLen,addInfo[i],false,offset);
         offset += numTrialsAdapt;
 
-        initCBdir(0);
+        initCBdir(targetPre1,false);
         experimentPhase = POST1;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsPost,memoryLen,addInfo[i],false,offset);
@@ -399,22 +433,26 @@ void runExperiment(int argc, char** argv)
 //#endif
 //#endif //CB_MULTI_POINT_INIT
         
-        initCBdir(targetAdapt2);
-        experimentPhase = PRE3;
+#ifdef TWO_PARTS
+        initCBdir(targetPre2,true);   // update but save W
+        experimentPhase = PRE2;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsPre,memoryLen,addInfo[i],false,offset);
         offset+= numTrialsPre;
 
-        initCBdir(targetAdapt2+dirShift);
+//#ifdef TARGET_ROTATION
+//        initCBdir(targetPre2+dirShift,false);
+//#endif
         experimentPhase = ADAPT2;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsAdapt,memoryLen,addInfo[i],false,offset);
         offset += numTrialsAdapt;
         
-        initCBdir(targetAdapt2);
+        initCBdir(targetPre2,false);
         experimentPhase = POST2;
         cout<<"session num = "<<i<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         makeTrials(numTrialsPost,memoryLen,addInfo[i],false,offset);
+#endif
 
         exportClose();
     }

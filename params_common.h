@@ -35,7 +35,8 @@ float WMmax=3;
 
 ////////////// CB
 
-float cb_learn_rate=2; // was 10
+float cb_learn_rate=4; // was 10
+float cb_init_shift=1; // was 1   -- stepsize used for computation of DF in cerebellum
 
 ////////////  for the version where STN is a part of the indirect pathway
 
@@ -47,8 +48,10 @@ float d1_drive=0.;
 float d2_drive=0.; 
 ////////////// exploration-related consts
 
-float Q = 0.02; //0.001 in old ver with dif. exploration.  1 in new version
-float A_exp = 0.2; // exploratory constant [0, 1]
+//float Q = 0.02; //0.001 in old ver with dif. exploration.  1 in new version
+//float A_exp = 0.2; // exploratory constant [0, 1]
+float Q = 0.002; //0.001 in old ver with dif. exploration.  1 in new version
+float A_exp = 0.0; // exploratory constant [0, 1]
 
 
 float expCoefRpre = 0.1;
@@ -57,8 +60,9 @@ float Rpre_coef = 0.85;
 
 /// arm movement constants
 
-float finalNoiseAmpl = 0.005; //0.005; // amplitude of noise applied to the final hand position
-float neuron2armMult = 1.3;  // =S in prev Slava models it was = 1.3
+float finalNoiseAmpl = 0.00; //0.005; // amplitude of noise applied to the final hand position
+//float finalNoiseAmpl = 0.005; //0.005; // amplitude of noise applied to the final hand position
+float neuron2armMult = 1;  // =S in prev Slava models it was = 1.3
 float initAng[4] ={ -0.832778,	1.16426, 0, 0};
 
 ////////////////////////////////////////

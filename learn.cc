@@ -228,7 +228,7 @@ void cblearn(float dx,float dy)
             wcb[i][j]-=cb_learn_rate*(dx*dfwx[i][j]+dy*dfwy[i][j]);
 }
 
-void initCB(float x0, float y0, float dw, float * yy, float coef)
+void initCB(float x0, float y0, float * yy, float coef, bool flushW)
     // coef is the coef of the addition to the existing value
 {
     float endpt[2];
@@ -238,6 +238,11 @@ void initCB(float x0, float y0, float dw, float * yy, float coef)
     x_cb_target = x0;     // TODO x_cb_target should debend on cues activated
     y_cb_target = y0;
 
+    float wcb_backup[6][6];
+    for(int k=0;k<6;k++) 
+        for(int l=0;l<6;l++) 
+            wcb_backup[k][l] = wcb[k][l];
+
 	for(int i=0;i<6;i++) 
         for(int j=0;j<6;j++)
         {  
@@ -246,8 +251,12 @@ void initCB(float x0, float y0, float dw, float * yy, float coef)
                 for(int l=0;l<6;l++) 
                     wcb[k][l]=0;
 
+            // this is not needed because we add W*(activities ) to existing activities. So we actually do (Id + W)*(activities)
+            //for(int l=0;l<6;l++) 
+            //    wcb[l][l] = 1.;
+
             // set only current weight nonzero
-            wcb[i][j]=dw;
+            wcb[i][j]+=cb_init_shift;
 
             //x[0]=a; x[1]=b;
             
@@ -255,15 +264,24 @@ void initCB(float x0, float y0, float dw, float * yy, float coef)
             moveHand(yy,endpt,0.);
 
             // compute error vector
-            dfwx[i][j]= (1-coef)*dfwx[i][j] + coef*(endpt[0]-x_cb_target)/dw; 
-            dfwy[i][j]= (1-coef)*dfwy[i][j] + coef* (endpt[1]-y_cb_target)/dw;
+            dfwx[i][j]= (1.-coef)*dfwx[i][j] + coef*(endpt[0]-x_cb_target)/cb_init_shift; 
+            dfwy[i][j]= (1.-coef)*dfwy[i][j] + coef* (endpt[1]-y_cb_target)/cb_init_shift;
         }
 
     // flush cb weights so that they do not influence normal movements
     // we will set them to nonzero if we do cblearn
-	for(int k=0;k<6;k++) 
-        for(int l=0;l<6;l++) 
-            wcb[k][l]=0;
+    if(flushW)
+    { 
+        for(int k=0;k<6;k++) 
+            for(int l=0;l<6;l++) 
+                wcb[k][l]=0;
+    }
+    else
+    { 
+        for(int k=0;k<6;k++) 
+            for(int l=0;l<6;l++) 
+                wcb[k][l] = wcb_backup[k][l];
+    } 
 
     //learn_cb = true;
 }
@@ -302,34 +320,49 @@ float makeTrials(unsigned int ntrials, unsigned int memoryLen, float * addInfo, 
 
         // should work but looks confusing
 		
-		float expl[na]={};
-		//for(int i=0;i<na;i++) expl[i]=A_exp*( rnd()  ); // Uniform distribution in [0,1]
-		for(int i=0;i<na;i++) expl[i]=A_exp*rnd(); // Uniform distribution in [0,1]
-
-        // put random firing rates in MSN and M1 populations.
-        // because trials are independent and we don't know what's there in the beginning
-		for(int i=0;i<na;i++) { y[i]=Q*rnd(); d1[i]=Q*rnd(); d2[i]=Q*rnd();  }
-
-        if(doExport)
+        if(learn_bg)
         { 
-            exportCuesState(k,x);
+            float expl[na]={};
+            //for(int i=0;i<na;i++) expl[i]=A_exp*( rnd()  ); // Uniform distribution in [0,1]
+            for(int i=0;i<na;i++) expl[i]=A_exp*rnd(); // Uniform distribution in [0,1]
+
+            // put random firing rates in MSN and M1 populations.
+            // because trials are independent and we don't know what's there in the beginning
+            for(int i=0;i<na;i++) { y[i]=Q*rnd(); d1[i]=Q*rnd(); d2[i]=Q*rnd();  }
+
+            if(doExport)
+            { 
+                exportCuesState(k,x);
+            }
+
+            int nsteps = 0;
+            float dt = 0;
+            for(float t=0; t<T; )
+            {   
+                dt = bg_step(w1,w2,wm,x,y,expl); 
+                nsteps++;
+                t+= dt;
+                if(dt >= 1.)
+                    break;
+            };
+        } 
+        else
+        {
+            for(int j =0;j<na; j++)
+            {
+                if(wm[cueActive][j] > EPS)
+                    y[j] = 1.;
+                else
+                    y[j] = 0.;
+            }
         }
 
-        int nsteps = 0;
-        float dt = 0;
-        for(float t=0; t<T; )
-        {   
-            dt = bg_step(w1,w2,wm,x,y,expl); 
-            nsteps++;
-            t+= dt;
-            if(dt >= 1.)
-                break;
-        };
-
-        float addInfoItem[3];
+        float addInfoItem[5];
         float sc = getSuccess(x,y,k,addInfoItem);   // here arm export happens
-        float endpt_x = addInfoItem[1];
-        float endpt_y = addInfoItem[2];
+        float endpt_percieved_x = addInfoItem[1];
+        float endpt_percieved_y = addInfoItem[2];
+        float endpt_x = addInfoItem[3];
+        float endpt_y = addInfoItem[4];
 
         float t; // is set in the following function (via a link)
         float R = getReward(sc,x,y,t);
@@ -340,12 +373,12 @@ float makeTrials(unsigned int ntrials, unsigned int memoryLen, float * addInfo, 
         //sumSuccPerCue[activeCue] += ( fabs(sc- 2.)<EPS ? -1. : sc);
         //cout<<k<<" sumSucc 13 = "<<sumSuccPerCue[13]<<" and 19 = "<<sumSuccPerCue[19]<<endl;
 
-        if(doExport)
+        if(doExport )
         { 
             exportDynData(k,y,d1,d2,gpe,gpi,t,R,addInfo);
         } 
 
-        if(doExport)
+        if(doExport )
         { 
 	        exportWeights(k,w1,w2,wm);    
         } 
@@ -356,8 +389,8 @@ float makeTrials(unsigned int ntrials, unsigned int memoryLen, float * addInfo, 
 
         if(learn_cb)
         { 
-            if( fzero(R) )
-            { cblearn(endpt_x-x_cb_target, endpt_y-y_cb_target); }
+            //if( fzero(R) )
+            { cblearn(endpt_percieved_x-x_cb_target, endpt_percieved_y-y_cb_target); }
            // else
            // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
         }
@@ -378,8 +411,7 @@ float makeTrials(unsigned int ntrials, unsigned int memoryLen, float * addInfo, 
 
 void initHand()
 {
-	float phi0[2]={ -0.832778,	1.16426};
-
+	//float phi0[2]={ -0.832778,	1.16426};
 	ifstream("ini")>>phi0[0]>>phi0[1];
 	xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
 }
@@ -389,8 +421,8 @@ int main(int argc, char** argv)
     clock_t start = clock();
     cout<<"Calc started, nc = "<<nc<<" na = "<<na<<" nsessions "<<nsessions<<" numTrials = "<<numTrials<<endl;
     bool presetSeed = false;
-    //unsigned int seed =   1482861418;   presetSeed = true;  
     unsigned int seed =   time(NULL);  presetSeed = false; 
+    seed =  1486152915;   presetSeed = true;  
     srand(seed);
     cout<<"seed is "<<seed<<endl;
     if(presetSeed)

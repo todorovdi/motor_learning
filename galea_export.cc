@@ -102,7 +102,7 @@ void exportWeightsOnce(float ** w1,float ** w2,float **wm)
 
 void exportArm(unsigned int trialNum,float xcur,float ycur, float x0, float y0, float xc, float yc, float * addInfo)
 {
-    float d = *addInfo;
+    float d = addInfo[0];
     unsigned int k = trialNum;
     foutArm<<k<<'\t'       //1
            <<xcur<<'\t'    //2
