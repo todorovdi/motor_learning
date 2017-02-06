@@ -1,10 +1,6 @@
-#include "file_export.h"
+#include "exporter.h"
 
-ofstream foutPerTrial;
-ofstream foutVarDyn;
-ofstream foutWeights;
-
-void exportDynDataStd(unsigned int k, float *y,float *d1,float *d2,float * gpe,float *gpi,float t,float R, float sr)
+void Exporter::exportDynDataStd(unsigned int k, float *y,float *d1,float *d2,float * gpe,float *gpi,float t,float R, float sr)
 {
 //    foutPerTrial<<k<<" ";
 //    foutPerTrial<<"M1 = ";
@@ -47,7 +43,7 @@ void exportDynDataStd(unsigned int k, float *y,float *d1,float *d2,float * gpe,f
     foutVarDyn<<endl;
 }
 
-void exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **wm)
+void Exporter::exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **wm)
 {
 //    for(int i=0;i<na;i++) 
 //    {
@@ -126,7 +122,7 @@ void exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **wm)
 //    foutWeights<<endl;
 }
 
-void exportCuesState(unsigned int k, float * x)
+void Exporter::exportCuesState(unsigned int k, float * x)
 {
     foutPerTrial<<"trial number k="<<k<<" cues are ";
     for(int i=0;i<nc;i++)
@@ -134,7 +130,7 @@ void exportCuesState(unsigned int k, float * x)
     foutPerTrial<<endl;
 }
 
-void trialEndExport(float * sumM1freq, unsigned int seed)
+void Exporter::trialEndExport(float * sumM1freq, unsigned int seed)
 {
     foutPerTrial<<"sums are  ";
     for(int i=0;i<na;i++)
@@ -142,6 +138,107 @@ void trialEndExport(float * sumM1freq, unsigned int seed)
     foutPerTrial<<endl;
     foutPerTrial<<"seed was "<<seed<<endl;
 }
+
+Exporter::Exporter()
+{
+    na = 100;
+    nc = 1;
+}
+
+Exporter::Exporter(int na_,int nc_)
+{
+    setCounts(na_,nc_);
+}
+
+void Exporter::setCounts(int na_,int nc_)
+{
+    na = na_;
+    nc = nc_;
+}
+
+void Exporter::exportDynData(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi, float* addInfo)
+{
+    // first all M1s then all d1s and so on
+    //foutVarDyn2<<trialNum<<'\t';  // would spoil existing graphing procs probably
+    for(int i=0;i<na;i++) foutVarDyn2<<y[i]<<'\t';
+    for(int i=0;i<na;i++) foutVarDyn2<<d1[i]<<'\t';
+    for(int i=0;i<na;i++) foutVarDyn2<<d2[i]<<'\t';
+    for(int i=0;i<na;i++) foutVarDyn2<<gpe[i]<<'\t';
+    for(int i=0;i<na;i++) foutVarDyn2<<gpi[i]<<'\t';
+    foutVarDyn2<<endl;
+}
+
+
+
+void Exporter::exportWeights(unsigned int trialNum,float ** w1,float ** w2,float **wm)
+{ 
+    //foutWeights2<<trialNum<<'\t';
+    for(int i=0;i<na;i++) foutWeights2<<w1[0][i]<<'\t';
+    for(int i=0;i<na;i++) foutWeights2<<w2[0][i]<<'\t';
+    for(int i=0;i<na;i++) foutWeights2<<wm[0][i]<<'\t';
+    foutWeights2<<endl;
+
+    //for(int i=0;i<na;i++) foutWeights2<<w1[0][i]<<'\t';
+    //for(int i=0;i<na;i++) foutWeights2<<w2[0][i]<<'\t';
+}
+
+void Exporter::exportWeightsOnce(float ** w1,float ** w2,float **wm)
+{
+    for(int i=0;i<na;i++) 
+    {  
+        for(int j=0;j<nc;j++) 
+            foutWeightsOnce<<w1[j][i]<<'\t';
+        foutWeightsOnce<<endl;
+    }	
+    foutWeightsOnce<<endl<<endl;	
+
+    for(int i=0;i<na;i++)
+    { 
+        for(int j=0;j<nc;j++) 
+            foutWeightsOnce<<w2[j][i]<<'\t';
+        foutWeightsOnce<<endl;	
+    }
+    foutWeightsOnce<<endl<<endl;	
+    
+    for(int i=0;i<na;i++)
+    { 
+        for(int j=0;j<nc;j++) 
+            foutWeightsOnce<<wm[j][i]<<'\t';
+        foutWeightsOnce<<endl;	
+    }
+    foutWeightsOnce<<endl<<endl;	
+	//for(int j=0;j<nc;j++)
+	//{
+	//	for(int i=0;i<na;i++)
+	//	{
+	//		foutWeightsOnce << w1[j][i] << '\t' << w2[j][i] << '\t' <<wm[j][i]<< endl;
+	//	}
+	//}
+}
+
+
+void Exporter::exportArm(unsigned int trialNum,float xcur,float ycur, float x0, float y0, float xc, float yc, float * addInfo)
+{
+    float d = addInfo[0];
+    unsigned int k = trialNum;
+    foutArm<<k<<'\t'       //1
+           <<xcur<<'\t'    //2
+           <<ycur<<'\t'    //3
+           <<x0  <<'\t'    //4   // most rewarded target coords
+           <<y0  <<'\t'    //5
+           <<d   <<'\t'    //6
+           <<xc  <<'\t'    //7
+           <<yc  <<'\t'    //8
+           <<endl;
+
+  
+	//	out<<xcur<<'\t'<<ycur<<'\t'<<x0<<'\t'<<y0<<'\t'<<d<<'\t'<<xc<<'\t'<<yc;
+        //<<'\t'<<sr<<endl;
+}
+
+
+
+
 
 
 /*
