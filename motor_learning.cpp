@@ -79,7 +79,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     // cycle over trials
 	for(int k=indAdd;k<(ntrials+indAdd);k++)
 	{
-        bg.resetTrialBegin();
+        bg.resetForTrialBegin();
 
         int cueActive = env->turnOnCues(x);
         bg.setCues(x);

@@ -7,7 +7,7 @@
 
 #define ACTION_CHANGE_SECOND
 
-#define TWO_PARTS
+//#define TWO_PARTS
 
 ///// first part
 //#define ACTION_CHANGE

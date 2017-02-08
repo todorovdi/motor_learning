@@ -282,16 +282,6 @@ void BG_model::flushWeights(bool wmToo)
     }
 }
 
-void BG_model::trialBegin()
-{
-    //for(int i=0;i<na;i++) expl[i]=A_exp*( rnd()  ); // Uniform distribution in [0,1]
-    for(int i=0;i<na;i++) expl[i]=A_exp*rnd(); // Uniform distribution in [0,1]
-
-    // put random firing rates in MSN and M1 populations.
-    // because trials are independent and we don't know what's there in the beginning
-    for(int i=0;i<na;i++) { y[i]=Q*rnd(); d1[i]=Q*rnd(); d2[i]=Q*rnd();  }
-}
-
 BG_model::BG_model()
 {
     na = 100;
@@ -401,7 +391,7 @@ void BG_model::getPMC(float * y_)
     }
 }
 
-void BG_model::resetTrialBegin()
+void BG_model::resetForTrialBegin()
 {
     for(int i = 0; i<nc; i++)
     {
@@ -411,6 +401,13 @@ void BG_model::resetTrialBegin()
     {
         y[j] = 0;
     }
+
+    //for(int i=0;i<na;i++) expl[i]=A_exp*( rnd()  ); // Uniform distribution in [0,1]
+    for(int i=0;i<na;i++) expl[i]=A_exp*rnd(); // Uniform distribution in [0,1]
+
+    // put random firing rates in MSN and M1 populations.
+    // because trials are independent and we don't know what's there in the beginning
+    for(int i=0;i<na;i++) { y[i]=Q*rnd(); d1[i]=Q*rnd(); d2[i]=Q*rnd();  }
 }
 
 void BG_model::inactivate()

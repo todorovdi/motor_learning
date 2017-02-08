@@ -113,14 +113,11 @@ class BG_model
 
         void flushWeights(bool wmToo);
 
-        void resetCuesActions();
-        void trialBegin();
-
         void exportBGstate(int k, float* addInfo);
         void exportCuesState(int k);
         void exportWeightsOnce();
 
-        void resetTrialBegin();
+        void resetForTrialBegin();
         void setCues(float * x_);
         void getPMC(float * y_);
 
