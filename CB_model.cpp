@@ -1,7 +1,7 @@
 #include "BG_model.h"
 #include "CB_model.h"
 
-void CB_model::initCB(float x0, float y0, float * yy, float coef, bool flushW)
+void CB_model::train(float x0, float y0, float * yy, float coef, bool flushW)
     // coef is the coef of the addition to the existing value
 {
     float endpt[2];
@@ -29,16 +29,16 @@ void CB_model::initCB(float x0, float y0, float * yy, float coef, bool flushW)
             //    wcb[l][l] = 1.;
 
             // set only current weight nonzero
-            wcb[i][j]+=cb_init_shift;
+            wcb[i][j]+=cb_init_shift_size;
 
             //x[0]=a; x[1]=b;
             
             // it influences update of DR which is basically some precalc * neuron activity
-            hand->move(yy,endpt,wcb,0.);
+            arm->move(yy,endpt,wcb,0.);
 
             // compute error vector
-            dfwx[i][j]= (1.-coef)*dfwx[i][j] + coef*(endpt[0]-x_cb_target)/cb_init_shift; 
-            dfwy[i][j]= (1.-coef)*dfwy[i][j] + coef* (endpt[1]-y_cb_target)/cb_init_shift;
+            dfwx[i][j]= (1.-coef)*dfwx[i][j] + coef*(endpt[0]-x_cb_target)/cb_init_shift_size; 
+            dfwy[i][j]= (1.-coef)*dfwy[i][j] + coef* (endpt[1]-y_cb_target)/cb_init_shift_size;
         }
 
     // flush cb weights so that they do not influence normal movements
@@ -68,7 +68,7 @@ void CB_model::cblearn(float dx,float dy)
 
 void CB_model::learn(float x,float y)
 {
-    cblearn(x-x_cb_target, y_cb_target);
+    cblearn(x-x_cb_target, y-y_cb_target);
 }
 
 void CB_model::flush()
@@ -81,14 +81,14 @@ void CB_model::flush()
         }
 }
 
-void CB_model::setHand(Hand * hand_)
+void CB_model::setArm(Arm * arm_)
 {
-    hand = hand_;
+    arm = arm_;
 }
 
-CB_model::CB_model(Hand * hand_)
+CB_model::CB_model(Arm * arm_)
 {
-    setHand(hand_);
+    setArm(arm_);
     x_cb_target=0., y_cb_target=0.;
 }
 
@@ -100,4 +100,18 @@ CB_model::CB_model()
 void CB_model::setCBtarget(float x, float y)
 {
     x_cb_target=x, y_cb_target=y;
+}
+
+void CB_model::moveArm(float * y, float * out, float ffield)
+{
+    arm->move(y,out,wcb,ffield);
+}
+
+void CB_model::init(string iniCBname,Exporter *exporter, Arm * arm_)
+{
+    readIni(iniCBname,params);
+
+    cb_learn_rate = stof(params["cb_learn_rate"]);
+    cb_init_shift_size = stof(params["cb_init_shift_size"]);
+    arm = arm_;
 }

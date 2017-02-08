@@ -1,28 +1,38 @@
-#include "hand.h"
+#include "arm.h"
 
-Hand::Hand()
+Arm::Arm()
 {
+    na = 100;
     //wcb = {};
     finalNoiseAmpl = 0.01;
     neuron2armMult = 1;
 
-    initHand();
+    //init("");
     reach_init();
 }
 
-Hand::Hand(int na_)
+void Arm::init(string iniFile, int na, bool oldverIni)
 {
-    na = na_;
-}
+    parmap p;
+    readIni(iniFile,p);
 
-void Hand::initHand()
-{
+    phi0[0] = stof(p["phi_0"]);
+    phi0[1] = stof(p["phi_1"]);
 	//float phi0[2]={ -0.832778,	1.16426};
-	ifstream("ini")>>phi0[0]>>phi0[1];
+    if(oldverIni)
+	    ifstream(iniFile)>>phi0[0]>>phi0[1];
+    else
+    {
+        phi0[0] = stof(p["phi_0"]);
+        phi0[1] = stof(p["phi_1"]);
+    }
 	xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
+
+    finalNoiseAmpl = stof(p["finalNoiseAmpl"]);
+    neuron2armMult = stof(p["neuron2armMult"]);
 }
 
-void Hand::move(float * y, float* out, float wcb[][6], float ffield)   
+void Arm::move(float * y, float* out, float wcb[][6], float ffield)   
 { 
     float Y[na];
     float th=0.;
@@ -43,4 +53,10 @@ void Hand::move(float * y, float* out, float wcb[][6], float ffield)
 
     out[0] = xcur_tmp;
     out[1] = ycur_tmp;
+}
+
+void Arm::getReachCenterPos(float &x, float&y)
+{
+    x = xc;
+    y = yc;
 }

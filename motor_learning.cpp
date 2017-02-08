@@ -1,6 +1,7 @@
 #include "motor_learning.h"
+#include "environment.h"
 
-int MotorLearning::nc=1;
+//int MotorLearning::nc=1;
 
 void MotorLearning::inactivateBG()
 {
@@ -38,7 +39,7 @@ void MotorLearning::flushRpre()
     }
 }
 
-float MotorLearning::getRpre(unsigned int k, float R, float * addInfo)  // to be called AFTER bg_learn
+float MotorLearning::updateRpre(unsigned int k, float R, float * addInfo)  // to be called AFTER bg_learn
 {
     { 
         Rpre[k]=Rpre_coef*Rpre[k]+(1-Rpre_coef)*R;
@@ -62,6 +63,7 @@ void MotorLearning::setCBtarget(float x, float y)
     cb.setCBtarget(x,y);
 }
 
+// calls getSuccess, which calls moveArm
 float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flushData, unsigned int indAdd, bool doExport)
 {
     if(flushData)
@@ -71,17 +73,18 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         flushRpre();
     }
 
-    bg.resetTrialBegin();
     float T=20;
 
     float x[nc];
     // cycle over trials
 	for(int k=indAdd;k<(ntrials+indAdd);k++)
 	{
+        bg.resetTrialBegin();
+
         int cueActive = env->turnOnCues(x);
         bg.setCues(x);
 
-//        if(learn_bg)
+        if(learn_bg)
         { 
             if(doExport)
             { 
@@ -99,16 +102,10 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
                     break;
             };
         } 
-//        else
-//        {
-//            for(int j =0;j<na; j++)
-//            {
-//                if(wm[cueActive][j] > EPS)
-//                    y[j] = 1.;
-//                else
-//                    y[j] = 0.;
-//            }
-//        }
+        else
+        {
+            bg.habit2PMCdirectly(cueActive);
+        }
 
         float y[na];
         bg.getPMC(y);
@@ -142,7 +139,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
            // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
         }
 
-        getRpre(cueActive,R,addInfo);   
+        updateRpre(cueActive,R,addInfo);   
 
 	}
     if(doExport)
@@ -154,21 +151,81 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     return 0;
 }
 
+void MotorLearning::backupWeights()
+{
+    bg.backupWeights();
+}
 
-MotorLearning::MotorLearning(Hand * hand, Environment * env_, int nc)
-    {
-        nc=1;
-        learn_cb = false;
-        learn_bg = true;
+void MotorLearning::setHabit(int cue, int action, float strength)
+{
+    bg.setwm(cue,action,strength);
+}
 
-        env = env_;
-        cb.setHand(hand);
-    }
+void MotorLearning::restoreWeights(bool w12too)
+{
+    bg.restoreWeights(w12too);
+}
+
+MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & paramsEnv ) //:bg(exporter_),cb(&arm),Rpre(nc,0.)
+{
+    init(env_,exporter_,paramsEnv);
+}
+
+MotorLearning::MotorLearning()
+{
+}
 
 MotorLearning::~MotorLearning()
-    {
-    }
+{
+}
 
+void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & paramsEnv)
+{
+    string iniBGname = paramsEnv["iniBG"];
+    string iniCBname = paramsEnv["iniCB"]; 
+    string iniMLname = paramsEnv["iniML"]; 
+
+    readIni(iniMLname,paramsML);
+
+    //expCoefRpre = paramsML["expCoefRpre"]; 
+    Rpre_coef = stof(paramsML["Rpre_coef"]); 
+    learn_cb = stoi(paramsML["learn_cb"]);
+    learn_bg = stoi(paramsML["learn_bg"]); 
+
+    nc=stoi(paramsEnv["nc"]);
+    na=stoi(paramsEnv["na"]);
+
+
+    env = env_;
+
+    exporter = exporter_;
+
+    arm.init(paramsEnv["iniArm"], na);
+    cb.init(iniCBname,exporter,&arm);
+    bg.init(iniBGname,exporter);
+
+    Rpre.resize(nc);
+}
+
+void MotorLearning::getReachCenterPos(float &x, float&y)
+{
+    arm.getReachCenterPos(x,y);
+}
+
+void MotorLearning::moveArm(float * PMC_activity, float * out, float ffield)
+{
+    cb.moveArm(PMC_activity,out,ffield);
+}
+
+void MotorLearning::trainCB(float x0, float y0, float * yy, float coef, bool flushW) 
+{
+    cb.train(x0,y0,yy,coef,flushW);
+}
+
+void MotorLearning::flushWeights(bool wmtoo)
+{
+    bg.flushWeights(wmtoo);
+}
 
 //void initWeightNormFactor(unsigned int memoryLen)  // should be called ONLY ONCE
 //{

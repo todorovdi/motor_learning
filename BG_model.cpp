@@ -176,18 +176,21 @@ void BG_model::allocMemory()
         wmBackup[j]=new float [na];
     }
 
+    y = new float[na], 
+      x = new float[nc];
     gpe = new float[na], gpi = new float[na];
     stn= new float[na];
     d1= new float[na], d2= new float[na];
+    expl= new float[na];
 
     for(int i=0;i<nc;i++)
     {
         for(int j=0;j<na;j++)
         {
             wm[i][j]=0;
-            w1Backup[i][j]=wm[i][j];
-            w2Backup[i][j]=wm[i][j];
-            wmBackup[i][j]=wm[i][j];
+            w1Backup[i][j]=0;
+            w2Backup[i][j]=0;
+            wmBackup[i][j]=0;
         }
     }
 }
@@ -214,6 +217,11 @@ void BG_model::freeMemory()
     delete gpe;
     delete d1;
     delete d2;
+
+    delete expl;
+    delete stn;
+    delete x;
+    delete y;
 }
 
 void BG_model::copyWeights(float** wfrom, float ** wto)
@@ -244,6 +252,16 @@ void BG_model::restoreWeights(bool w12too)
     }
 }
 
+void BG_model::habit2PMCdirectly(int cueActive)
+{ 
+    for(int j =0;j<na; j++)
+    {
+        if(wm[cueActive][j] > EPS)
+            y[j] = 1.;
+        else
+            y[j] = 0.;
+    }
+} 
 
 void BG_model::flushWeights(bool wmToo)
 {
@@ -258,7 +276,7 @@ void BG_model::flushWeights(bool wmToo)
             w1[i][j]=amplInitRand*rnd(); 
             w2[i][j]=amplInitRand*rnd();
             if(wmToo)
-                wm[i][j]=i==j?0:0;
+                wm[i][j]=0;
 //#endif
         }
     }
@@ -276,10 +294,10 @@ void BG_model::trialBegin()
 
 BG_model::BG_model()
 {
-    na = MotorLearning::na;
-    nc = MotorLearning::nc;
+    na = 100;
+    nc = 1;
 
-    allocMemory();
+    //allocMemory();
 
     BGactive=true; 
     d1_ltp=1., d2_ltp=1., dm_ltp=1.;
@@ -296,9 +314,59 @@ BG_model::BG_model()
     //Rpre_coef = 0.85;
 }
 
+BG_model::BG_model(Exporter * exporter_):BG_model()
+{
+    exporter = exporter_;
+}
+
 BG_model::~BG_model()
 {
     freeMemory();
+}
+
+void BG_model::init(string iniBGname,Exporter *exporter_)
+{
+    readIni(iniBGname,params);
+
+    y_drive = stof(params["y_drive"]);
+    y_d1 = stof(params["y_d1"]);
+    y_d2 = stof(params["y_d2"]);
+    d1_gpi = stof(params["d1_gpi"]);
+    gpi_drive = stof(params["gpi_drive"]);
+    gpi_y = stof(params["gpi_y"]);
+    d2_gpe = stof(params["d2_gpe"]);
+    gpe_drive = stof(params["gpe_drive"]);
+    gpe_gpi = stof(params["gpe_gpi"]);
+    tau = stof(params["tau"]);
+    inh1 = stof(params["inh1"]);
+    inh2 = stof(params["inh2"]);
+    inh21 = stof(params["inh21"]);
+    inh12 = stof(params["inh12"]);
+    inhy = stof(params["inhy"]);
+    gam1 = stof(params["gam1"]);
+    gam2 = stof(params["gam2"]);
+    lam1 = stof(params["lam1"]);
+    lam2 = stof(params["lam2"]);
+    mgam = stof(params["mgam"]);
+    mlam = stof(params["mlam"]);
+    W1max = stof(params["W1max"]);
+    W2max = stof(params["W2max"]);
+    WMmax = stof(params["WMmax"]);
+    stn_drive = stof(params["stn_drive"]);
+    gpe_stn = stof(params["gpe_stn"]);
+    stn_gpi = stof(params["stn_gpi"]);
+    d1_drive = stof(params["d1_drive"]);
+    d2_drive = stof(params["d2_drive"]);
+    Q = stof(params["Q"]);
+    A_exp = stof(params["A_exp"]);
+
+    na = stof(params["na"]);
+    nc = stof(params["nc"]);
+
+    allocMemory();
+
+    exporter = exporter_;
+    //vim replace code 317,351s\(\w*\)\W*=.*/\1 = stof(params["\1"]);/gc
 }
 
 void BG_model::exportBGstate(int k, float * addInfo)
@@ -353,4 +421,10 @@ void BG_model::inactivate()
 void BG_model::activate()
 {
     BGactive = true;
+}
+
+
+void BG_model::setwm(int cue, int action, float val)
+{
+    wm[cue][action] = val;
 }

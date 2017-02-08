@@ -1,39 +1,35 @@
 #include "exporter.h"
 
+void Exporter::init(string suffix_,string dir_)   // prefix = "RC" for example
+{
+    suffix = suffix_;
+    dir = dir_;
+}
+
+void Exporter::exportInit(string prefix,string suffix)   // prefix = "RC" for example
+{
+    foutPerTrial.open( dir+prefix+string("_output")+suffix+string(".dat")) ;
+    foutVarDyn.open  ( dir+prefix+string("_var_dyn")+suffix+string(".dat") );
+    foutVarDyn2.open  ( dir+prefix+string("_var_dyn2")+suffix+string(".dat") );
+    foutWeights.open  ( dir+prefix+string("_weights")+suffix+string(".dat") );
+    foutWeights2.open  ( dir+prefix+string("_weights2")+suffix+string(".dat") );
+    foutWeightsOnce.open  ( dir+prefix+string("_weights_once")+suffix+string(".dat") );
+    foutArm.open  ( dir+prefix+string("_arm")+suffix+string(".dat") );
+}
+
+void Exporter::exportClose()
+
+{
+    foutPerTrial.close();
+    foutVarDyn.close();
+    foutVarDyn2.close();
+    foutWeights.close();
+    foutWeights2.close();
+    foutWeightsOnce.close();
+    foutArm.close();
+}
 void Exporter::exportDynDataStd(unsigned int k, float *y,float *d1,float *d2,float * gpe,float *gpi,float t,float R, float sr)
 {
-//    foutPerTrial<<k<<" ";
-//    foutPerTrial<<"M1 = ";
-//    for(int i=0;i<na;i++) foutPerTrial<<y[i]<<" ";                              
-//    foutPerTrial<<endl;
-//
-//    foutPerTrial<<"D1= ";
-//    for(int i=0;i<na;i++) foutPerTrial<<d1[i]  <<" ";
-//    foutPerTrial<<endl;
-//
-//    foutPerTrial<<"D2= ";
-//    for(int i=0;i<na;i++) foutPerTrial<<d2[i] <<" ";                              
-//    foutPerTrial<<endl;
-//
-//    foutPerTrial<<"GPE= ";
-//    for(int i=0;i<na;i++) foutPerTrial<<gpe[i]<<" ";
-//    foutPerTrial<<endl;
-//
-//    foutPerTrial<<"GPI= ";
-//    for(int i=0;i<na;i++) foutPerTrial<<gpi[i]<<" ";
-//    foutPerTrial<<endl;
-//
-//    foutPerTrial<<"t exceptionality is "<< (t>=0.75)<<" reward is "<<R <<"  success rate is "<<sr<<endl;
-
-
-    //foutVarDyn<<k<<" ";
-    //for(int i=0;i<na;i++) 
-    //{
-    //    foutVarDyn<<y[i]<<" "<<d1[i]<<" "<<d2[i]<<" "<<gpe[i]<<" "<<gpi[i]<<" ";
-    //}
-    //foutVarDyn<<(t>=0.75)<<" "<<sr<<endl;
-
-
     foutVarDyn<<k<<'\t';
     for(int i=0;i<na;i++) foutVarDyn<<y[i]<<'\t';
     for(int i=0;i<na;i++) foutVarDyn<<d1[i]<<'\t';
@@ -45,54 +41,6 @@ void Exporter::exportDynDataStd(unsigned int k, float *y,float *d1,float *d2,flo
 
 void Exporter::exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **wm)
 {
-//    for(int i=0;i<na;i++) 
-//    {
-//        foutPerTrial<<"conn from cue to i D1 ";
-//        for(int j=0;j<nc;j++)
-//            foutPerTrial<<w1[j][i]<<" ";  
-//        foutPerTrial<<endl;
-//    }
-//    for(int i=0;i<na;i++) 
-//    {
-//        foutPerTrial<<"conn from cue to i D2 ";
-//        for(int j=0;j<nc;j++)
-//            foutPerTrial<<w2[j][i]<<" ";  
-//        foutPerTrial<<endl;
-//    }
-//    for(int i=0;i<na;i++) 
-//    {
-//        foutPerTrial<<"conn from cue to i M1 ";
-//        for(int j=0;j<nc;j++)
-//            foutPerTrial<<wm[j][i]<<" ";  
-//        foutPerTrial<<endl;
-//    }
-//    foutPerTrial<<endl;
-
-//    // for actions for 1 cue, actions for 2nd cue..
-//    foutWeights<<k<<" ";
-//    for(int i=0;i<nc;i++)
-//    {
-//        for(int j=0;j<na;j++)
-//        {
-//            foutWeights<<w1[i][j]<<" ";
-//        }
-//    }
-//    for(int i=0;i<nc;i++)
-//    {
-//        for(int j=0;j<na;j++)
-//        {
-//            foutWeights<<w2[i][j]<<" ";
-//        }
-//    }
-//    for(int i=0;i<nc;i++)
-//    {
-//        for(int j=0;j<na;j++)
-//        {
-//            foutWeights<<wm[i][j]<<" ";
-//        }
-//    }
-//
-
     for(int i=0;i<na;i++) 
     {  
         for(int j=0;j<nc;j++) 
@@ -117,9 +65,6 @@ void Exporter::exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **
         foutWeights<<endl;	
     }
     foutWeights<<endl<<endl;	
-
-
-//    foutWeights<<endl;
 }
 
 void Exporter::exportCuesState(unsigned int k, float * x)
@@ -148,6 +93,8 @@ Exporter::Exporter()
 Exporter::Exporter(int na_,int nc_)
 {
     setCounts(na_,nc_);
+    //prefix = prefix_;
+    //suffix = suffix_;
 }
 
 void Exporter::setCounts(int na_,int nc_)
@@ -230,60 +177,13 @@ void Exporter::exportArm(unsigned int trialNum,float xcur,float ycur, float x0, 
            <<xc  <<'\t'    //7
            <<yc  <<'\t'    //8
            <<endl;
-
-  
-	//	out<<xcur<<'\t'<<ycur<<'\t'<<x0<<'\t'<<y0<<'\t'<<d<<'\t'<<xc<<'\t'<<yc;
-        //<<'\t'<<sr<<endl;
 }
 
+void Exporter::setParamsMaps(parmap * paramsEnv_, parmap *paramsBG_, parmap *paramsCB_)
+{
+    paramsEnv = paramsEnv_;
+    paramsBG = paramsBG_;
+    paramsCB = paramsCB_;
 
-
-
-
-
-/*
- *
- *  
-std::fstream w1w2All;
-	w1w2All.open("w1w2All", std::fstream::out |  std::ios::app);
-
-               for(int i=0;i<na;i++) w1w2All<<w1[25][i]<<'\t';
-		for(int i=0;i<na;i++) w1w2All<<w2[25][i]<<'\t';
-					
-                         w1w2All << endl;
-	                  
-	w1w2All.close();	
-	
+    setCounts(stoi( (*paramsBG)["na"]),stoi( (*paramsBG)["nc"]));
 }
- *
- *
- *
-	std::fstream w1w2;
-	w1w2.open("w1w2", std::fstream::out | std::fstream::trunc);
-
-	for(int j=0;j<nc;j++)
-	{
-		for(int i=0;i<na;i++)
-		{
-			w1w2 << w1[j][i] << '\t' << w2[j][i] << endl;
-		}
-         
-	}
-	w1w2.close();	
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- */
-

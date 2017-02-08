@@ -84,7 +84,6 @@ unsigned int numTrials = numTrialsPre + numTrialsAdapt + numTrialsPost;
 
 float getSuccess(float * x,float * y,unsigned int k, float * addInfo)
 {
-
     float target = 0;
     float rot = 0;
     switch(experimentPhase)

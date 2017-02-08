@@ -6,7 +6,13 @@
 #include <math.h>
 #include <stdlib.h>
 #include <fstream>
+#include <map>
+#include <string>
 //#include <random>
+
+using std::string;
+using std::map;
+typedef map<string,string> parmap;
 
 using namespace std;
 
@@ -15,6 +21,7 @@ class CB_model;
 class Exporter;
 class Environment;
 class Hand;
+class MotorLearning;
 
 // Basal ganglia
 // base class from which experiment class should be inherited 
@@ -86,8 +93,9 @@ class BG_model
     int na;
     int nc;
 
-    Environment * env;
+//    Environment * env;
     Exporter * exporter;
+    parmap params;
 ///////////////////////////////////////
 ////////////////// Functions to be called by your experiment
 ///////////////////////////////////////
@@ -116,7 +124,19 @@ class BG_model
         void setCues(float * x_);
         void getPMC(float * y_);
 
+        void setwm(int cue, int action, float val);
+
+        void backupWeights();
+        void restoreWeights(bool w12too=false);
+
+        // sets to max firing all PMC that have habit associations
+        // used to speed up computation when basal ganglia activity is not interesting
+        // (when testing cerebellum separately)
+        void habit2PMCdirectly(int cueActive);
+
+        void init(string iniBGname,Exporter *exporter);
         BG_model();
+        BG_model(Exporter * exporter_);
         ~BG_model();
 /////////////// internal functions of the model
 
@@ -126,8 +146,6 @@ class BG_model
 
 
         void copyWeights(float** wfrom, float ** wto);
-        void backupWeights();
-        void restoreWeights(bool w12too=false);
         void allocMemory();
         void freeMemory();
 
@@ -135,7 +153,6 @@ class BG_model
 };
 
 
-void runExperiment(int argc, char** argv);
 
 
 ///////////////////////////////////////
@@ -144,7 +161,7 @@ void runExperiment(int argc, char** argv);
 
 extern const float EPS; // to compare floats with zero
 
-inline bool fzero(float t){return abs(t) < EPS;}
+inline bool fzero(float t){return fabs(t) < EPS;}
 inline float rnd() { return 1.*rand()/(RAND_MAX+1.); } 
 inline float s(float x) { return x>0?tanh(x):0; }
 float gauss();

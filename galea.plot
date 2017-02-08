@@ -6,15 +6,15 @@ unset key
 set xrange [0:]
 set yrange [0:]
 
-var_dyn2 =        "./output_galea/galea_var_dyn2.dat" 
-weights2 =        "./output_galea/galea_weights2.dat" 
-arm =             "./output_galea/galea_arm.dat"          
+var_dyn2 =        "./output_galea/_var_dyn20.dat" 
+weights2 =        "./output_galea/_weights20.dat" 
+arm =             "./output_galea/_arm0.dat"          
                             
-datold =          "./output_galea/galea_var_dyn.dat" 
-weights =         "./output_galea/galea_weights.dat" 
-weightsOnce =     "./output_galea/galea_weights_once.dat" 
+datold =          "./output_galea/_var_dyn0.dat" 
+weights =         "./output_galea/_weights0.dat" 
+weightsOnce =     "./output_galea/_weights_once0.dat" 
 
-err =     "./output_galea/galea_errors.dat" 
+err =     "./output_galea/_errors.dat" 
 
 # ------------ first 
 

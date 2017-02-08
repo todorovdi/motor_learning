@@ -1,32 +1,65 @@
 #ifndef ENVIRONMENT_H
 #define ENVIRONMENT_H
 
-#include "hand.h"
+#include "arm.h"
+#include "BG_model.h"
+#include "motor_learning.h"
+#include "exporter.h"
+#include <vector>
+#include <string>
+#include <map>
+
+
+using std::string;
+using std::map;
+typedef parmap parmap;
+
 // class representing environement that BG works with
+// one object per session (experiment run)
+// single session is not parallelizable, works in a single thread
 class Environment
 {
 ////////////////////////////// 
 ////////   Constants to set in your experiment
 /////////////////////////////
+    protected:
     unsigned int nsessions;
     unsigned int numTrials;
-    float successDist;  // distance the hand has to reach the success to count
-    float initAng[4];
+    float successDist;  // distance the arm has to reach the success to count
+    //float initAng[4];
+    float rewardDist;
 
     unsigned int memoryLen; // currently not used
 
-    //Hand * hand;
+    bool prelearnEachTime;
+
+    int experimentPhase;
+    vector<string> phasesNames;
+    int nc,na;
+
+    MotorLearning ml;
+    Exporter exporter;
+
+    parmap paramsEnv;
+    int num_sess;
 
     public:
 ///////////////////////////////////////
 //  Functions to implement in your experiment
 ///////////////////////////////////////
         virtual int turnOnCues(float * cues) = 0;
-        virtual float getSuccess(float * x,float * y,unsigned int k,float *addInfo){}  // precise meaning of success differs from experiment to experiment
-        virtual float getReward(float success, float * x,float * y, float & param){}  
+        virtual float getSuccess(float * x,float * y,unsigned int k,float *addInfo) = 0;  // precise meaning of success differs from experiment to experiment
+        virtual float getReward(float success, float * x,float * y, float & param) = 0;  
+        virtual void runSession() = 0;
+        virtual void setParams(int argc, char** argv) = 0;
+
+        //void setModel(MotorLearning * ml_);
         
         Environment();
-        //Environment(Hand * hand_);
+        Environment(string paramsEnvFile, int num_sess);
+
+        virtual void prelearn(int nTrials, float * addInfo) = 0;
+        //Environment(Hand * arm_);
         //float moveHand(float * y, float* out, float ffield);
 };
 

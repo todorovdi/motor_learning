@@ -1,6 +1,10 @@
-// learn.cc
-// this file is for the learning model only
-// INDEPENDENT of the experiment we are modelling
+// learn.cpp
+
+#include "CB_model.h"
+#include "motor_learning.h"
+#include "suppl.h"
+#include "exporter.h"
+#include "environment.h"
 
 
 #ifdef  BUILD_PIRON_ARM
@@ -22,11 +26,8 @@
 
 #include <time.h>
 
-#include "CB_model.h"
-#include "motor_learning.h"
-#include "suppl.h"
-#include "exporter.h"
-#include "environment.h"
+
+using namespace std;
 
 
 //float forceField = 0.;
@@ -52,44 +53,31 @@ const float EPS = 0.0000001;
 // it interacts badly with existing experiment code
 // we have to make a framework that would allow to use the different one
 
-class testExperimentEnv: public Environment
-{
-    public:
-    int turnOnCues(float * cues){};
-    float getSuccess(float * x,float * y,unsigned int k,float *addInfo){};
-    float getReward(float success, float * x,float * y, float & param){};  
 
-    //testExperimentEnv(Hand * hand):Environment(hand)
-    testExperimentEnv():Environment()
-    {
-    }
-};
 
 int main(int argc, char** argv)
 {
     // write class GaleaExperiment:public Environment
     // create MotorLearning object
     // run trials from here
+        // --ini params.ini
+        
 
-    Hand hand;
-    testExperimentEnv te;
-    MotorLearning mlModel(&hand,&te,1);
 
     clock_t start = clock();
     //cout<<"Calc started, nc = "<<nc<<" na = "<<na<<" nsessions "<<nsessions<<" numTrials = "<<numTrials<<endl;
     bool presetSeed = false;
     unsigned int seed =   time(NULL);  presetSeed = false; 
-    seed =  1486152915;   presetSeed = true;  
+    //seed =  1486152915;   presetSeed = true;  
     srand(seed);
     cout<<"seed is "<<seed<<endl;
     if(presetSeed)
         cout<<"WARNING: PRESET SEED IS ACTIVE!!!!"<<endl;
 
-    //runExperiment(argc,argv);
+    runExperiment(argc,argv);
 
     clock_t end = clock();
     cout<<"Calc finished, clock time (in sec) passed is "<<(end-start)/CLOCKS_PER_SEC<<endl;
     return 0;
 }
 
-void runExperiment(int argc, char** argv){}
