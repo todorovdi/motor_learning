@@ -73,8 +73,6 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         flushRpre();
     }
 
-    float T=20;
-
     float x[nc];
     // cycle over trials
 	for(int k=indAdd;k<(ntrials+indAdd);k++)
@@ -120,11 +118,9 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         float t; // is set in the following function (via a link)
         float R = env->getReward(sc,x,y,t);
 
-        addInfo[k] = addInfoItem[0];
-
         if(doExport )
         { 
-            bg.exportBGstate(k,addInfo);
+            bg.exportBGstate(k,0);
         } 
 
         //rnd();  // just to follow same seed as Slava's code
@@ -139,7 +135,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
            // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
         }
 
-        updateRpre(cueActive,R,addInfo);   
+        updateRpre(cueActive,R,0);   
 
 	}
     if(doExport)
@@ -179,30 +175,33 @@ MotorLearning::~MotorLearning()
 {
 }
 
-void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & paramsEnv)
+void MotorLearning::initParams(parmap & paramsEnv)
 {
-    string iniBGname = paramsEnv["iniBG"];
-    string iniCBname = paramsEnv["iniCB"]; 
     string iniMLname = paramsEnv["iniML"]; 
 
     readIni(iniMLname,paramsML);
 
     //expCoefRpre = paramsML["expCoefRpre"]; 
     Rpre_coef = stof(paramsML["Rpre_coef"]); 
+    T = stof(paramsML["T"]); 
+
     learn_cb = stoi(paramsML["learn_cb"]);
     learn_bg = stoi(paramsML["learn_bg"]); 
 
     nc=stoi(paramsEnv["nc"]);
     na=stoi(paramsEnv["na"]);
+}
 
-
+void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & paramsEnv)
+{
+    initParams(paramsEnv);
     env = env_;
 
     exporter = exporter_;
 
     arm.init(paramsEnv["iniArm"], na);
-    cb.init(iniCBname,exporter,&arm);
-    bg.init(iniBGname,exporter);
+    cb.init(paramsEnv["iniCB"],exporter,&arm);
+    bg.init(paramsEnv["iniBG"],exporter);
 
     Rpre.resize(nc);
 }

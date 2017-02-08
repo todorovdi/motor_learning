@@ -15,7 +15,6 @@
 //#define TARGET_ROTATION
 
 //#define PRELEARN_EACH_TIME
-#define DO_FAKE_PRELEARN
  
 //#define SECTOR_REWARD
 //#define HOR_REWARD_SLAVA
@@ -73,8 +72,6 @@ void runExperiment(int argc, char** argv)
 // should output everything to files
 void testExperimentEnv::runSession()
 {
-    float * addInfo = new float[numTrials];
-
 //    if(prelearnEachTime)
     //     Maybe we have to do longer prelarn
     { 
@@ -110,7 +107,7 @@ void testExperimentEnv::runSession()
         initCBdir(targetPre1,true);
         experimentPhase = PRE1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        ml.makeTrials(numTrialsPre,addInfo,false,0);
+        ml.makeTrials(numTrialsPre,0,false,0);
         int offset = numTrialsPre;
 
 #ifdef TARGET_ROTATION
@@ -118,109 +115,95 @@ void testExperimentEnv::runSession()
 #endif
         experimentPhase = ADAPT1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        ml.makeTrials(numTrialsAdapt,addInfo,false,offset);
+        ml.makeTrials(numTrialsAdapt,0,false,offset);
         offset += numTrialsAdapt;
 
         initCBdir(targetPre1,false);
         experimentPhase = POST1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        ml.makeTrials(numTrialsPost,addInfo,false,offset);
+        ml.makeTrials(numTrialsPost,0,false,offset);
         offset += numTrialsPost;
 
-#ifdef TWO_PARTS
-        initCBdir(targetPre2,true);   // update but do not save W, for testing purposes
-        experimentPhase = PRE2;
-        cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        ml.makeTrials(numTrialsPre,addInfo,false,offset);
-        offset+= numTrialsPre;
+//#ifdef TWO_PARTS
+        if(numPhases > 3)
+        { 
+            initCBdir(targetPre2,true);   // update but do not save W, for testing purposes
+            experimentPhase = PRE2;
+            cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
+            ml.makeTrials(numTrialsPre,0,false,offset);
+            offset+= numTrialsPre;
 
-//#ifdef TARGET_ROTATION
-//        initCBdir(targetPre2+dirShift,false);
+    //#ifdef TARGET_ROTATION
+    //        initCBdir(targetPre2+dirShift,false);
+    //#endif
+            experimentPhase = ADAPT2;
+            cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
+            ml.makeTrials(numTrialsAdapt,0,false,offset);
+            offset += numTrialsAdapt;
+            
+            initCBdir(targetPre2,false);
+            experimentPhase = POST2;
+            cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
+            ml.makeTrials(numTrialsPost,0,false,offset);
+        } 
 //#endif
-        experimentPhase = ADAPT2;
-        cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        ml.makeTrials(numTrialsAdapt,addInfo,false,offset);
-        offset += numTrialsAdapt;
-        
-        initCBdir(targetPre2,false);
-        experimentPhase = POST2;
-        cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        ml.makeTrials(numTrialsPost,addInfo,false,offset);
-#endif
 
         exporter.exportClose();
-    
-
-//    float errors[numTrials] = {};
-//    float SME[numTrials] = {};
-//    extractErrors(addInfo, errors, SME, numTrials);
-//
-//    char fname[256] = "./output_galea/";
-//    const char * prefix="galea";
-//    strcat(strcat(fname,prefix), "_errors.dat");
-//    foutErr.open(fname);
-//    for(int j =0;j<numTrials;j++)
-//    {
-//        foutErr<<j<<"\t"<<errors[j]<<"\t"<<SME[j]<<endl;
-//    }
-//    foutErr.close();
-//
-//    for(int i=0;i<nsessions;i++)
-//    {
-        delete addInfo;
-//    }
 }
 
 void testExperimentEnv::prelearn(int n, float * addInfo)
 {
     experimentPhase = PRELEARN;
     float wmmax;
-#ifdef DO_FAKE_PRELEARN
-    wmmax = wmmax_fake_prelearn;
-    int dirIndPre1 = deg2action(targetPre1);
-    int dirIndAdapt1 = deg2action(targetPre1+dirShift);
-    int dirIndPre2 = deg2action(targetPre2);
-    int dirIndAdapt2 = deg2action(targetPre2+dirShift);
+    if(fake_prelearn)
+    { 
+        wmmax = wmmax_fake_prelearn;
+        int dirIndPre1 = deg2action(targetPre1);
+        int dirIndAdapt1 = deg2action(targetPre1+dirShift);
+        int dirIndPre2 = deg2action(targetPre2);
+        int dirIndAdapt2 = deg2action(targetPre2+dirShift);
 
-    ml.setHabit(0,dirIndPre1,wmmax);
-    ml.setHabit(2,dirIndPre2,wmmax);
+        ml.setHabit(0,dirIndPre1,wmmax);
+        ml.setHabit(2,dirIndPre2,wmmax);
 
-#ifdef ACTION_CHANGE
-    ml.setHabit(1,dirIndAdapt1,wmmax);
-#else 
-    ml.setHabit(1,dirIndPre1,wmmax);
-#endif
+        if(action_change1)
+            ml.setHabit(1,dirIndAdapt1,wmmax);
+        else
+            ml.setHabit(1,dirIndPre1,wmmax);
 
-#ifdef ACTION_CHANGE_SECOND
-    ml.setHabit(3,dirIndAdapt2,wmmax);
-#else 
-    ml.setHabit(3,dirIndPre2,wmmax);
-#endif
+        if(action_change2)
+            ml.setHabit(3,dirIndAdapt2,wmmax);
+        else
+            ml.setHabit(3,dirIndPre2,wmmax);
 
+        xcur = 0.2;
+        ycur = 0.4;
+        cout<<"Fake prelearn max weight is "<<wmmax<<endl;
+    }
+    else
+    { 
+        // TODO: careful here!
+        ml.setBGlearning(true);
+        ml.setCBlearning(false);
 
-    xcur = 0.2;
-    ycur = 0.4;
-    cout<<"Fake prelearn max weight is "<<wmmax<<endl;
-#else  // DO_FAKE_PRELEARN
-    ml.setBGlearning(true);
-    ml.setCBlearning(false);
+        exporter.exportInit("prelearn",to_string(num_sess));
+        ml.makeTrials(n,addInfo,false,0,true);  // last arg is whether we do export, or not
+        exporter.exportClose();
 
-    exporter.exportInit("prelearn");
-    ml.makeTrials(n,addInfo,true,0,true);  // last arg is whether we do export, or not
-    exporter.exportClose();
-    //
-//    wmmax = 0;
-//    for(int i = 0; i<nc; i++)
-//    {
-//        for(int j = 0; j<na; j++)
-//        {
-//            if(wm[i][j] > wmmax)
-//                wmmax = wm[i][j];
-//        }
-//    }
+        ml.initParams(paramsEnv);  // restore bg and cb learning params from ini file
+        //
+    //    wmmax = 0;
+    //    for(int i = 0; i<nc; i++)
+    //    {
+    //        for(int j = 0; j<na; j++)
+    //        {
+    //            if(wm[i][j] > wmmax)
+    //                wmmax = wm[i][j];
+    //        }
+    //    }
 
-    cout<<"True prelearn max weight is "<<wmmax<<endl;
-#endif    // DO_FAKE_PRELEARN
+        cout<<"True prelearn max weight is "<<wmmax<<endl;
+    }
 
     ml.backupWeights();
 }
@@ -281,11 +264,10 @@ float testExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *ad
         case ADAPT1:
             // Do something to mimic this simuations, occurin at random
             rot = dirShift;
-#ifdef TARGET_ROTATION
-            target = targetPre1+rot;
-#else
-            target = targetPre1; 
-#endif
+            if(target_rotation1)
+                target = targetPre1+rot;
+            else
+                target = targetPre1; 
             break;
         case POST1:
             rot = 0;
@@ -294,11 +276,10 @@ float testExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *ad
         case ADAPT2:
             //rot = dirShift;
             rot = 0;
-//#ifdef TARGET_ROTATION
-//            target = targetPre2 + dirShift;
-//#else
-            target = targetPre2; 
-//#endif
+            if(target_rotation2)
+                target = targetPre2+rot;
+            else
+                target = targetPre2; 
             break;
         case POST2:
             rot = 0;
@@ -324,46 +305,52 @@ float testExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *ad
 
     float out[2];
     ml.moveArm(y,out,0.);
-    xcur = out[0], ycur = out[1];
+    float xcur_real, ycur_real;
+    xcur_real = out[0], ycur_real = out[1];
 
     // save "table" point coordinates
-    addInfo[3] = xcur;
-    addInfo[4] = ycur;
+    addInfo[3] = xcur_real;
+    addInfo[4] = ycur_real;
+    xcur = xcur_real;
+    ycur = ycur_real;
 
-
-#if defined(ENDPOINT_ROTATION)
-    float xtmp = xcur - xc, ytmp = ycur -yc;
-    float angle = 2.*M_PI/360.*rot;
-    xcur = xtmp*cos(angle) - ytmp*sin(angle) + xc;
-    ycur = xtmp*sin(angle) + ytmp*cos(angle) + yc;
-#endif
+    if( endpoint_rotation1 || endpoint_rotation2)
+    { 
+        float xtmp = xcur_real - xc, ytmp = ycur_real -yc;
+        float angle = 2.*M_PI/360.*rot;
+        xcur = xtmp*cos(angle) - ytmp*sin(angle) + xc;
+        ycur = xtmp*sin(angle) + ytmp*cos(angle) + yc;
+    } 
     float sc = rewardDist+0.01;  // to be unrewarded by default
-#if defined (SECTOR_REWARD)
-    float dist0=hypot(xcur-xc,ycur-yc); 
-    float xd = (xcur-xc);  
-    float yd = (ycur-yc);  
-    float angleCur0 = atan( yd/xd) / (2*M_PI) * 360;
-    if(xd<0)
-        angleCur0 = atan(-xd/yd)/ (2*M_PI) * 360  + (yd>0?90:-90) ;
-    //float angleCur = angleCur1 < 180 ? angleCur1 : angleCur0 - 180;
-    float angleCur = angleCur0 > 0 ? angleCur0 : angleCur0+360.;
-    float dif = angleCur-targetAngle/(2*M_PI)*360;
-    float dif1 = (dif < 180. ? dif : dif-360);
-    if( fabs(dist0 - armReachRadius)  < sector_thickness )
-        sc = dif1;
+    if(sector_reward)
+    { 
+        float dist0=hypot(xcur-xc,ycur-yc); 
+        float xd = (xcur-xc);  
+        float yd = (ycur-yc);  
+        float angleCur0 = atan( yd/xd) / (2*M_PI) * 360;
+        if(xd<0)
+            angleCur0 = atan(-xd/yd)/ (2*M_PI) * 360  + (yd>0?90:-90) ;
+        //float angleCur = angleCur1 < 180 ? angleCur1 : angleCur0 - 180;
+        float angleCur = angleCur0 > 0 ? angleCur0 : angleCur0+360.;
+        float dif = angleCur-targetAngle/(2*M_PI)*360;
+        float dif1 = (dif < 180. ? dif : dif-360);
+        if( fabs(dist0 - armReachRadius)  < sector_thickness )
+            sc = dif1;
+        else
+            sc = fabs(dif1) > sector_width+0.1 ? dif1 : sector_width+0.1;
+        addInfo[0] = -dif1;
+    } 
     else
-        sc = fabs(dif1) > sector_width+0.1 ? dif1 : sector_width+0.1;
-    addInfo[0] = -dif1;
-#else 
-    float dist0=hypot(xcur-x0,ycur-y0);
-    sc = dist0;
-    //addInfo[0] = -(xcur-x0);
-    addInfo[0] = dist0;
-#endif
+    { 
+        float dist0=hypot(xcur-x0,ycur-y0);
+        sc = dist0;
+        //addInfo[0] = -(xcur-x0);
+        addInfo[0] = dist0;
+    } 
     addInfo[1] = xcur;
     addInfo[2] = ycur;
 
-    exporter.exportArm(k,xcur,ycur,x0,y0,xc,yc,addInfo);
+    exporter.exportArm(k,xcur,ycur,x0,y0,xc,yc,addInfo);  // export percieved point
     return sc;
 }
 
@@ -371,17 +358,20 @@ float testExperimentEnv::getReward(float sc, float * x,float * y, float & param)
 {
     float R = 0;
 
-#ifndef SECTOR_REWARD
-    if( fabs(sc) < rewardDist) 
-    {
-        R = 3;
+    if(!sector_reward)
+    { 
+        if( fabs(sc) < rewardDist) 
+        {
+            R = 3;
+        }
     }
-#else
-    if( fabs(sc) < sector_width/2) 
+    else
     {
-        R = 3;
-    }
-#endif
+        if( fabs(sc) < sector_width/2) 
+        {
+            R = 3;
+        }
+    } 
 
     return R;
 }  
@@ -392,6 +382,18 @@ testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_):Enviro
     numTrialsAdapt    = stoi(paramsEnv["numTrialsAdapt"]);
     numTrialsPost     = stoi(paramsEnv["numTrialsPost"]);
     numTrialsPrelearn = stoi(paramsEnv["numTrialsPrelearn"]);
+    numPhases         = stoi(paramsEnv["numPhases"]);
+
+    fake_prelearn     = stoi(paramsEnv["fake_prelearn"]);
+
+    action_change1 = stof(paramsEnv["action_change1"]);
+    endpoint_rotation1 = stof(paramsEnv["endpoint_rotation1"]);
+    target_rotation1 = stof(paramsEnv["target_rotation1"]);
+    action_change2 = stof(paramsEnv["action_change2"]);
+    endpoint_rotation2 = stof(paramsEnv["endpoint_rotation2"]);
+    target_rotation2 = stof(paramsEnv["target_rotation2"]);
+    sector_reward = stof(paramsEnv["sector_reward"]);
+
     dirShift          = stof(paramsEnv["dirShift"]);
     targetPre1        = stof(paramsEnv["targetPre1"]);
     targetPre2        = stof(paramsEnv["targetPre2"]);

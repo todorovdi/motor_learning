@@ -21,6 +21,7 @@ class MotorLearning
     bool learn_bg;
     vector<float> Rpre;
     float Rpre_coef;
+    float T;                      // integration duration max limit
 
     parmap paramsML;
 
@@ -64,6 +65,7 @@ class MotorLearning
     ~MotorLearning();
 
     void init(Environment* env, Exporter* exporter_,parmap & paramsEnv);
+    void initParams(parmap & paramsEnv);
 };
 
 #endif

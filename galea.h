@@ -18,11 +18,21 @@ class testExperimentEnv: public Environment
     //unsigned int numTrialsPrelearn = 1200;
     int numTrialsPrelearn;
 
-    float xcur,ycur;
+    float xcur,ycur;   // percieved endpoint
     float sector_thickness;
     float sector_width;
     float wmmax_fake_prelearn;
     float armReachRadius;
+    int  numPhases;
+
+    bool fake_prelearn;
+    bool sector_reward;
+    bool action_change1;
+    bool endpoint_rotation1;
+    bool target_rotation1;
+    bool action_change2;
+    bool endpoint_rotation2;
+    bool target_rotation2;
 
     public:
     int turnOnCues(float * cues);

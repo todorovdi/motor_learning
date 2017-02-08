@@ -46,13 +46,14 @@ void Arm::move(float * y, float* out, float wcb[][6], float ffield)
     phi[0]=phi0[0]; phi[1]=phi0[1]; phi[2]=0; phi[3]=0;
     reach(phi,Y,ffield,wcb);
     
-    float xcur_tmp=(-L1*sin(phi[0])+-L2*sin(phi[1]))+ // V*(1.-2.*rnd())*5.;   
-        finalNoiseAmpl*gauss();
-    float ycur_tmp=(L1*cos(phi[0])+L2*cos(phi[1]))+  // V*(1.-2.*rnd())*5.;     
-        finalNoiseAmpl*gauss();
+    float xcur_tmp=(-L1*sin(phi[0])+-L2*sin(phi[1])); // V*(1.-2.*rnd())*5.;   
+    float ycur_tmp=(L1*cos(phi[0])+L2*cos(phi[1]));
 
-    out[0] = xcur_tmp;
-    out[1] = ycur_tmp;
+    float noisex = finalNoiseAmpl*gauss();
+    float noisey = finalNoiseAmpl*gauss();
+
+    out[0] = xcur_tmp + noisex;
+    out[1] = ycur_tmp + noisey;
 }
 
 void Arm::getReachCenterPos(float &x, float&y)
