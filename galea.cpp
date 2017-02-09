@@ -1,23 +1,7 @@
 #include "galea.h"
 #include <boost/program_options.hpp>
 
-// Now it should be regulated by paramsMotorLearning.ini
-//#define CEREBELLUM_ENABLED
-//#define BG_ENABLED
-
 #define ACTION_CHANGE_SECOND
-
-//#define TWO_PARTS
-
-///// first part
-//#define ACTION_CHANGE
-#define ENDPOINT_ROTATION
-//#define TARGET_ROTATION
-
-//#define PRELEARN_EACH_TIME
- 
-//#define SECTOR_REWARD
-//#define HOR_REWARD_SLAVA
 
 void runExperiment(int argc, char** argv)
 {

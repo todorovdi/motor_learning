@@ -1,15 +1,9 @@
 #include "environment.h"
 
-//Environment::Environment(Hand * arm_)
 Environment::Environment()
 {
-    //exporter(100,1),ml(this,&exporter,"paramsBG.ini","paramsCB.ini")
-    nsessions = 1;
     numTrials = 100;
     successDist = 0.1;
-    prelearnEachTime = false;
-
-    //arm = arm_;
 }
 
 void Environment::prelearn(int nTrials, float * addInfo)
@@ -18,7 +12,6 @@ void Environment::prelearn(int nTrials, float * addInfo)
 } 
 
 Environment::Environment(string paramsFile, int num_sess_)
-    //:ml(this,&exporter,params["iniBG"], params["iniCB"]),exporter(stoi(params["na"]),stoi(params["nc"]))                       
 {
     readIni(paramsFile,params);
 
@@ -39,12 +32,3 @@ Environment::Environment(string paramsFile, int num_sess_)
     num_sess = num_sess_;
 }
 
-//void Environment::setModel(MotorLearning * ml_)
-//{
-//    ml = ml_;
-//}
-
-//float Environment::moveHand(float * y, float* out, float wcb[][6], float ffield)  
-//{
-//    arm->move(y,out,ffield);
-//}

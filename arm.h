@@ -20,7 +20,7 @@ class Arm
     float neuron2armMult;
     float finalNoiseAmpl; // amplitude of noise applied to the final arm position
 
-    float xc,yc;
+    float xc,yc;                     // center of the reaching movement
 
     int na;
 

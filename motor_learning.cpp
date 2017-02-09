@@ -91,6 +91,8 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
 
             int nsteps = 0;
             float dt = 0;
+
+            // integrate the equations
             for(float t=0; t<T; )
             {   
                 dt = bg.do_step(); 
@@ -115,7 +117,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         float endpt_x = addInfoItem[3];
         float endpt_y = addInfoItem[4];
 
-        float t; // is set in the following function (via a link)
+        float t; // is may be set in the following function (it passes as a reference argument)
         float R = env->getReward(sc,x,y,t);
 
         if(doExport )
@@ -162,7 +164,7 @@ void MotorLearning::restoreWeights(bool w12too)
     bg.restoreWeights(w12too);
 }
 
-MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & params ) //:bg(exporter_),cb(&arm),Rpre(nc,0.)
+MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & params ) 
 {
     init(env_,exporter_,params);
 }
@@ -177,7 +179,6 @@ MotorLearning::~MotorLearning()
 
 void MotorLearning::initParams(parmap & params)
 {
-    //params = params_;
     //expCoefRpre = paramsML["expCoefRpre"]; 
     Rpre_coef = stof(params["Rpre_coef"]); 
     T = stof(params["T"]); 
@@ -195,10 +196,6 @@ void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & params)
     env = env_;
 
     exporter = exporter_;
-
-    //readIni(params["iniArm"],params);
-    //readIni(params["iniCB"],params);
-    //readIni(params["iniBG"],params);
 
     arm.init(params);
     cb.init(params,exporter,&arm);

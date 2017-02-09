@@ -1,0 +1,139 @@
+     to use already existing experiments, run 
+$ make <one of the build targets from Makefile>
+    then 
+$ run_<experiment name>.sh <param1> <param2> <param3>
+
+this would 
+1) clear <experiment_name>_output  directory
+2) run the compiled program with the parameters given to the script
+(which parameters and how passed to the executable -- see the actuall
+shell script file, it is experiment-specific). It put all output in <experiment_name>_output  directory 
+3) runs data processing with python which is supposed to put all its
+ouput <experiment name>.plot
+
+------  compilation
+
+you should have openmp and libboost installed for the program to work
+
+------  Makefile
+
+One build target in Makefile corresponds to one experiment.
+While building exectuable you do a macro definition which helps to determine
+which .h file should be included (=> which code will be compiled)
+
+Usually it is convinient to compile for version of a file
+1) normal version
+2) debug version
+3) openmp version
+4) openmp debug version
+
+------ ini file structure
+
+<paramName> = <value>
+
+spaces (but not tabs) are allowed. Values can be of any type, but have
+to not contain whitespace characters. All of them are read as strings
+and then you convert it to the necessary type inside the code using
+stof,stoi functions
+# comments are allowed, but
+<paramName> = <value>  # are not (i.e. you can not place # after the
+param-value pair currently)
+
+Note that file parser is very basic now (in partiular it does not
+provide a lot of info about errors that might happen) and if you fill ini file
+wrongly you will just have a runtime error at some point (best
+scenario) or a hidden error somewhere inside the program 
+
+------ New experiment creation
+
+1) create <experiment name>.h file and declare a class
+<Experiment_name> derived from Environment (note that you have to
+overload some pure virtual methods from Environment class)
+1.3) create ini files with constants, if they should differ from the
+existing ones
+1.4) modify the beginning of learn.cc adding one #ifdef and add corresponding -D flag to the Makefile
+2) create <experiment name>.cpp file and
+    2.0) write a definition(realisation) of runExperiment function
+    2.1) put definitions of methods of your experiment class 
+    2.2) in the constructor read the parameters from the parameter
+file using readIni function 
+    2.2) define the way you get success, reward and Rpre in the experiment
+         (i.e. define the functions declared in learn.h )
+    2.3) write the code for the experiment itself (realize functions defined in learn.h)
+3) create <experiment name>_file_export.cc and <same name>.h and adjust the
+output in file_export. You may change existing functions or add new ones, but
+don't delete old ones 
+4) create <experiment name>.plot.py (it is easier to do it based on an
+existing *.plot.py file)
+5) create run_<experiment name>.sh
+
+The code of interaction with arm is located in 
+piron_learn_arm.cc   in functions
+  getSuccess (and getTargetPoints)
+
+It is done so that potentially model could be used without arm as well
+
+------ Overall code logic 
+
+descirption of particular methods actions can be found in the code (in
+*.h files)
+In general you are supposed to touch only public methods, not the
+private ones
+
+    Environment class (environment.h and cpp)
+experiment environment that interacts with the motor learning model as
+an experimenter interacts with an animal. It 
+1) turns on cues
+2) provides rewards 
+3) counts successes (after Piron the successful choice may either
+imply reward or not, depending on you implementation of the getReward
+method)
+    It contains exemplars of MotorLearning and Exporter classes
+    Imortant to note: each Environment object is meant to represent a
+single experiment run, that is executed (i.e. exec of runSession
+method) in a single thread (but different Environment object can be exectued in different threads)
+
+    Exporter class  (exporter.h and .cpp)
+provides export functions
+it actually does not contain much members, it is mostly done to
+encapsulate export functions in one place. Most other classes has a
+pointer to an object of this type.
+    The most important output file is arm.dat file in the output
+directory. You can read its structure looking at exportArm and
+exportInit methods. Note that exportInit allows you to insert a string
+(that may containt newlines) in the beginning of this file, if you
+have to add some small pieces of information in it, apart from reachin
+information.
+    There are also methods that export BG populations and weights
+dynamics -- exportWeights and exportDynData. The write to
+corresponding files in the output directory. 
+
+    BG_model (BG_model.h and cpp)
+Everything that is necessary to do bgstep and bglearn. Also different
+control methods
+
+    CB_model (CB_model.h and cpp)
+Everything that is necessary to do cerebellum correction. Also different
+control methods. When moveHand is called by the environment, it passes
+through cerebellum always (and correction is applied). Though if the
+cerebellum learning is turned off (see MotorLearning class and ini),
+it always zero and thus has no effect                                         
+
+    MotorLearning (motor_learning.h and cpp)
+Everything that is necessary to run makeTrials method (which interacts
+with the environment, BG and cerebellum).
+
+
+modified file learn.cc provides the most important function makeTrials(..)
+You call this function when you want to actully do simulation. It is possible
+to choose whether you set wm weights to 0 in the beginning or use something
+computed earlier. 
+In general you are not supposed to use other functions from learn.cc (except
+maybe backupWeights and restoreWeights). And you are not supposed to modify
+learn.cc as well (at least before discussing it with other people).
+
+exportWeights(..) -- called every trial before bg_learn 
+exportDynData(..) -- called every trial before doing iterations
+exportWeightsOnce -- called after the last trial
+exportInit(..)    -- open ofsteram objects for writing. Argument determines the change of name. Change the body of the function to specify the folder where you put your output
+e

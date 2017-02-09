@@ -51,7 +51,6 @@ void Exporter::exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **
     }	
     foutWeights<<endl<<endl;	
 
-
     for(int i=0;i<na;i++)
     { 
         for(int j=0;j<nc;j++) 
@@ -95,8 +94,6 @@ Exporter::Exporter()
 Exporter::Exporter(int na_,int nc_)
 {
     setCounts(na_,nc_);
-    //prefix = prefix_;
-    //suffix = suffix_;
 }
 
 void Exporter::setCounts(int na_,int nc_)
@@ -108,7 +105,6 @@ void Exporter::setCounts(int na_,int nc_)
 void Exporter::exportDynData(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi, float* addInfo)
 {
     // first all M1s then all d1s and so on
-    //foutVarDyn2<<trialNum<<'\t';  // would spoil existing graphing procs probably
     for(int i=0;i<na;i++) foutVarDyn2<<y[i]<<'\t';
     for(int i=0;i<na;i++) foutVarDyn2<<d1[i]<<'\t';
     for(int i=0;i<na;i++) foutVarDyn2<<d2[i]<<'\t';
@@ -117,18 +113,12 @@ void Exporter::exportDynData(unsigned int trialNum,float *y,float *d1,float *d2,
     foutVarDyn2<<endl;
 }
 
-
-
 void Exporter::exportWeights(unsigned int trialNum,float ** w1,float ** w2,float **wm)
 { 
-    //foutWeights2<<trialNum<<'\t';
     for(int i=0;i<na;i++) foutWeights2<<w1[0][i]<<'\t';
     for(int i=0;i<na;i++) foutWeights2<<w2[0][i]<<'\t';
     for(int i=0;i<na;i++) foutWeights2<<wm[0][i]<<'\t';
     foutWeights2<<endl;
-
-    //for(int i=0;i<na;i++) foutWeights2<<w1[0][i]<<'\t';
-    //for(int i=0;i<na;i++) foutWeights2<<w2[0][i]<<'\t';
 }
 
 void Exporter::exportWeightsOnce(float ** w1,float ** w2,float **wm)
@@ -156,15 +146,7 @@ void Exporter::exportWeightsOnce(float ** w1,float ** w2,float **wm)
         foutWeightsOnce<<endl;	
     }
     foutWeightsOnce<<endl<<endl;	
-	//for(int j=0;j<nc;j++)
-	//{
-	//	for(int i=0;i<na;i++)
-	//	{
-	//		foutWeightsOnce << w1[j][i] << '\t' << w2[j][i] << '\t' <<wm[j][i]<< endl;
-	//	}
-	//}
 }
-
 
 void Exporter::exportArm(unsigned int trialNum,float xcur,float ycur, float x0, float y0, float xc, float yc, float * addInfo)
 {
@@ -179,13 +161,4 @@ void Exporter::exportArm(unsigned int trialNum,float xcur,float ycur, float x0, 
            <<xc  <<'\t'    //7
            <<yc  <<'\t'    //8
            <<endl;
-}
-
-void Exporter::setParamsMaps(parmap * paramsEnv_, parmap *paramsBG_, parmap *paramsCB_)
-{
-    paramsEnv = paramsEnv_;
-    paramsBG = paramsBG_;
-    paramsCB = paramsCB_;
-
-    setCounts(stoi( (*paramsBG)["na"]),stoi( (*paramsBG)["nc"]));
 }

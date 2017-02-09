@@ -23,19 +23,17 @@ class Environment
 ////////   Constants to set in your experiment
 /////////////////////////////
     protected:
-    unsigned int nsessions;
     unsigned int numTrials;
+
     float successDist;  // distance the arm has to reach the success to count
-    //float initAng[4];
-    float rewardDist;
+    float rewardDist;   // distance, reaching within weach implies a reward. But actually depends on the way you define getReward, so it is more a suggestion
 
     unsigned int memoryLen; // currently not used
 
-    bool prelearnEachTime;
-
-    int experimentPhase;
+    int experimentPhase; // experiment phase number
     vector<string> phasesNames;
-    int nc,na;
+
+    int nc,na;  // number of cues and actions
 
     MotorLearning ml;
     Exporter exporter;
@@ -44,6 +42,9 @@ class Environment
     int num_sess;
 
     public:
+        Environment();
+        Environment(string paramsFile, int num_sess);
+
 ///////////////////////////////////////
 //  Functions to implement in your experiment
 ///////////////////////////////////////
@@ -52,20 +53,7 @@ class Environment
         virtual float getReward(float success, float * x,float * y, float & param) = 0;  
         virtual void runSession() = 0;
         virtual void setParams(int argc, char** argv) = 0;
-
-        //void setModel(MotorLearning * ml_);
-        
-        Environment();
-        Environment(string paramsFile, int num_sess);
-
-        virtual void prelearn(int nTrials, float * addInfo) = 0;
-        //Environment(Hand * arm_);
-        //float moveHand(float * y, float* out, float ffield);
-};
-
-
-class Experiment: public Environment
-{
+        virtual void prelearn(int nTrials, float * addInfo) = 0;   // for prelearning
 };
 
 #endif // ENVIRONMENT_H
