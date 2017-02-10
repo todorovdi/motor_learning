@@ -21,7 +21,7 @@ Environment::Environment(string paramsFile, int num_sess_)
     readIni(params["iniML"],params);
 
 
-    exporter.init(params["suffix"],params["output_dir"]);
+    exporter.init(params["prefix"],params["suffix"],params["output_dir"]);
     exporter.setCounts(stoi(params["na"]),stoi(params["nc"]));
     ml.init(this,&exporter,params);
 
