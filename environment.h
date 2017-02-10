@@ -40,7 +40,7 @@ class Environment
     MotorLearning ml;
     Exporter exporter;
 
-    parmap paramsEnv;
+    parmap params;   // contain ALL the parameters from all files
     int num_sess;
 
     public:
@@ -56,7 +56,7 @@ class Environment
         //void setModel(MotorLearning * ml_);
         
         Environment();
-        Environment(string paramsEnvFile, int num_sess);
+        Environment(string paramsFile, int num_sess);
 
         virtual void prelearn(int nTrials, float * addInfo) = 0;
         //Environment(Hand * arm_);

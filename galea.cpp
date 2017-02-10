@@ -29,6 +29,7 @@ void runExperiment(int argc, char** argv)
       ("n", po::value<int>()->default_value(1), "Number of experiment runs (sessions)")
       ("iniEnv", po::value<string>()->default_value(""), "Ini params for the environment file name")
       ("prefix", po::value<string>(), "Prefix")
+      ("targetPre1", po::value<float>(), "targetPre1")
       ("suffix", po::value<string>(), "Suffix");
 
     po::variables_map vm;
@@ -39,6 +40,8 @@ void runExperiment(int argc, char** argv)
 
     string prefix = "";
     string suffix = "";
+
+    float targetPre1 = -1;
     if (vm.count("help"))
       std::cout << desc << '\n';
     if (vm.count("iniEnv"))
@@ -46,6 +49,10 @@ void runExperiment(int argc, char** argv)
         paramsEnvFile =vm["iniEnv"].as<string>();
         if(!paramsEnvFile.length())
             paramsEnvFile = "env.ini";
+    }
+    if (vm.count("targetPre1"))
+    {
+        targetPre1 = vm["targetPre1"].as<float>();
     }
     int nsessions = vm["n"].as<int>(); 
 //    if (vm.count("prefix"))
@@ -64,7 +71,7 @@ void runExperiment(int argc, char** argv)
 #pragma omp parallel for
     for(int i = 0; i<nsessions; i++)
     { 
-        testExperimentEnv te(paramsEnvFile,i);
+        testExperimentEnv te(paramsEnvFile,i,targetPre1);
         te.runSession();
     }
 }
@@ -95,7 +102,9 @@ void testExperimentEnv::runSession()
 //        ml.setCBlearning(true);
 //#endif
 
-        exporter.exportInit("",std::to_string(num_sess));
+        string prefix = string("rot_")+to_string(dirShift)+string(" target_")+to_string(targetPre1);
+        string putInBeg = to_string(dirShift)+string("\n")+to_string(targetPre1) + string("\n");
+        exporter.exportInit(prefix,std::to_string(num_sess),putInBeg);
 
         // if we did prelearn above
         ml.restoreWeights(false);  // false == not restoring w1,w2
@@ -186,11 +195,11 @@ void testExperimentEnv::prelearn(int n, float * addInfo)
         ml.setBGlearning(true);
         ml.setCBlearning(false);
 
-        exporter.exportInit("prelearn",to_string(num_sess));
+        exporter.exportInit("prelearn",to_string(num_sess),"");
         ml.makeTrials(n,addInfo,false,0,true);  // last arg is whether we do export, or not
         exporter.exportClose();
 
-        ml.initParams(paramsEnv);  // restore bg and cb learning params from ini file
+        ml.initParams(params);  // restore bg and cb learning params from ini file
         //
     //    wmmax = 0;
     //    for(int i = 0; i<nc; i++)
@@ -376,34 +385,41 @@ float testExperimentEnv::getReward(float sc, float * x,float * y, float & param)
     return R;
 }  
 
-testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_):Environment(paramsEnvFile,num_sess_)
+testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_,float tgt):Environment(paramsEnvFile,num_sess_)
 {
-    numTrialsPre      = stoi(paramsEnv["numTrialsPre"]);
-    numTrialsAdapt    = stoi(paramsEnv["numTrialsAdapt"]);
-    numTrialsPost     = stoi(paramsEnv["numTrialsPost"]);
-    numTrialsPrelearn = stoi(paramsEnv["numTrialsPrelearn"]);
-    numPhases         = stoi(paramsEnv["numPhases"]);
+    numTrialsPre      = stoi(params["numTrialsPre"]);
+    numTrialsAdapt    = stoi(params["numTrialsAdapt"]);
+    numTrialsPost     = stoi(params["numTrialsPost"]);
+    numTrialsPrelearn = stoi(params["numTrialsPrelearn"]);
+    numPhases         = stoi(params["numPhases"]);
 
-    fake_prelearn     = stoi(paramsEnv["fake_prelearn"]);
+    fake_prelearn     = stoi(params["fake_prelearn"]);
 
-    action_change1 = stof(paramsEnv["action_change1"]);
-    endpoint_rotation1 = stof(paramsEnv["endpoint_rotation1"]);
-    target_rotation1 = stof(paramsEnv["target_rotation1"]);
-    action_change2 = stof(paramsEnv["action_change2"]);
-    endpoint_rotation2 = stof(paramsEnv["endpoint_rotation2"]);
-    target_rotation2 = stof(paramsEnv["target_rotation2"]);
-    sector_reward = stof(paramsEnv["sector_reward"]);
+    action_change1 = stof(params["action_change1"]);
+    endpoint_rotation1 = stof(params["endpoint_rotation1"]);
+    target_rotation1 = stof(params["target_rotation1"]);
+    action_change2 = stof(params["action_change2"]);
+    endpoint_rotation2 = stof(params["endpoint_rotation2"]);
+    target_rotation2 = stof(params["target_rotation2"]);
+    sector_reward = stof(params["sector_reward"]);
 
-    dirShift          = stof(paramsEnv["dirShift"]);
-    targetPre1        = stof(paramsEnv["targetPre1"]);
-    targetPre2        = stof(paramsEnv["targetPre2"]);
+    dirShift          = stof(params["dirShift"]);
+    targetPre1        = stof(params["targetPre1"]);
+    targetPre2        = stof(params["targetPre2"]);
+    dirShiftInc        = stof(params["dirShiftInc"]);
+
+    if(tgt>= (-EPS) )
+    {
+        targetPre1 = tgt;
+        targetPre2 = tgt;
+    }
 
     numTrials = numTrialsPre*2+numTrialsAdapt*2+numTrialsPost*2;
 
-    sector_thickness = stof(paramsEnv["sector_thickness"]);
-    sector_width = stof(paramsEnv["sector_width"]);
-    wmmax_fake_prelearn = stof(paramsEnv["wmmax_fake_prelearn"]);
-    armReachRadius = stof(paramsEnv["armReachRadius"]);
+    sector_thickness = stof(params["sector_thickness"]);
+    sector_width = stof(params["sector_width"]);
+    wmmax_fake_prelearn = stof(params["wmmax_fake_prelearn"]);
+    armReachRadius = stof(params["armReachRadius"]);
 
     phasesNames.push_back("PRE1");
     phasesNames.push_back("PRE2");
@@ -412,6 +428,8 @@ testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_):Enviro
     phasesNames.push_back("ADAPT2");
     phasesNames.push_back("POST2");
     phasesNames.push_back("PRELEARN");
+
+    dirShift += num_sess * dirShiftInc;
 }
 
 testExperimentEnv::~testExperimentEnv()

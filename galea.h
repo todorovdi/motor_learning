@@ -34,6 +34,8 @@ class testExperimentEnv: public Environment
     bool endpoint_rotation2;
     bool target_rotation2;
 
+    int dirShiftInc;
+
     public:
     int turnOnCues(float * cues);
     float getSuccess(float * x,float * y,unsigned int k,float *addInfo);
@@ -45,7 +47,7 @@ class testExperimentEnv: public Environment
     //void setParams();
     int deg2action(float degAngle);
 
-    testExperimentEnv(string paramsEnvFile, int num_sess);
+    testExperimentEnv(string paramsEnvFile, int num_sess, float tgt);
     ~testExperimentEnv();
 
     // experiment-specific

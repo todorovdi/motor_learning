@@ -314,9 +314,9 @@ BG_model::~BG_model()
     freeMemory();
 }
 
-void BG_model::init(string iniBGname,Exporter *exporter_)
+void BG_model::init(parmap & params,Exporter *exporter_)
 {
-    readIni(iniBGname,params);
+    //params = params_;
 
     y_drive = stof(params["y_drive"]);
     y_d1 = stof(params["y_d1"]);
@@ -356,7 +356,7 @@ void BG_model::init(string iniBGname,Exporter *exporter_)
     allocMemory();
 
     exporter = exporter_;
-    //vim replace code 317,351s\(\w*\)\W*=.*/\1 = stof(params["\1"]);/gc
+    //vim replace code 317,351s/\(\w*\)\W*=.*/\1 = stof(params["\1"]);/gc
 }
 
 void BG_model::exportBGstate(int k, float * addInfo)

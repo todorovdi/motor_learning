@@ -95,7 +95,7 @@ class BG_model
 
 //    Environment * env;
     Exporter * exporter;
-    parmap params;
+    //parmap & params;
 ///////////////////////////////////////
 ////////////////// Functions to be called by your experiment
 ///////////////////////////////////////
@@ -131,7 +131,7 @@ class BG_model
         // (when testing cerebellum separately)
         void habit2PMCdirectly(int cueActive);
 
-        void init(string iniBGname,Exporter *exporter);
+        void init(parmap & params,Exporter *exporter);
         BG_model();
         BG_model(Exporter * exporter_);
         ~BG_model();

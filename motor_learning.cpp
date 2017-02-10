@@ -162,9 +162,9 @@ void MotorLearning::restoreWeights(bool w12too)
     bg.restoreWeights(w12too);
 }
 
-MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & paramsEnv ) //:bg(exporter_),cb(&arm),Rpre(nc,0.)
+MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & params ) //:bg(exporter_),cb(&arm),Rpre(nc,0.)
 {
-    init(env_,exporter_,paramsEnv);
+    init(env_,exporter_,params);
 }
 
 MotorLearning::MotorLearning()
@@ -175,33 +175,34 @@ MotorLearning::~MotorLearning()
 {
 }
 
-void MotorLearning::initParams(parmap & paramsEnv)
+void MotorLearning::initParams(parmap & params)
 {
-    string iniMLname = paramsEnv["iniML"]; 
-
-    readIni(iniMLname,paramsML);
-
+    //params = params_;
     //expCoefRpre = paramsML["expCoefRpre"]; 
-    Rpre_coef = stof(paramsML["Rpre_coef"]); 
-    T = stof(paramsML["T"]); 
+    Rpre_coef = stof(params["Rpre_coef"]); 
+    T = stof(params["T"]); 
 
-    learn_cb = stoi(paramsML["learn_cb"]);
-    learn_bg = stoi(paramsML["learn_bg"]); 
+    learn_cb = stoi(params["learn_cb"]);
+    learn_bg = stoi(params["learn_bg"]); 
 
-    nc=stoi(paramsEnv["nc"]);
-    na=stoi(paramsEnv["na"]);
+    nc=stoi(params["nc"]);
+    na=stoi(params["na"]);
 }
 
-void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & paramsEnv)
+void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & params)
 {
-    initParams(paramsEnv);
+    initParams(params);
     env = env_;
 
     exporter = exporter_;
 
-    arm.init(paramsEnv["iniArm"], na);
-    cb.init(paramsEnv["iniCB"],exporter,&arm);
-    bg.init(paramsEnv["iniBG"],exporter);
+    //readIni(params["iniArm"],params);
+    //readIni(params["iniCB"],params);
+    //readIni(params["iniBG"],params);
+
+    arm.init(params);
+    cb.init(params,exporter,&arm);
+    bg.init(params,exporter);
 
     Rpre.resize(nc);
 }

@@ -27,7 +27,7 @@ class Arm
     public:
         Arm();
         void move(float * y, float* out, float  wcb[][6], float ffield);  
-        void init(string iniFile, int na, bool oldVerIni=false);
+        void init(parmap & params); //, int na, bool oldVerIni=false);
         void getReachCenterPos(float &x, float&y);
 };
 

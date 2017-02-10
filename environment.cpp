@@ -17,17 +17,24 @@ void Environment::prelearn(int nTrials, float * addInfo)
     ml.backupWeights();
 } 
 
-Environment::Environment(string paramsEnvFile, int num_sess_)
-    //:ml(this,&exporter,paramsEnv["iniBG"], paramsEnv["iniCB"]),exporter(stoi(paramsEnv["na"]),stoi(paramsEnv["nc"]))                       
+Environment::Environment(string paramsFile, int num_sess_)
+    //:ml(this,&exporter,params["iniBG"], params["iniCB"]),exporter(stoi(params["na"]),stoi(params["nc"]))                       
 {
-    readIni(paramsEnvFile,paramsEnv);
-    ml.init(this,&exporter,paramsEnv);
-    exporter.init(paramsEnv["suffix"],paramsEnv["output_dir"]);
-    exporter.setCounts(stoi(paramsEnv["na"]),stoi(paramsEnv["nc"]));
+    readIni(paramsFile,params);
 
-    rewardDist = stof(paramsEnv["rewardDist"]);
-    nc = stof(paramsEnv["nc"]);
-    na = stof(paramsEnv["na"]);
+    readIni(params["iniBG"],params);
+    readIni(params["iniCB"],params);
+    readIni(params["iniArm"],params);
+    readIni(params["iniML"],params);
+
+
+    exporter.init(params["suffix"],params["output_dir"]);
+    exporter.setCounts(stoi(params["na"]),stoi(params["nc"]));
+    ml.init(this,&exporter,params);
+
+    rewardDist = stof(params["rewardDist"]);
+    nc = stof(params["nc"]);
+    na = stof(params["na"]);
 
     num_sess = num_sess_;
 }

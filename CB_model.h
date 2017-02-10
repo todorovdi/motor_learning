@@ -23,7 +23,7 @@ class CB_model
     float phi0[2];
 
     Arm * arm;
-    parmap params;
+    //parmap params;
 
     private:
         void cblearn(float xdif, float ydif);
@@ -41,7 +41,7 @@ class CB_model
     
         void setCBtarget(float x, float y);
 
-        void init(string iniCBname,Exporter *exporter,Arm * arm_);
+        void init(parmap & params,Exporter *exporter,Arm * arm_);
         CB_model();
         CB_model(Arm * arm_);
 };

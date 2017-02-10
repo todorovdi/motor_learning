@@ -11,17 +11,19 @@ Arm::Arm()
     reach_init();
 }
 
-void Arm::init(string iniFile, int na, bool oldverIni)
+void Arm::init(parmap & p) //, bool oldverIni)
 {
-    parmap p;
-    readIni(iniFile,p);
+    //parmap p;
+    //readIni(iniFile,p);
+    
+    na = stoi(p["na"]);
 
     phi0[0] = stof(p["phi_0"]);
     phi0[1] = stof(p["phi_1"]);
 	//float phi0[2]={ -0.832778,	1.16426};
-    if(oldverIni)
-	    ifstream(iniFile)>>phi0[0]>>phi0[1];
-    else
+    //if(oldverIni)
+	//    ifstream(iniFile)>>phi0[0]>>phi0[1];
+    //else
     {
         phi0[0] = stof(p["phi_0"]);
         phi0[1] = stof(p["phi_1"]);

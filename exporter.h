@@ -34,7 +34,7 @@ public:
     void trialEndExport(float * sumM1freq, unsigned int seed);
 
     void init(string dir,string suffix);   // prefix = "RC" for example
-    void exportInit(string prefix,string suffix);   // prefix = "RC" for example
+    void exportInit(string prefix,string suffix,string putInBeg);   // prefix = "RC" for example
     void exportClose();
 
     void exportDynData(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi, float* addInfo);

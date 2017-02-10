@@ -107,9 +107,9 @@ void CB_model::moveArm(float * y, float * out, float ffield)
     arm->move(y,out,wcb,ffield);
 }
 
-void CB_model::init(string iniCBname,Exporter *exporter, Arm * arm_)
+void CB_model::init(parmap & params,Exporter *exporter, Arm * arm_)
 {
-    readIni(iniCBname,params);
+    //readIni(iniCBname,params);
 
     cb_learn_rate = stof(params["cb_learn_rate"]);
     cb_init_shift_size = stof(params["cb_init_shift_size"]);

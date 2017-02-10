@@ -6,7 +6,7 @@ void Exporter::init(string suffix_,string dir_)   // prefix = "RC" for example
     dir = dir_;
 }
 
-void Exporter::exportInit(string prefix,string suffix)   // prefix = "RC" for example
+void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix = "RC" for example
 {
     foutPerTrial.open( dir+prefix+string("_output")+suffix+string(".dat")) ;
     foutVarDyn.open  ( dir+prefix+string("_var_dyn")+suffix+string(".dat") );
@@ -15,6 +15,8 @@ void Exporter::exportInit(string prefix,string suffix)   // prefix = "RC" for ex
     foutWeights2.open  ( dir+prefix+string("_weights2")+suffix+string(".dat") );
     foutWeightsOnce.open  ( dir+prefix+string("_weights_once")+suffix+string(".dat") );
     foutArm.open  ( dir+prefix+string("_arm")+suffix+string(".dat") );
+
+    foutArm<<begPut;
 }
 
 void Exporter::exportClose()

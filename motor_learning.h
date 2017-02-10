@@ -23,7 +23,7 @@ class MotorLearning
     float Rpre_coef;
     float T;                      // integration duration max limit
 
-    parmap paramsML;
+    //parmap & params;
 
     int na; // number of actions
     int nc; // number of cues
@@ -60,12 +60,12 @@ class MotorLearning
 
     void getReachCenterPos(float &x, float&y);
 
-    MotorLearning(Environment* env, Exporter * exporter_, parmap & paramsEnv);
+    MotorLearning(Environment* env, Exporter * exporter_, parmap & params);
     MotorLearning();
     ~MotorLearning();
 
-    void init(Environment* env, Exporter* exporter_,parmap & paramsEnv);
-    void initParams(parmap & paramsEnv);
+    void init(Environment* env, Exporter* exporter_,parmap & params);
+    void initParams(parmap & params);
 };
 
 #endif
