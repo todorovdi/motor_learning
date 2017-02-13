@@ -375,6 +375,22 @@ void BG_model::exportCuesState(int k)
     exporter->exportCuesState(k,x);
 }
 
+void BG_model::exportContOpen(int k)
+{
+  exporter->exportContOpen(k);
+}
+
+void BG_model::exportContState(float t)
+{
+  //void exportContState(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi, float* addInfo);
+  exporter->exportContState(t,y,d1,d2,gpe,gpi);
+}
+
+void BG_model::exportContClose()
+{
+    exporter->exportContClose();
+}
+
 void BG_model::setCues(float * x_)
 {
     for(int i = 0; i<nc; i++)

@@ -1,13 +1,16 @@
 #include "exporter.h"
 
-void Exporter::init(string suffix_,string dir_)   // prefix = "RC" for example
+void Exporter::init(string prefix_,string suffix_,string dir_)   // prefix = "RC" for example
 {
-    suffix = suffix_;
-    dir = dir_;
+  prefix = prefix_;
+  suffix = suffix_;
+  dir = dir_;
 }
 
 void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix = "RC" for example
 {
+  prefix_for_cont = prefix;
+  suffix_for_cont = suffix;
     foutPerTrial.open( dir+prefix+string("_output")+suffix+string(".dat")) ;
     foutVarDyn.open  ( dir+prefix+string("_var_dyn")+suffix+string(".dat") );
     foutVarDyn2.open  ( dir+prefix+string("_var_dyn2")+suffix+string(".dat") );
@@ -15,12 +18,16 @@ void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix
     foutWeights2.open  ( dir+prefix+string("_weights2")+suffix+string(".dat") );
     foutWeightsOnce.open  ( dir+prefix+string("_weights_once")+suffix+string(".dat") );
     foutArm.open  ( dir+prefix+string("_arm")+suffix+string(".dat") );
-
     foutArm<<begPut;
 }
 
-void Exporter::exportClose()
+void Exporter::exportContOpen(int k)
+{
 
+  foutContState.open( dir+prefix_for_cont+string("_cont_state_")+std::to_string(k)+"_"+suffix_for_cont+string(".dat") );
+}
+
+void Exporter::exportClose()
 {
     foutPerTrial.close();
     foutVarDyn.close();
@@ -30,6 +37,13 @@ void Exporter::exportClose()
     foutWeightsOnce.close();
     foutArm.close();
 }
+
+void Exporter::exportContClose()
+{
+    foutContState.close();
+
+}
+
 void Exporter::exportDynDataStd(unsigned int k, float *y,float *d1,float *d2,float * gpe,float *gpi,float t,float R, float sr)
 {
     foutVarDyn<<k<<'\t';
@@ -40,6 +54,7 @@ void Exporter::exportDynDataStd(unsigned int k, float *y,float *d1,float *d2,flo
     for(int i=0;i<na;i++) foutVarDyn<<gpi[i]<<'\t';
     foutVarDyn<<endl;
 }
+
 
 void Exporter::exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **wm)
 {
@@ -111,6 +126,18 @@ void Exporter::exportDynData(unsigned int trialNum,float *y,float *d1,float *d2,
     for(int i=0;i<na;i++) foutVarDyn2<<gpe[i]<<'\t';
     for(int i=0;i<na;i++) foutVarDyn2<<gpi[i]<<'\t';
     foutVarDyn2<<endl;
+}
+
+void Exporter::exportContState(float t,float *y,float *d1,float *d2,float * gpe,float *gpi)
+{
+  // first all M1s then all d1s and so on
+  foutContState<<t<<'\t';
+  for(int i=0;i<na;i++) foutContState<<y[i]<<'\t';
+  for(int i=0;i<na;i++) foutContState<<d1[i]<<'\t';
+  for(int i=0;i<na;i++) foutContState<<d2[i]<<'\t';
+  for(int i=0;i<na;i++) foutContState<<gpe[i]<<'\t';
+  for(int i=0;i<na;i++) foutContState<<gpi[i]<<'\t';
+  foutContState<<endl;
 }
 
 void Exporter::exportWeights(unsigned int trialNum,float ** w1,float ** w2,float **wm)

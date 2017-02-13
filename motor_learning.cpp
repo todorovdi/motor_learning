@@ -66,6 +66,7 @@ void MotorLearning::setCBtarget(float x, float y)
 // calls getSuccess, which calls moveArm
 float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flushData, unsigned int indAdd, bool doExport)
 {
+
     if(flushData)
     {
         bg.flushWeights(true);
@@ -75,37 +76,44 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
 
     float x[nc];
     // cycle over trials
-	for(int k=indAdd;k<(ntrials+indAdd);k++)
-	{
+    for(int k=indAdd;k<(ntrials+indAdd);k++)
+      {
+
         bg.resetForTrialBegin();
 
         int cueActive = env->turnOnCues(x);
         bg.setCues(x);
 
         if(learn_bg)
-        { 
+	  {
+
             if(doExport)
-            { 
+	      { 
                 bg.exportCuesState(k);
-            }
+	      }
 
             int nsteps = 0;
             float dt = 0;
-
+	    bool CONT_OUT = false;
             // integrate the equations
+
+	    if (CONT_OUT) {bg.exportContOpen(k); }
+
             for(float t=0; t<T; )
-            {   
-                dt = bg.do_step(); 
+	      {   
+                dt = bg.do_step();
+		if (CONT_OUT) {bg.exportContState(t);}
                 nsteps++;
                 t+= dt;
                 if(dt >= 1.)
-                    break;
-            };
-        } 
+		  break;
+	      };
+	    if (CONT_OUT) {bg.exportContClose();}
+	  } 
         else
-        {
+	  {
             bg.habit2PMCdirectly(cueActive);
-        }
+	  }
 
         float y[na];
         bg.getPMC(y);
@@ -121,30 +129,30 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         float R = env->getReward(sc,x,y,t);
 
         if(doExport )
-        { 
+	  { 
             bg.exportBGstate(k,0);
-        } 
+	  } 
 
         //rnd();  // just to follow same seed as Slava's code
         if(learn_bg)
-		    bg.learn(R- Rpre[cueActive]);
+	  bg.learn(R- Rpre[cueActive]);
 
         if(learn_cb)
-        { 
+	  { 
             //if( fzero(R) )
             { cb.learn(endpt_percieved_x, endpt_percieved_y); }
-           // else
-           // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
-        }
+	    // else
+	    // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
+	  }
 
         updateRpre(cueActive,R,0);   
 
-	}
+      }
     if(doExport)
-        bg.exportWeightsOnce();
+      bg.exportWeightsOnce();
 
-//    if(doExport)
-//        trialEndExport(sumM1freq, 0);
+    //    if(doExport)
+    //        trialEndExport(sumM1freq, 0);
 
     return 0;
 }

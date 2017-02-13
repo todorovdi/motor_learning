@@ -125,7 +125,10 @@ class BG_model
         void exportBGstate(int k, float* addInfo);
         void exportCuesState(int k);
         void exportWeightsOnce();
-
+	void exportContOpen(int k);
+	void exportContState(float t);
+	void exportContClose();
+	
         void resetForTrialBegin();  // do random resetting, usually in the trial beginning 
         void setCues(float * x_); 
         void getPMC(float * y_);  // get current PMC neurons activities

@@ -67,6 +67,7 @@ void testExperimentEnv::runSession()
     //     Maybe we have to do longer prelarn
     { 
         float addInfoTemp[numTrialsPrelearn]; //to be used in prelearn
+
         cout<<"experimentPhase is "<<phasesNames[PRELEARN]<<endl;
 #ifndef DO_FAKE_PRELEARN
         cout<<"num prelearn trials "<<numTrialsPrelearn<<endl;
