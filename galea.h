@@ -33,6 +33,8 @@ class testExperimentEnv: public Environment
     bool action_change2;
     bool endpoint_rotation2;
     bool target_rotation2;
+    bool cue_change1;
+    bool cue_change2;
 
     int dirShiftInc;
 

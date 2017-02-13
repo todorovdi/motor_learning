@@ -27,7 +27,7 @@ void MotorLearning::setRpreMax()
 {
     for(int i=0;i<nc;i++)
     {
-        Rpre[i] = 3.;
+        Rpre[i] = rewardSize;
     }
 }
 
@@ -185,6 +185,7 @@ void MotorLearning::initParams(parmap & params)
 
     learn_cb = stoi(params["learn_cb"]);
     learn_bg = stoi(params["learn_bg"]); 
+    rewardSize =  stof(params["rewardSize"]);
 
     nc=stoi(params["nc"]);
     na=stoi(params["na"]);

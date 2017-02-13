@@ -32,7 +32,7 @@ void runExperiment(int argc, char** argv)
     { 
         paramsEnvFile =vm["iniEnv"].as<string>();
         if(!paramsEnvFile.length())
-            paramsEnvFile = "env.ini";
+            paramsEnvFile = "galea.ini";
     }
     if (vm.count("targetPre1"))
     {
@@ -94,18 +94,18 @@ void testExperimentEnv::runSession()
         ml.restoreWeights(false);  // false == not restoring w1,w2
         ml.flushWeights(false); 
         //flushRpre(); // flush all data except wm (we set them from prelearn)
-        float rpre = 3.;
+        //float rpre = 3.;
         ml.setRpreMax();   // if we use only CB not need this
 
-        initCBdir(targetPre1,true);
+    //    initCBdir(targetPre1,true);
         experimentPhase = PRE1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         ml.makeTrials(numTrialsPre,0,false,0);
         int offset = numTrialsPre;
 
-#ifdef TARGET_ROTATION
-        initCBdir(targetPre1+dirShift,false);
-#endif
+    //    if(target_rotation1)
+    //        initCBdir(targetPre1+dirShift,false);
+
         experimentPhase = ADAPT1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         ml.makeTrials(numTrialsAdapt,0,false,offset);
@@ -126,9 +126,9 @@ void testExperimentEnv::runSession()
             ml.makeTrials(numTrialsPre,0,false,offset);
             offset+= numTrialsPre;
 
-    //#ifdef TARGET_ROTATION
-    //        initCBdir(targetPre2+dirShift,false);
-    //#endif
+            if(target_rotation2)
+                initCBdir(targetPre2+dirShift,false);
+
             experimentPhase = ADAPT2;
             cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
             ml.makeTrials(numTrialsAdapt,0,false,offset);
@@ -229,11 +229,21 @@ int testExperimentEnv::turnOnCues(float * cues)
     if(experimentPhase == PRE1 || experimentPhase == POST1) 
         cueInd = 0;
     else if(experimentPhase == ADAPT1) 
-        cueInd = 1;
+    { 
+        if(cue_change1)
+            cueInd = 1;
+        else
+            cueInd = 0;
+    }
     else if (experimentPhase == PRE2 || experimentPhase == POST2) 
         cueInd = 2;
     else if (experimentPhase == ADAPT2) 
-        cueInd = 3;
+    { 
+        if(cue_change1)
+            cueInd = 3;
+        else
+            cueInd = 2;
+    } 
 
     cues[cueInd] = 1.;
     return cueInd;
@@ -379,18 +389,20 @@ testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_,float t
 
     fake_prelearn     = stoi(params["fake_prelearn"]);
 
-    action_change1 = stof(params["action_change1"]);
-    endpoint_rotation1 = stof(params["endpoint_rotation1"]);
-    target_rotation1 = stof(params["target_rotation1"]);
-    action_change2 = stof(params["action_change2"]);
-    endpoint_rotation2 = stof(params["endpoint_rotation2"]);
-    target_rotation2 = stof(params["target_rotation2"]);
-    sector_reward = stof(params["sector_reward"]);
+    action_change1 = stoi(params["action_change1"]);
+    action_change2 = stoi(params["action_change2"]);
+    endpoint_rotation1 = stoi(params["endpoint_rotation1"]);
+    target_rotation1 = stoi(params["target_rotation1"]);
+    endpoint_rotation2 = stoi(params["endpoint_rotation2"]);
+    target_rotation2 = stoi(params["target_rotation2"]);
+    sector_reward = stoi(params["sector_reward"]);
+    cue_change1 = stoi(params["cue_change1"]);
+    cue_change2 = stoi(params["cue_change2"]);
 
     dirShift          = stof(params["dirShift"]);
     targetPre1        = stof(params["targetPre1"]);
     targetPre2        = stof(params["targetPre2"]);
-    dirShiftInc        = stof(params["dirShiftInc"]);
+    dirShiftInc       = stof(params["dirShiftInc"]);
 
     if(tgt>= (-EPS) )
     {

@@ -166,7 +166,6 @@ class BG_model
 extern const float EPS; // to compare floats with zero
 
 inline bool fzero(float t){return fabs(t) < EPS;}
-inline float rnd() { return 1.*rand()/(RAND_MAX+1.); } 
 inline float s(float x) { return x>0?tanh(x):0; }
 float gauss();
 

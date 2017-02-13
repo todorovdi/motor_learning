@@ -23,6 +23,7 @@ class MotorLearning
     vector<float> Rpre;
     float Rpre_coef;              // how much of current reward we use for the new reward prediction error
     float T;                      // integration duration max limit
+    float rewardSize;
 
     //parmap & params;
 
