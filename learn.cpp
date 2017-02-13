@@ -70,14 +70,16 @@ int main(int argc, char** argv)
         // --ini env.ini
 
     clock_t start = clock();
+    cout<<"Calc started"<<endl;
     //cout<<"Calc started, nc = "<<nc<<" na = "<<na<<" nsessions "<<nsessions<<" numTrials = "<<numTrials<<endl;
-    bool presetSeed = false;
-    unsigned int seed =   time(NULL);  presetSeed = false; 
+    //bool presetSeed = false;
+    //unsigned int seed =   time(NULL);  presetSeed = false; 
     //seed = 1486963713;   presetSeed = true;  
-    srand(seed);
-    cout<<"seed is "<<seed<<endl;
-    if(presetSeed)
-        cout<<"WARNING: PRESET SEED IS ACTIVE!!!!"<<endl;
+    ////seed = 1486963714;   presetSeed = true;  
+    //srand(seed);
+    //cout<<"seed is "<<seed<<endl;
+    //if(presetSeed)
+    //    cout<<"WARNING: PRESET SEED IS ACTIVE!!!!"<<endl;
 
     runExperiment(argc,argv);
 

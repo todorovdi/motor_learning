@@ -14,6 +14,9 @@ void runExperiment(int argc, char** argv)
       ("iniEnv", po::value<string>()->default_value(""), "Ini params for the environment file name")
       ("prefix", po::value<string>(), "Prefix")
       ("targetPre1", po::value<float>(), "targetPre1")
+      ("learn_cb", po::value<int>()->default_value(-1), "learn_cb")
+      ("cb_learn_rate", po::value<float>()->default_value(-1.), "cb_learn_rate")
+      ("seed", po::value<unsigned int>(), "seed")
       ("suffix", po::value<string>(), "Suffix");
 
     po::variables_map vm;
@@ -38,24 +41,30 @@ void runExperiment(int argc, char** argv)
     {
         targetPre1 = vm["targetPre1"].as<float>();
     }
+
+    int learn_cb = vm["learn_cb"].as<int>();
     int nsessions = vm["n"].as<int>(); 
-//    if (vm.count("prefix"))
-//        prefix = vm["prefix"].as<string>();
-//    else
-//        prefix = configEnv["prefix"];
-//    if (vm.count("suffix"))
-//        suffix = vm["suffix"].as<string>();
-//    else
-//        prefix = configEnv["prefix"];
+    float cb_learn_rate = vm["cb_learn_rate"].as<float>(); 
 
-    //cout<<prefix<<" "<<suffix;
+    unsigned int seed =   time(NULL);  bool presetSeed = false; 
+    if (vm.count("seed"))
+    {
+        seed = vm["seed"].as<unsigned int>(); 
+        presetSeed = true;
+    }
+    srand(seed);
 
+    cout<<"seed is "<<seed<<endl;
+    if(presetSeed)
+        cout<<"WARNING: PRESET SEED IS ACTIVE!!!!"<<endl;
+
+    cout<<"nsessions is "<<nsessions<<endl;
 
     // parallel works only if compiled with a special flag. At least with gcc
 #pragma omp parallel for
     for(int i = 0; i<nsessions; i++)
     { 
-        testExperimentEnv te(paramsEnvFile,i,targetPre1);
+        testExperimentEnv te(paramsEnvFile,i,targetPre1,learn_cb,cb_learn_rate);
         te.runSession();
     }
 }
@@ -87,7 +96,7 @@ void testExperimentEnv::runSession()
 //        ml.setCBlearning(true);
 //#endif
 
-        string prefix = string("rot_")+to_string(dirShift)+string(" target_")+to_string(targetPre1);
+        string prefix = string("BG")+to_string(learn_bg) +  string("_CB")+to_string(learn_cb) + string("_learnRate_") + to_string(cb_learn_rate) +  string("_rot_")+to_string(dirShift)+string(" target_")+to_string(targetPre1);
         string putInBeg = to_string(dirShift)+string("\n")+to_string(targetPre1) + string("\n");
         exporter.exportInit(prefix,std::to_string(num_sess),putInBeg);
 
@@ -380,7 +389,7 @@ float testExperimentEnv::getReward(float sc, float * x,float * y, float & param)
     return R;
 }  
 
-testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_,float tgt):Environment(paramsEnvFile,num_sess_)
+testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_,float tgt,int learn_cb_,float cb_learn_rate_):Environment(paramsEnvFile,num_sess_)
 {
     numTrialsPre      = stoi(params["numTrialsPre"]);
     numTrialsAdapt    = stoi(params["numTrialsAdapt"]);
@@ -404,6 +413,18 @@ testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_,float t
     targetPre1        = stof(params["targetPre1"]);
     targetPre2        = stof(params["targetPre2"]);
     dirShiftInc       = stof(params["dirShiftInc"]);
+
+    if(learn_cb_ != -1)
+        params["learn_cb"] = to_string(learn_cb_);
+    if(cb_learn_rate_ >= -EPS)
+        params["cb_learn_rate"] = to_string(cb_learn_rate_);
+
+    learn_cb = stoi(params["learn_cb"]); // it may look stupid to do so right after prev. line but note that the same parameters object are passed to MotorLearning
+    learn_bg = stoi(params["learn_bg"]); 
+    cb_learn_rate = stof(params["cb_learn_rate"]);
+        
+
+    ml.init(this,&exporter,params);  // we did it once in the Environemnt constructor but we might have changed learn_cb so do it again
 
     if(tgt>= (-EPS) )
     {

@@ -36,6 +36,10 @@ class testExperimentEnv: public Environment
     bool cue_change1;
     bool cue_change2;
 
+    int learn_cb;                
+    int learn_bg;
+    float cb_learn_rate;
+
     int dirShiftInc;
 
     public:
@@ -49,7 +53,7 @@ class testExperimentEnv: public Environment
     //void setParams();
     int deg2action(float degAngle);
 
-    testExperimentEnv(string paramsEnvFile, int num_sess, float tgt);
+    testExperimentEnv(string paramsEnvFile, int num_sess, float tgt, int learn_cb, float cblr);
     ~testExperimentEnv();
 
     // experiment-specific

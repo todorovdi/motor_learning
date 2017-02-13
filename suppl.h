@@ -29,7 +29,6 @@ void readIni(string fname, parmap & configValues);
 #include <functional>
 #include <thread>
 
-
 //inline std::mt19937 get_prng() {
 //    std::random_device r;
 //    std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
@@ -39,10 +38,11 @@ void readIni(string fname, parmap & configValues);
 typedef std::mt19937 rng_type;
 extern boost::variate_generator<rng_type&, boost::uniform_real<> > uni;
 
-inline float rnd() { 
-//boost::uniform_real<> uni_dist(0,1);
-//rng_type rng = get_prng();
-    return uni(); } 
-//inline float rnd() { return 1.*rand()/(RAND_MAX+1.); } 
+//inline float rnd() { 
+////boost::uniform_real<> uni_dist(0,1);
+////rng_type rng = get_prng();
+//    return uni(); } 
+
+inline float rnd() { return 1.*rand()/(RAND_MAX+1.); } 
 
 #endif

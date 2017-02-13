@@ -34,7 +34,7 @@ def genReachPlot(fig,ax,xs,ys,nums):
     ax.set_ylim([0,0.8])
     ax.set_xlim([-0.4,0.4])
 
-    ax.scatter(xs[pp.trials1],ys[pp.trials1],c=nums[pp.trials1],lw=0.0,cmap='inferno',s=30)
+    ax.scatter(xs[pp.trials1],ys[pp.trials1],c=nums[pp.trials1],lw=0.0,cmap='inferno',s=45)
     if( int(pp.paramsEnv.get("root","numPhases")) > 3 ):
         ax.scatter(xs[pp.trials2],ys[pp.trials2],c=nums[pp.trials2],lw=0.0,cmap='inferno',marker='^')
 
@@ -75,7 +75,16 @@ def genReachPlot(fig,ax,xs,ys,nums):
 
     #cax = ax.imshow(nums, interpolation='nearest', cmap=cm.coolwarm)
     #fig = plt.gcf()
-    ax1= fig.add_axes([0.92,0.04,0.03,0.9]);
+
+
+    wd=0.03
+    pos1 = ax.get_position() # get the original position 
+    pos1new = [pos1.x0, pos1.y0,  pos1.width-wd, pos1.height ] 
+    ax.set_position(pos1new)
+    pos1 = ax.get_position() # get the original position 
+    pos2 = [pos1.x0 + pos1.width, pos1.y0,  wd, pos1.height ] 
+
+    ax1= fig.add_axes(pos2); # from left, from down, width, height
 
     #im = imshow
 

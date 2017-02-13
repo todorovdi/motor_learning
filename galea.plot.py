@@ -80,8 +80,8 @@ def doStats(fnames,n,xerr):
 ###############################
 
 def genFigureGalea(fnames,outname):
-    file
-    armData,dirShift,targetPre1 = armFileRead(fnames[0])
+    fileToPlot = fnames[0]
+    armData,dirShift,targetPre1 = armFileRead(fileToPlot)
     #armData = np.loadtxt(fnames[0],skiprows=2)
     nums = armData[:,0]
     xs = armData[:,1]
@@ -89,15 +89,15 @@ def genFigureGalea(fnames,outname):
     n = len(xs)
     lastNum = nums[-1]
 
-    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(20, 20), sharex=False, sharey=False)
+    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
 
     ax = axs[0,0]
-    genBGActivityPlot(ax,fnames[0].replace('arm','var_dyn2'))
+    genBGActivityPlot(ax,fileToPlot.replace('arm','var_dyn2'))
     ax.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
     ax.set_xticklabels(['ADAPT1','POST1'])
 
     ax = axs[0,1]
-    genBGWeightsPlot(ax,fnames[0].replace('arm','weights2'))
+    genBGWeightsPlot(ax,fileToPlot.replace('arm','weights2'))
     ax.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
     ax.set_xticklabels(['ADAPT1','POST1'])
 
@@ -124,14 +124,17 @@ def genFigureGalea(fnames,outname):
     #ax_.set_xlabel("x-transformed")
     ax_.set_xlim(0, n)
     if pp.numPhases > 3:
-        ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt, pp.numTrialsPre+pp.numTrialsAdapt+pp.numTrialsPost, pp.numTrialsPre*2+pp.numTrialsAdapt+pp.numTrialsPost ,pp.numTrialsPre*2, pp.numTrialsAdapt*2+pp.numTrialsPost])
+        ticks = [pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt, pp.numTrialsPre+pp.numTrialsAdapt+pp.numTrialsPost, pp.numTrialsPre*2+pp.numTrialsAdapt+pp.numTrialsPost ,pp.numTrialsPre*2, pp.numTrialsAdapt*2+pp.numTrialsPost]
+        ax_.set_xticks(ticks)
         ax_.set_xticklabels(['ADAPT1','POST1','PRE2','ADAPT2','POST2'])
+        ax.set_xticks(ticks,minor=True)
     else:
-        ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
+        ticks = [pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt]
+        ax_.set_xticks(ticks)
         ax_.set_xticklabels(['ADAPT1','POST1'])
-
-
-
+        ax.set_xticks(ticks,minor=True)
+        ax.xaxis.grid(True, which='minor')
+        #ax_.xas
 
     plt.savefig(pp.out_dir+outname+".pdf")
     plt.close(fig)
@@ -244,7 +247,14 @@ for filename in os.listdir(pp.out_dir):
         fnames.append(pp.out_dir+filename)
 
 #from stdplots import *
-genFigureGalea(fnames,"galea")
+
+import re
+
+ree = '(.*)_\w+\.dat'
+
+basename = os.path.basename(fnames[0])
+name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
+genFigureGalea(fnames,name)
 
 
 
