@@ -18,6 +18,7 @@ void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix
     foutWeights2.open  ( dir+prefix+string("_weights2")+suffix+string(".dat") );
     foutWeightsOnce.open  ( dir+prefix+string("_weights_once")+suffix+string(".dat") );
     foutArm.open  ( dir+prefix+string("_arm")+suffix+string(".dat") );
+    foutModParams.open  ( dir+prefix+string("_modParams")+suffix+string(".dat") );
     foutArm<<begPut;
 }
 
@@ -25,6 +26,16 @@ void Exporter::exportContOpen(int k)
 {
 
   foutContState.open( dir+prefix_for_cont+string("_cont_state_")+std::to_string(k)+"_"+suffix_for_cont+string(".dat") );
+}
+
+void Exporter::exportParams(parmap & params)
+{
+    parmap::iterator it= params.begin();
+    for(;it!=params.end();it++)
+    {
+        foutModParams<<it->first<<"="<<it->second<<"\n";
+    }
+    foutModParams.flush();
 }
 
 void Exporter::exportClose()
@@ -36,6 +47,7 @@ void Exporter::exportClose()
     foutWeights2.close();
     foutWeightsOnce.close();
     foutArm.close();
+    foutModParams.close();
 }
 
 void Exporter::exportContClose()

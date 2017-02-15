@@ -134,6 +134,7 @@ class BG_model
         void getPMC(float * y_);  // get current PMC neurons activities
 
         void setwm(int cue, int action, float val);
+        float getwm(int cue, int action);
 
         // sets to max firing all PMC that have habit associations
         // used to speed up computation when basal ganglia activity is not interesting

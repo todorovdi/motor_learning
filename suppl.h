@@ -37,12 +37,17 @@ void readIni(string fname, parmap & configValues);
 
 typedef std::mt19937 rng_type;
 extern boost::variate_generator<rng_type&, boost::uniform_real<> > uni;
+extern thread_local rng_type rng;   // thread-specific RNG
 
-//inline float rnd() { 
-////boost::uniform_real<> uni_dist(0,1);
-////rng_type rng = get_prng();
-//    return uni(); } 
+#define RND_BOOST
 
+#ifdef RND_BOOST
+inline float rnd() { 
+//boost::uniform_real<> uni_dist(0,1);
+//rng_type rng = get_prng();
+    return uni(); } 
+#else
 inline float rnd() { return 1.*rand()/(RAND_MAX+1.); } 
+#endif
 
 #endif

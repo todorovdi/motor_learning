@@ -1,12 +1,13 @@
 #include "suppl.h"
 #include "BG_model.h"
 
-
-//std::uniform_int_distribution<int> dice_distribution(1, 6);
-//std::mt19937 rng; // pseudorandom number generator
-//auto dice_roller = std::bind(dice_distribution, random_number_engine);
-//int random_roll = dice_roller();  // Generate one of the integers 1,2,3,4,5,6.
-
+#ifdef RND_BOOST
+thread_local std::random_device rd;    // used once only per thread to initialise RNG
+//std::random_device rd;    
+thread_local rng_type rng(rd());   // thread-specific RNG
+boost::uniform_real<> uni_dist(0,1);
+boost::variate_generator<rng_type&, boost::uniform_real<> > uni(rng,uni_dist);
+#endif
 
 // using only prev data
 void movingAverageFilter(float * input, unsigned int len, unsigned int windowSize, float * output)

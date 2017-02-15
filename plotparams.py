@@ -9,43 +9,57 @@ def paramFileRead(fname):
     ini_str = '[root]\n' + open(fname, 'r').read()
     ini_fp = StringIO.StringIO(ini_str)
     params = ConfigParser.RawConfigParser(allow_no_value=True)
+    params.optionxform = str 
     params.readfp(ini_fp)
-    return params
+    
+    #sect = paramsEnv_pre.sections()
+    items= params.items('root')
+    params_ = dict(items)
+    return params_
 
-def paramsInit(fname):
+def paramsInit(fname,readMultParamFiles = True):
     global paramsEnv
+    global paramsML
+    global paramsCB
     global armFileSkiprows
     global rewardDist
-    global paramsML
     global trials1
     global trials2
     global out_dir
+    global out_dir_pdf
     global numPhases
     global numTrialsPre
     global numTrialsAdapt
     global numTrialsPost
     global trials1End
+    global dirShift
 
     paramsEnv = paramFileRead(fname) 
 
-    rewardDist = float(paramsEnv.get("root","rewardDist") )
-    out_dir = paramsEnv.get("root","output_dir")
-    iniML = paramsEnv.get("root","iniML")
-    iniBG = paramsEnv.get("root","iniBG")
-    iniCB = paramsEnv.get("root","iniCB")
-    iniArm = paramsEnv.get("root","iniArm")
+    rewardDist = float(paramsEnv["rewardDist"] )
+    out_dir = paramsEnv["output_dir"]
+    out_dir_pdf = paramsEnv["output_dir_pdf"]
+    iniML = paramsEnv["iniML"]
+    iniBG = paramsEnv["iniBG"]
+    iniCB = paramsEnv["iniCB"]
+    iniArm = paramsEnv["iniArm"]
 
-    armFileSkiprows = int(paramsEnv.get("root","armFileSkiprows"))
 
-    paramsML = paramFileRead(iniML)
+    armFileSkiprows = int(paramsEnv["armFileSkiprows"])
 
-    targetPre1_def = float(paramsEnv.get("root","targetPre1"))
-    targetPre2 = float(paramsEnv.get("root","targetPre2"))
-    dirShift_def = float(paramsEnv.get("root","dirShift"))
-    numPhases = int(paramsEnv.get("root","numPhases"))
-    numTrialsPre = int(paramsEnv.get("root","numTrialsPre"))
-    numTrialsAdapt = int(paramsEnv.get("root","numTrialsAdapt"))
-    numTrialsPost = int(paramsEnv.get("root","numTrialsPost"))
+    if(readMultParamFiles):
+        paramsML = paramFileRead(iniML)
+        paramsCB = paramFileRead(iniCB)
+        paramsEnv.update(paramsML)
+        paramsEnv.update(paramsCB)
+
+    targetPre1_def = float(paramsEnv["targetPre1"])
+    targetPre2 = float(paramsEnv["targetPre2"])
+    dirShift = float(paramsEnv["dirShift"])
+    numPhases = int(paramsEnv["numPhases"])
+    numTrialsPre = int(paramsEnv["numTrialsPre"])
+    numTrialsAdapt = int(paramsEnv["numTrialsAdapt"])
+    numTrialsPost = int(paramsEnv["numTrialsPost"])
 
     trials1End = numTrialsPre+numTrialsAdapt+numTrialsPost
     trials1 = range(trials1End)

@@ -53,7 +53,7 @@ class testExperimentEnv: public Environment
     //void setParams();
     int deg2action(float degAngle);
 
-    testExperimentEnv(string paramsEnvFile, int num_sess, float tgt, int learn_cb, float cblr);
+    testExperimentEnv(string paramsEnvFile, int num_sess, float tgt, int learn_cb, float cblr, unsigned int seed);
     ~testExperimentEnv();
 
     // experiment-specific

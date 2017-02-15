@@ -29,6 +29,8 @@ class MotorLearning
 
     int na; // number of actions
     int nc; // number of cues
+    
+    int textExport;
 
     public:
     
@@ -56,6 +58,7 @@ class MotorLearning
 
     // sets paritcular habit, does not flush existing habits
     void setHabit(int cue, int action, float strength);
+    float getHabit(int cue, int action);
 
     // backs up weights (see BG_model methods for more details)
     void backupWeights();

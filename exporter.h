@@ -24,6 +24,7 @@ class Exporter
     ofstream foutErr;
     
     ofstream foutContState;
+    ofstream foutModParams;
 
     int na,nc;
 public: 
@@ -39,6 +40,8 @@ public:
     void exportClose();
     void exportContOpen(int k);
     void exportContClose();
+
+    void exportParams(parmap & params);
     
     // data write methods
     void exportDynData(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi, float* addInfo);

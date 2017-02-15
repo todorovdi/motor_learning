@@ -2,7 +2,7 @@ addhCbonly = par.h params*
 addcCbonly = reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                  
 #addh = suppl.h learn.h file_export.h par.h params*
 #addc = learn.cpp suppl.cc file_export.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                                 
-addh2 = galea.h BG_model.h suppl.h exporter.h environment.h arm.h motor_learning.h par.h params*
+addh2 = galea.h BG_model.h suppl.h exporter.h environment.h arm.h motor_learning.h par.h 
 addc2 = galea.cpp learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp exporter.cpp environment.cpp suppl.cpp reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                                 
 
 #learn: learn.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc   par.h

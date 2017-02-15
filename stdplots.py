@@ -27,25 +27,27 @@ def armFileRead(fname):
     armData = np.loadtxt(fname,skiprows=pp.armFileSkiprows)
     return armData,dirShift,targetPre1
 
-def genReachPlot(fig,ax,xs,ys,nums):
+def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False):
     ax.set_xticks(np.arange(-0.5,0.5,0.1))
     ax.set_yticks(np.arange(0.0,0.9,0.1))
 
     ax.set_ylim([0,0.8])
     ax.set_xlim([-0.4,0.4])
 
-    ax.scatter(xs[pp.trials1],ys[pp.trials1],c=nums[pp.trials1],lw=0.0,cmap='inferno',s=45)
-    if( int(pp.paramsEnv.get("root","numPhases")) > 3 ):
-        ax.scatter(xs[pp.trials2],ys[pp.trials2],c=nums[pp.trials2],lw=0.0,cmap='inferno',marker='^')
+    if(twoPhases and int(pp.paramsEnv["numPhases"]) > 3 ):
+        ax.scatter(xs[pp.trials1],ys[pp.trials1],c=nums[pp.trials1],lw=0.0,cmap='inferno',s=45)
+        ax.scatter(xs[pp.trials2],ys[pp.trials2],c=nums[pp.trials2],lw=0.0,cmap='inferno',marker='^',s=45)
+    else:
+        ax.scatter(xs,ys,c=range(len(nums)),lw=0.0,cmap='inferno',s=45)
 
 
     #plt.scatter(xs, ys, color='r', marker='*', alpha=.4)
     #ax.scatter(x2, y2, color='b', s=s/2, alpha=.4)
 
     ax.grid()
-    ax.set_title('Reaching points')
+    ax.set_title('Reaching points '+title)
 
-    if len(xs)<20:
+    if len(xs)<=30:
         for i, x, y in zip(nums, xs, ys):
             ax.annotate(int(i), (x,y))
 
@@ -63,41 +65,20 @@ def genReachPlot(fig,ax,xs,ys,nums):
             bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
             arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
 
-    ax.legend(loc=1)
     rewardSpot1 = plt.Circle((0.2, 0.4), pp.rewardDist, color='b', fill=False)
     rewardSpot2 = plt.Circle((0.0, 0.6), pp.rewardDist, color='b', fill=False)
 
-    learn_bg = int(pp.paramsML.get("root","learn_bg") )
+    learn_bg = int(pp.paramsEnv["learn_bg"] )
     if(learn_bg>0):
         ax.add_artist(rewardSpot1)
         ax.add_artist(rewardSpot2)
 
 
+    addColorBar(fig,ax,vals=nums)
     #cax = ax.imshow(nums, interpolation='nearest', cmap=cm.coolwarm)
     #fig = plt.gcf()
 
 
-    wd=0.03
-    pos1 = ax.get_position() # get the original position 
-    pos1new = [pos1.x0, pos1.y0,  pos1.width-wd, pos1.height ] 
-    ax.set_position(pos1new)
-    pos1 = ax.get_position() # get the original position 
-    pos2 = [pos1.x0 + pos1.width, pos1.y0,  wd, pos1.height ] 
-
-    ax1= fig.add_axes(pos2); # from left, from down, width, height
-
-    #im = imshow
-
-    tickNum = 10
-    mult = int(nums[-1]/10)
-    #print np.where(nums%mult==0)
-    #colorTicks = [nums[i*mult] for i in range(len(nums[-1])) ]
-    colorTicks = [i for i in nums if i%mult == 0]  
-    colorTicks.append(nums[-1])
-
-    norm = mpl.colors.Normalize(vmin=nums[0], vmax=nums[-1])
-    #cbar = fig.colorbar(cax=ax1,norm=norm,ticks=nums,orientation='vertical')
-    cbar = mpl.colorbar.ColorbarBase(ax=ax1,norm=norm,ticks=colorTicks,orientation='vertical',cmap='inferno')
     #cbar.ax.set_yticklabels(nums)  # vertically oriented colorbar
 
     #cb2 = mpl.colorbar.ColorbarBase(ax2, cmap=cmap,
@@ -113,8 +94,32 @@ def genReachPlot(fig,ax,xs,ys,nums):
 
     #plt.show()
 
-def genBGActivityPlot(ax,fname):
+def addColorBar(fig,ax_,vals=0,tickSkip=10,dat=0,wd=0.01):
+
+    pos1 = ax_.get_position() # get the original position 
+    #pos1new = [pos1.x0, pos1.y0,  pos1.width, pos1.height ] 
+    #ax_.set_position(pos1new)
+    pos1 = ax_.get_position() # get the original position 
+    pos2 = [pos1.x0 + pos1.width+wd/2, pos1.y0,  wd, pos1.height ] 
+
+    ax1= fig.add_axes(pos2); # from left, from down, width, height
+
+    #im = imshow
+
+    if dat==0:
+        mult = max(1,int((vals[-1]+1)/tickSkip) )
+        colorTicks = [i for i in vals if i%mult == 0]  
+        #colorTicks.append(vals[-1])
+
+        norm = mpl.colors.Normalize(vmin=vals[0], vmax=vals[-1])
+    #cbar = fig.colorbar(cax=ax1,norm=norm,ticks=nums,orientation='vertical')
+        cbar = mpl.colorbar.ColorbarBase(ax=ax1,norm=norm,ticks=colorTicks,orientation='vertical',cmap='inferno')
+    else:
+        cbar = fig.colorbar(dat,cax=ax1,orientation='vertical',cmap='inferno')
+
+def genBGActivityPlot(fig,ax,fname):
     activity = np.loadtxt(fname)
+    activity = activity[:,range(300)]
     (nrows, ncols) = activity.shape
 
     #data = [go.Heatmap( z=activity.transpose(), x=range(nrows) )]
@@ -129,11 +134,19 @@ def genBGActivityPlot(ax,fname):
     ax.set_aspect('auto')
     ax.set_xlim([0,pp.trials1End])
     ax.grid(False)
-    ax.set_title('BG populations activity plot')
+    ax.set_title('BG populations activity plot',y=1.04)
     #fig.savefig('auto.png')
     #forceAspect(ax,aspect=1)
     #fig.savefig('force.png')
+    ax.yaxis.grid(True,color='w')
+    ax.set_yticks(range(0,301,100))
+    #ax.set_ylabel('y   d1   d2   gpe   gpi',rotation=90)
+    ax.set_ylabel('y   d1   d2',rotation=90)
 
-def genBGWeightsPlot(ax,fname):
-    genBGActivityPlot(ax,fname)
-    ax.set_title('BG weights plot')
+    addColorBar(fig,ax_=ax,dat=pcol,wd=0.01)
+
+def genBGWeightsPlot(fig,ax,fname):
+    pcol = genBGActivityPlot(fig,ax,fname)
+    ax.set_title('BG weights plot',y=1.04)
+    ax.set_yticks(range(0,301,100))
+    ax.set_ylabel('w1    w2    wm',rotation=90)

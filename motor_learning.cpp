@@ -167,6 +167,11 @@ void MotorLearning::setHabit(int cue, int action, float strength)
     bg.setwm(cue,action,strength);
 }
 
+float MotorLearning::getHabit(int cue, int action)
+{
+    bg.getwm(cue,action);
+}
+
 void MotorLearning::restoreWeights(bool w12too)
 {
     bg.restoreWeights(w12too);
@@ -194,6 +199,8 @@ void MotorLearning::initParams(parmap & params)
     learn_cb = stoi(params["learn_cb"]);
     learn_bg = stoi(params["learn_bg"]); 
     rewardSize =  stof(params["rewardSize"]);
+
+    textExport=stoi(params["textExport"]);
 
     nc=stoi(params["nc"]);
     na=stoi(params["na"]);

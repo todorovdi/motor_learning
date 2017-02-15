@@ -11,6 +11,10 @@ shell script file, it is experiment-specific). It put all output in <experiment_
 3) runs data processing with python which is supposed to put all its
 ouput <experiment name>.plot
 
+Note that parameters given in the command line are supposed to
+override the ones from the *.ini files. Although it is up to the
+experiment designer whether to do it or not
+
 ------  compilation
 
 you should have openmp and libboost installed for the program to work

@@ -29,24 +29,6 @@
 
 using namespace std;
 
-
-//thread_local std::random_device rd;    // used once only per thread to initialise RNG
-std::random_device rd;    
-thread_local rng_type rng(rd());   // thread-specific RNG
-boost::uniform_real<> uni_dist(0,1);
-boost::variate_generator<rng_type&, boost::uniform_real<> > uni(rng,uni_dist);
-
-
-//float forceField = 0.;
-//float *gpe, *gpi, *stn;
-//float *d1,*d2;
-
-
-
-//const int na=100; // number of actions
-
-// init_gpi_drive=1.7,
-
 ////////////////
 
 
