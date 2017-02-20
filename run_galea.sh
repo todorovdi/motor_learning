@@ -1,6 +1,16 @@
 mkdir -p output_galea
-wipe_output.sh galea
-./galea --n=$1 --learn_cb=$2
-#--targetPre1=$2
+calc_dir=$HOME/tmp_out_calc 
+mkdir -p $calc_dir
+rm -f output_galea/*.dat
+rm -f $calc_dir/*.dat
+if [ $# -eq 4 ]; then
+    ./galea --n=$1 --learn_cb=$2 --cb_learn_rate=$3 --seed=$4
+elif [ $# -eq 3 ]; then
+    ./galea --n=$1 --learn_cb=$2 --cb_learn_rate=$3
+elif [ $# -eq 2 ];  then
+    ./galea --n=$1 --learn_cb=$2
+elif [ $# -eq 1 ];  then
+    ./galea --n=$1
+fi
 #gnuplot galea.plot
 python galea.plot.py

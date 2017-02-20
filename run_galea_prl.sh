@@ -12,6 +12,5 @@ elif [ $# -eq 2 ];  then
 elif [ $# -eq 1 ];  then
     ./galea_prl --n=$1
 fi
-#./galea_prl --n=$1 --targetPre1=$2
 #gnuplot galea.plot
 python galea.plot.py
