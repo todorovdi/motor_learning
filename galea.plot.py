@@ -34,6 +34,7 @@ import plotparams as pp
 from stdplots import *
 
 from matplotlib.backends.backend_pdf import PdfPages
+import re
 
 #def paramFileRead(fname):
 #    ini_str = '[root]\n' + open(fname, 'r').read()
@@ -57,6 +58,7 @@ def getErrs(armData,xerr):
             d =  -(x-xt)
         else:
             d = math.sqrt( (x-xt)**2 + (y-yt)**2 )
+        #print int(j),x,y,xt,yt, d
         errs[int(j)] = d
     return errs
 
@@ -64,7 +66,7 @@ def doStats(fnames,n,xerr):
     nsess = len(fnames)
     errs = np.zeros(shape=(nsess,n))
     for i,fname in enumerate(fnames):
-        armData = np.loadtxt(fnames[i],skiprows=2)
+        armData = np.loadtxt(fnames[i])
         errs[i,:] = getErrs(armData,xerr)
     #print math.isnan(t)
     means = np.zeros(n)
@@ -89,8 +91,8 @@ def doStats(fnames,n,xerr):
 
 def genFigureGalea(fnames,outname):
     fileToPlot = fnames[0]
-    armData,dirShift,targetPre1 = armFileRead(fileToPlot)
-    #armData = np.loadtxt(fnames[0],skiprows=2)
+    armData = armFileRead(fileToPlot)
+    #armData = np.loadtxt(fnames[0])
     nums = armData[:,0]
     nums = nums.astype(np.int)
     xs = armData[:,1]
@@ -132,7 +134,7 @@ def genFigureGalea(fnames,outname):
         ax.errorbar(nums, errs, yerr=SEMs)
 
     ax.set_title('Errors averaged and SEMs',y=1.04)
-    ax.set_xticks(np.arange(0,n,10))
+    ax.set_xticks(np.arange(0,n,5))
     ax.set_yticks(np.arange(-0.9,0.9,0.1))
     ax.set_ylim([-0.5,0.5])
     ax.set_xlim([0,n])
@@ -175,9 +177,8 @@ def genFigureGalea(fnames,outname):
     #return armData,dirShift,targetPre1,errs
 
 def genReachingByPhase(fname):
-    fileToPlot = fnames[0]
-    armData,dirShift,targetPre1 = armFileRead(fileToPlot)
-    #armData = np.loadtxt(fnames[0],skiprows=2)
+    fileToPlot = fname
+    armData = armFileRead(fileToPlot)
     nums = armData[:,0]
     nums = nums.astype(np.int)
     xs = armData[:,1]
@@ -206,8 +207,7 @@ def genReachingByPhase(fname):
         genReachPlot(fig,axs[1,1],xs[rangeAdapt2],ys[rangeAdapt2],nums[rangeAdapt2])
 
 def genFigureSingleSess(fname,outname=""):
-    armData,dirShift,targetPre1 = armFileRead(fname)
-    #armData = np.loadtxt(fnames[0],skiprows=2)
+    armData = armFileRead(fname)
     nums = armData[:,0]
     xs = armData[:,1]
     ys = armData[:,2]
@@ -248,7 +248,7 @@ def genFigureSingleSess(fname,outname=""):
     plt.close(fig)
     #plt.clf()
     #plt.cla()
-    return armData,dirShift,targetPre1,errs
+    return armData,errs
 
     #labels = ['point{0}'.format(i) for i in range(N)]
 
@@ -256,17 +256,23 @@ def genCritAnglePics(fnames):
     dirShifts=[]
     ends=[]
     for fname in fnames:
-        armData,dirShift,targetPre1,errs = genFigureSingleSess(fname)
+        armData,errs = genFigureSingleSess(fname)
         #
-        armData,dirShift,targetPre1 = armFileRead(fname)
+        armData = armFileRead(fname)
         errs = getErrs(armData)
-        dirShifts.append(int(dirShift))
+
+        basename = os.path.basename(fname)
+        name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
+        modParamsFileName = filename.replace("_arm","_modParams")
+        pp.paramsInit(modParamsFileName,False)
+
+        dirShifts.append(int(pp.paramsEnv["dirShift"]))
         ends.append(errs[pp.numTrialsPre+pp.numTrialsAdapt-1] )
 
     fig=plt.figure()
     plt.plot(dirShifts,ends,'ro')
-    plt.title("targetPre1 = "+ str(targetPre1))
-    plt.savefig(pp.out_dir_pdf+"dirShift2error_target="+str(targetPre1)+".pdf")
+    plt.title("targetPre1 = "+ pp.paramsEnv["targetPre1"])
+    plt.savefig(pp.out_dir_pdf+"dirShift2error_target="+pp.paramsEnv["targetPre1"]+".pdf")
 
     plt.clf()
     plt.cla()
@@ -276,36 +282,34 @@ def printParams(fig,pos):
     initX = 0.06;  initY = 0.5; ysubtr=0.02;
     fsz = 15
 
-    i = 0
-    axlm.text(initX,initY-ysubtr*i,"targetPre1 = "+ pp.paramsEnv["targetPre1"],fontsize=fsz)                # count from left top
-    i+=1
+    paramsToPlot = []
+    paramsToPlot.append("targetPre1")
+    paramsToPlot.append("dirShift")
+    paramsToPlot.append("learn_bg")
+    paramsToPlot.append("learn_cb")
+    paramsToPlot.append("cb_learn_rate")
+    paramsToPlot.append("wmmax")
+    paramsToPlot.append("wmmax_action")
+    paramsToPlot.append("fake_prelearn")
+    paramsToPlot.append("numTrialsPrelearn")
+    paramsToPlot.append("A_exp")
+    paramsToPlot.append("Q")
+    paramsToPlot.append("finalNoiseAmpl")
+    paramsToPlot.append("")
+    paramsToPlot.append("action_change1")
+    paramsToPlot.append("endpoint_rotation1")
+    paramsToPlot.append("target_rotation1")
+    paramsToPlot.append("cue_change1")
+    paramsToPlot.append("")
+    if "sess_seed" in pp.paramsEnv:
+        paramsToPlot.append("sess_seed")
+    paramsToPlot.append("seed")
+    paramsToPlot.append("nsessions")
 
-    axlm.text(initX,initY-ysubtr*i,"dirShift = "+ pp.paramsEnv["dirShift"],fontsize=fsz)                # count from left top
-    i+=1
 
-    axlm.text(initX,initY-ysubtr*i,"learn_bg = "+ pp.paramsEnv["learn_bg"],fontsize=fsz)                # count from left top
-    i+=1
-
-    axlm.text(initX,initY-ysubtr*i,"learn_cb = "+ pp.paramsEnv["learn_cb"],fontsize=fsz)                # count from left top
-    i+=1
-
-    axlm.text(initX,initY-ysubtr*i,"cb_learn_rate = "+ pp.paramsEnv["cb_learn_rate"],fontsize=fsz)                # count from left top
-    i+=1
-
-    axlm.text(initX,initY-ysubtr*i,"wmmax = "+ pp.paramsEnv["wmmax"],fontsize=fsz)                # count from left top
-    i+=1
-
-    axlm.text(initX,initY-ysubtr*i,"fake_prelearn = "+ pp.paramsEnv["fake_prelearn"],fontsize=fsz)                # count from left top
-    i+=1
-
-    axlm.text(initX,initY-ysubtr*i,"numTrialsPrelearn = "+ pp.paramsEnv["numTrialsPrelearn"],fontsize=fsz)                # count from left top
-    i+=1
- 
-    axlm.text(initX,initY-ysubtr*i,"wmmax = "+ pp.paramsEnv["wmmax"],fontsize=fsz)                # count from left top
-    i+=1
-
-    axlm.text(initX,initY-ysubtr*i,"seed = "+ pp.paramsEnv["seed"],fontsize=fsz)                # count from left top
-    i+=1
+    for i,param in enumerate(paramsToPlot):
+        if param != "":
+            axlm.text(initX,initY-ysubtr*i,param+" = "+ pp.paramsEnv[param],fontsize=fsz)                # count from left top
 
 
 #paramsEnv = paramFileRead('galea.ini')
@@ -350,22 +354,26 @@ for filename in os.listdir(pp.out_dir):
 pdfForEachSession = int(pp.paramsEnv["pdfForEachSession"])  #it is important to init it here and not later
 
 filename = fnames[0]
-import re
+
 ree = '(.*)_\w+\.dat'
 basename = os.path.basename(filename)
 name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
 pp.paramsInit(filename.replace("_arm","_modParams"),False)
 
+
+genFigureGalea(fnames,'galea')
+
 if pdfForEachSession:
     print "Generate pictures for each seed"
-    for filename in fnames:
+    for i,filename in enumerate(fnames):
         ree = '(.*)_\w+\.dat'
         basename = os.path.basename(filename)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-        pp.paramsInit(filename.replace("_arm","_modParams"),False)
-        genFigureGalea([filename],name+"_seed_"+pp.paramsEnv["seed"]);
+        modParamsFileName = filename.replace("_arm","_modParams")
+        print "making graph "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
+        pp.paramsInit(modParamsFileName,False)
+        genFigureGalea([filename],name);
 
-genFigureGalea(fnames,'galea')
 
 
 

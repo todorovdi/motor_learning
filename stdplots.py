@@ -18,14 +18,8 @@ from scipy import stats
 import plotparams as pp
 
 def armFileRead(fname):
-    f=open(fname)
-    line=f.next().strip()
-    dirShift = float(line)
-    line=f.next().strip()
-    targetPre1 = float(line)
-    f.close()
     armData = np.loadtxt(fname,skiprows=pp.armFileSkiprows)
-    return armData,dirShift,targetPre1
+    return armData
 
 def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False):
     ax.set_xticks(np.arange(-0.5,0.5,0.1))
@@ -38,6 +32,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False):
         ax.scatter(xs[pp.trials1],ys[pp.trials1],c=nums[pp.trials1],lw=0.0,cmap='inferno',s=45)
         ax.scatter(xs[pp.trials2],ys[pp.trials2],c=nums[pp.trials2],lw=0.0,cmap='inferno',marker='^',s=45)
     else:
+        #print zip(nums,xs,ys)
         ax.scatter(xs,ys,c=range(len(nums)),lw=0.0,cmap='inferno',s=45)
 
 
@@ -71,7 +66,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False):
     learn_bg = int(pp.paramsEnv["learn_bg"] )
     if(learn_bg>0):
         ax.add_artist(rewardSpot1)
-        ax.add_artist(rewardSpot2)
+#        ax.add_artist(rewardSpot2)
 
 
     addColorBar(fig,ax,vals=nums)

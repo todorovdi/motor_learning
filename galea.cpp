@@ -37,21 +37,51 @@ void runExperiment(int argc, char** argv)
         if(!paramsEnvFile.length())
             paramsEnvFile = "galea.ini";
     }
+
+    parmap params;
+    readIni(paramsEnvFile,params);
+    
+    /////////   before I used several files to store parameters
+    // so just to maintain backward compatibility
+    parmap::iterator i;
+    i = params.find("iniBG");
+    if(i!= params.end())
+        readIni(i->second,params);
+
+    i = params.find("iniCB");
+    if(i!= params.end())
+        readIni(i->second,params);
+
+    i = params.find("iniArm");
+    if(i!= params.end())
+        readIni(i->second,params);
+
+    i = params.find("iniML");
+    if(i!= params.end())
+        readIni(i->second,params);
+
+
     if (vm.count("targetPre1"))
     {
         targetPre1 = vm["targetPre1"].as<float>();
+        params["targetPre1"] = to_string(targetPre1);
+        params["targetPre2"] = to_string(targetPre1);
     }
 
     int learn_cb = vm["learn_cb"].as<int>();
-    int nsessions = vm["n"].as<int>(); 
     float cb_learn_rate = vm["cb_learn_rate"].as<float>(); 
+    if(learn_cb != -1)
+        params["learn_cb"] = to_string(learn_cb);
+    if(cb_learn_rate >= -EPS)
+        params["cb_learn_rate"] = to_string(cb_learn_rate);
 
+    int nsessions = vm["n"].as<int>(); 
+    params["nsessions"] = to_string(nsessions); 
 
     unsigned int seed =   time(NULL);  
     bool presetSeed = false; 
 
-    parmap params;
-    readIni(paramsEnvFile,params);
+
     unsigned int t_seed = stoul(params["seed"]);
     if (vm.count("seed"))
     {
@@ -64,6 +94,8 @@ void runExperiment(int argc, char** argv)
         presetSeed = true;
     }
     srand(seed);
+
+    params["seed"] = to_string(seed);
 
     cout<<"seed is "<<seed<<endl;
     if(presetSeed)
@@ -94,7 +126,7 @@ void runExperiment(int argc, char** argv)
 #endif
         srand(seeds[i]);   // it happens in parallel sessions
         cout<<"seed number "<<i<<" is "<<seeds[i]<<endl;
-        testExperimentEnv te(paramsEnvFile,i,targetPre1,learn_cb,cb_learn_rate,seeds[i]);
+        testExperimentEnv te(params,i,seeds[i]);
         te.runSession();
     }
 }
@@ -127,9 +159,9 @@ void testExperimentEnv::runSession()
 //        ml.setCBlearning(true);
 //#endif
 
-        string prefix = string("BG")+to_string(learn_bg) +  string("_CB")+to_string(learn_cb) + string("_learnRate_") + to_string(cb_learn_rate) +  string("_rot_")+to_string(dirShift)+string("_target_")+to_string(targetPre1);
-        string putInBeg = to_string(dirShift)+string("\n")+to_string(targetPre1) + string("\n");
-        exporter.exportInit(prefix,string("_")+std::to_string(num_sess),putInBeg);
+        string prefix = string("BG")+to_string(learn_bg) +  string("_CB")+to_string(learn_cb) + string("_learnRate_") + to_string(cb_learn_rate) +  string("_rot_")+to_string(dirShift)+string("_target_")+to_string(targetPre1)+string("_sess_seed_")+to_string(sess_seed);
+        //string putInBeg = to_string(dirShift)+string("\n")+to_string(targetPre1) + string("\n");
+        exporter.exportInit(prefix,string("_numSess_")+std::to_string(num_sess),"");
         exporter.exportParams(params);
 
         // if we did prelearn above
@@ -139,14 +171,26 @@ void testExperimentEnv::runSession()
         //float rpre = 3.;
         ml.setRpreMax();   // if we use only CB not need this
 
-    //    initCBdir(targetPre1,true);
+        if(learn_cb)
+        { 
+            initCBdir(targetPre1,true);
+        }
         experimentPhase = PRE1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         ml.makeTrials(numTrialsPre,0,false,0);
         int offset = numTrialsPre;
 
-        if(target_rotation1 && learn_cb)
-            initCBdir(targetPre1+dirShift,false);
+        if(learn_cb)
+        { 
+          if(target_rotation1)
+          { 
+              initCBdir(targetPre1+dirShift,false);
+          } 
+          if(randomCBStateInit)
+          {
+            ml.setRandomCBState(2.);
+          }
+        } 
 
         experimentPhase = ADAPT1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
@@ -163,13 +207,14 @@ void testExperimentEnv::runSession()
 //#ifdef TWO_PARTS
         if(numPhases > 3)
         { 
-            initCBdir(targetPre2,true);   // update but do not save W, for testing purposes
+            if(learn_cb)
+                initCBdir(targetPre2,true);   // update but do not save W, for testing purposes
             experimentPhase = PRE2;
             cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
             ml.makeTrials(numTrialsPre,0,false,offset);
             offset+= numTrialsPre;
 
-            if(target_rotation2)
+            if(target_rotation2 && learn_cb)
                 initCBdir(targetPre2+dirShift,false);
 
             experimentPhase = ADAPT2;
@@ -177,7 +222,8 @@ void testExperimentEnv::runSession()
             ml.makeTrials(numTrialsAdapt,0,false,offset);
             offset += numTrialsAdapt;
             
-            initCBdir(targetPre2,false);
+            if(target_rotation2 && learn_cb)
+                initCBdir(targetPre2,false);
             experimentPhase = POST2;
             cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
             ml.makeTrials(numTrialsPost,0,false,offset);
@@ -192,6 +238,7 @@ void testExperimentEnv::prelearn(int n, float * addInfo)
     ml.flushWeights(true);
     experimentPhase = PRELEARN;
     float wmmax;
+    int wmmax_ind = -1;
     if(fake_prelearn)
     { 
         wmmax = wmmax_fake_prelearn;
@@ -216,6 +263,8 @@ void testExperimentEnv::prelearn(int n, float * addInfo)
         xcur = 0.2;
         ycur = 0.4;
         cout<<"Fake prelearn max weight is "<<wmmax<<endl;
+    
+        wmmax_ind = 0;
     }
     else
     { 
@@ -224,7 +273,7 @@ void testExperimentEnv::prelearn(int n, float * addInfo)
         ml.setCBlearning(false);
 
         exporter.exportInit("prelearn",to_string(num_sess),"");
-        ml.makeTrials(n,addInfo,false,0,true);  // last arg is whether we do export, or not
+        ml.makeTrials(n,addInfo,true,0,false);  // last arg is whether we do export, or not
         exporter.exportClose();
 
         ml.initParams(params);  // restore bg and cb learning params from ini file
@@ -236,13 +285,17 @@ void testExperimentEnv::prelearn(int n, float * addInfo)
             {        
                 float wmcur = ml.getHabit(i,j);
                 if(wmcur > wmmax)
+                { 
                     wmmax = wmcur;
+                    wmmax_ind = j;
+                } 
             }
         }
 
-        cout<<"True prelearn max weight is "<<wmmax<<endl;
+        cout<<"True prelearn max weight is "<<wmmax<<" for action "<<wmmax_ind<<endl;
     }
     params["wmmax"] = to_string(wmmax);
+    params["wmmax_action"] = to_string(wmmax_ind);
 
     ml.backupWeights();
 }
@@ -316,9 +369,10 @@ float testExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *ad
             break;
         case ADAPT1:
             // Do something to mimic this simuations, occurin at random
-            rot = dirShift;
+            if(endpoint_rotation1)
+                rot = dirShift;
             if(target_rotation1)
-                target = targetPre1+rot;
+                target = targetPre1+dirShift;
             else
                 target = targetPre1; 
             break;
@@ -327,10 +381,10 @@ float testExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *ad
             target = targetPre1;
             break;
         case ADAPT2:
-            //rot = dirShift;
-            rot = 0;
+            if(endpoint_rotation1)
+                rot = dirShift;
             if(target_rotation2)
-                target = targetPre2+rot;
+                target = targetPre2+dirShift;
             else
                 target = targetPre2; 
             break;
@@ -430,8 +484,12 @@ float testExperimentEnv::getReward(float sc, float * x,float * y, float & param)
     return R;
 }  
 
-testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_,float tgt,int learn_cb_,float cb_learn_rate_,unsigned int seed):Environment(paramsEnvFile,num_sess_)
+//    string paramsEnvFile, int num_sess_,float tgt,int learn_cb_,float cb_learn_rate_,unsigned int seed
+testExperimentEnv::testExperimentEnv(parmap & params,int num_sess_,unsigned int sess_seed_):Environment(params,num_sess_)
 {
+    sess_seed = sess_seed_;
+    params["sess_seed"] = to_string(sess_seed);
+
     numTrialsPre      = stoi(params["numTrialsPre"]);
     numTrialsAdapt    = stoi(params["numTrialsAdapt"]);
     numTrialsPost     = stoi(params["numTrialsPost"]);
@@ -458,19 +516,6 @@ testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_,float t
     // Note that we than save all the params with modifications, to the output
     params["dirShift"] = to_string(dirShift);
 
-    if(learn_cb_ != -1)
-        params["learn_cb"] = to_string(learn_cb_);
-    if(cb_learn_rate_ >= -EPS)
-        params["cb_learn_rate"] = to_string(cb_learn_rate_);
-
-    if(tgt>= (-EPS) )
-    {
-        params["targetPre1"] = to_string(tgt);
-        params["targetPre2"] = to_string(tgt);
-    }
-
-    params["seed"] = to_string(seed);
-
     targetPre1        = stof(params["targetPre1"]);
     targetPre2        = stof(params["targetPre2"]);
     dirShift          = stof(params["dirShift"]);
@@ -489,6 +534,8 @@ testExperimentEnv::testExperimentEnv(string paramsEnvFile, int num_sess_,float t
     sector_width = stof(params["sector_width"]);
     wmmax_fake_prelearn = stof(params["wmmax_fake_prelearn"]);
     armReachRadius = stof(params["armReachRadius"]);
+
+    randomCBStateInit = stof(params["randomCBStateInit"]);
 
     phasesNames.push_back("PRE1");
     phasesNames.push_back("PRE2");

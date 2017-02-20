@@ -39,8 +39,10 @@ class testExperimentEnv: public Environment
     int learn_cb;                
     int learn_bg;
     float cb_learn_rate;
+    float randomCBStateInit;
 
     int dirShiftInc;
+    unsigned int sess_seed;
 
     public:
     int turnOnCues(float * cues);
@@ -53,7 +55,7 @@ class testExperimentEnv: public Environment
     //void setParams();
     int deg2action(float degAngle);
 
-    testExperimentEnv(string paramsEnvFile, int num_sess, float tgt, int learn_cb, float cblr, unsigned int seed);
+    testExperimentEnv(parmap & params, int num_sess, unsigned int sess_seed);
     ~testExperimentEnv();
 
     // experiment-specific

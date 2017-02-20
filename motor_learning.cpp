@@ -63,6 +63,11 @@ void MotorLearning::setCBtarget(float x, float y)
     cb.setCBtarget(x,y);
 }
 
+void MotorLearning::setRandomCBState(float a)
+{
+    cb.setRandomState(a);
+}
+
 // calls getSuccess, which calls moveArm
 float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flushData, unsigned int indAdd, bool doExport)
 {

@@ -38,6 +38,7 @@ class CB_model
         // to retrain CB to reach this point -- so you would call train method instead 
         void setCBtarget(float x, float y);  
 
+        void setRandomState(float amplitudeOfRand); // fill W with random values from [0,amplitudeOfRand]
         void init(parmap & params,Exporter *exporter,Arm * arm_);
         CB_model();
         CB_model(Arm * arm_);

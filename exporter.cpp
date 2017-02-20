@@ -1,10 +1,26 @@
 #include "exporter.h"
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
 void Exporter::init(string prefix_,string suffix_,string dir_)   // prefix = "RC" for example
 {
   prefix = prefix_;
   suffix = suffix_;
+
   dir = dir_;
+  if(dir_[0] == '~')
+  {
+    const char *homedir;
+    if ((homedir = getenv("HOME")) == NULL) 
+    {
+        homedir = getpwuid(getuid())->pw_dir;
+    }
+    dir = string(homedir) + dir_.substr(1,dir_.length()-1);
+  }
+  cout<<dir<<endl;
+
 }
 
 void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix = "RC" for example
@@ -19,7 +35,10 @@ void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix
     foutWeightsOnce.open  ( dir+prefix+string("_weights_once")+suffix+string(".dat") );
     foutArm.open  ( dir+prefix+string("_arm")+suffix+string(".dat") );
     foutModParams.open  ( dir+prefix+string("_modParams")+suffix+string(".dat") );
-    foutArm<<begPut;
+    if(begPut != "")
+    { 
+        foutArm<<begPut;
+    }
 }
 
 void Exporter::exportContOpen(int k)

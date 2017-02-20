@@ -39,19 +39,23 @@ def paramsInit(fname,readMultParamFiles = True):
     rewardDist = float(paramsEnv["rewardDist"] )
     out_dir = paramsEnv["output_dir"]
     out_dir_pdf = paramsEnv["output_dir_pdf"]
-    iniML = paramsEnv["iniML"]
-    iniBG = paramsEnv["iniBG"]
-    iniCB = paramsEnv["iniCB"]
-    iniArm = paramsEnv["iniArm"]
+    #iniBG = paramsEnv["iniBG"]
+    #iniArm = paramsEnv["iniArm"]
 
+    from os.path import expanduser
+    out_dir = expanduser(out_dir)
 
     armFileSkiprows = int(paramsEnv["armFileSkiprows"])
 
     if(readMultParamFiles):
-        paramsML = paramFileRead(iniML)
-        paramsCB = paramFileRead(iniCB)
-        paramsEnv.update(paramsML)
-        paramsEnv.update(paramsCB)
+        if "iniML" in paramsEnv:
+            iniML = paramsEnv["iniML"]
+            paramsML = paramFileRead(iniML)
+            paramsEnv.update(paramsML)
+        if "iniCB" in paramsEnv:
+            iniCB = paramsEnv["iniCB"]
+            paramsCB = paramFileRead(iniCB)
+            paramsEnv.update(paramsCB)
 
     targetPre1_def = float(paramsEnv["targetPre1"])
     targetPre2 = float(paramsEnv["targetPre2"])

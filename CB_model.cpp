@@ -81,6 +81,13 @@ void CB_model::flush()
         }
 }
 
+void CB_model::setRandomState(float a)
+{
+    for(int k=0;k<6;k++) 
+        for(int l=0;l<6;l++) 
+            wcb[k][l] = a*rnd();
+}
+
 void CB_model::setArm(Arm * arm_)
 {
     arm = arm_;
