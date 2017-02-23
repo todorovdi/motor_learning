@@ -446,3 +446,13 @@ float BG_model::getwm(int cue, int action)
 {
     return wm[cue][action];
 }
+
+void BG_model::setw1(int cue, int action, float val)
+{
+  w1[cue][action] = val;
+}
+
+void BG_model::setw2(int cue, int action, float val)
+{
+  w2[cue][action] = val;
+}

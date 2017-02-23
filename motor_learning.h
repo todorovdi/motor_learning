@@ -20,6 +20,7 @@ class MotorLearning
     // do we do cerebellum and bg learning 
     bool learn_cb;                
     bool learn_bg;
+    bool retrainCB_useCurW;
     vector<float> Rpre;
     float Rpre_coef;              // how much of current reward we use for the new reward prediction error
     float T;                      // integration duration max limit
@@ -31,6 +32,9 @@ class MotorLearning
     int nc; // number of cues
     
     int textExport;
+    int trainCBEveryTrial;
+
+    float ffield;
 
     public:
     
@@ -55,10 +59,12 @@ class MotorLearning
     // turns off and on BG nd cerebellum learning, respectively
     void setBGlearning(bool bglearns);
     void setCBlearning(bool cblearns);
+    void setFfield(float ff);
 
     // sets paritcular habit, does not flush existing habits
     void setHabit(int cue, int action, float strength);
     float getHabit(int cue, int action);
+    void fakePrelearnReaching(int cue, int action, float habitAmpl, float tempWAmpl);
 
     // backs up weights (see BG_model methods for more details)
     void backupWeights();

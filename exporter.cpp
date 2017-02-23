@@ -19,7 +19,7 @@ void Exporter::init(string prefix_,string suffix_,string dir_)   // prefix = "RC
     }
     dir = string(homedir) + dir_.substr(1,dir_.length()-1);
   }
-  cout<<dir<<endl;
+  //cout<<dir<<endl;
 
 }
 
@@ -35,6 +35,8 @@ void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix
     foutWeightsOnce.open  ( dir+prefix+string("_weights_once")+suffix+string(".dat") );
     foutArm.open  ( dir+prefix+string("_arm")+suffix+string(".dat") );
     foutModParams.open  ( dir+prefix+string("_modParams")+suffix+string(".dat") );
+    foutCBState.open  ( dir+prefix+string("_CBState")+suffix+string(".dat") );
+    foutCBTuning.open  ( dir+prefix+string("_CBTuning")+suffix+string(".dat") );
     if(begPut != "")
     { 
         foutArm<<begPut;
@@ -95,6 +97,7 @@ void Exporter::exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **
             foutWeights<<w1[j][i]<<'\t';
         foutWeights<<endl;
     }	
+
     foutWeights<<endl<<endl;	
 
     for(int i=0;i<na;i++)
@@ -173,9 +176,12 @@ void Exporter::exportContState(float t,float *y,float *d1,float *d2,float * gpe,
 
 void Exporter::exportWeights(unsigned int trialNum,float ** w1,float ** w2,float **wm)
 { 
-    for(int i=0;i<na;i++) foutWeights2<<w1[0][i]<<'\t';
-    for(int i=0;i<na;i++) foutWeights2<<w2[0][i]<<'\t';
-    for(int i=0;i<na;i++) foutWeights2<<wm[0][i]<<'\t';
+    for(int cue=0;cue<nc;cue++)
+    { 
+      for(int i=0;i<na;i++) foutWeights2<<w1[cue][i]<<'\t';
+      for(int i=0;i<na;i++) foutWeights2<<w2[cue][i]<<'\t';
+      for(int i=0;i<na;i++) foutWeights2<<wm[cue][i]<<'\t';
+    }
     foutWeights2<<endl;
 }
 
@@ -219,4 +225,22 @@ void Exporter::exportArm(unsigned int trialNum,float xcur,float ycur, float x0, 
            <<xc  <<'\t'    //7
            <<yc  <<'\t'    //8
            <<endl;
+}
+
+void Exporter::CBExport(int k, float wcb[][6], float  dfwx[][6], float dfwy[][6])
+{
+  foutCBState<<k<<'\t';
+  for(int i = 0;i<6;i++)
+    for(int j =0;j<6;j++)
+      foutCBState<<wcb[i][j]<<'\t';
+  foutCBState<<endl;
+
+  foutCBTuning<<k<<'\t';
+  for(int i = 0;i<6;i++)
+    for(int j =0;j<6;j++)
+      foutCBTuning<<dfwx[i][j]<<'\t';
+  for(int i = 0;i<6;i++)
+    for(int j =0;j<6;j++)
+      foutCBTuning<<dfwy[i][j]<<'\t';
+  foutCBTuning<<endl;
 }

@@ -25,6 +25,8 @@ class Exporter
     
     ofstream foutContState;
     ofstream foutModParams;
+    ofstream foutCBState;
+    ofstream foutCBTuning;
 
     int na,nc;
 public: 
@@ -54,7 +56,7 @@ public:
     void exportWeightsStd(unsigned int trialNum,float ** w1,float ** w2,float **wm);
     void exportCuesState(unsigned int trialNum, float * cues);
     void trialEndExport(float * sumM1freq, unsigned int seed);
-
+    void CBExport(int k, float wcb[][6], float dfwx[][6], float dfwy[][6]);
 };
 
 #endif // FILE_EXPORT_H

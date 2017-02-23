@@ -121,7 +121,17 @@ def genFigureGalea(fnames,outname):
     ax_.set_xticklabels(['ADAPT1','POST1'])
     ax_.xaxis.grid(True,color='w')
 
-    genReachPlot(fig,axs[1,0],xs,ys,nums,twoPhases=True)
+    #genReachPlot(fig,axs[1,0],xs,ys,nums,twoPhases=True)
+
+    ax = axs[1,0]
+    genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),1)
+    ax.set_xticks(pp.trials1[::10])
+    ax_ = ax.twiny()
+    ax_.set_xlim(0, len(pp.trials1))
+    ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
+    ax_.set_xticklabels(['ADAPT1','POST1'])
+    ax_.xaxis.grid(True,color='w')
+
 
     ax = axs[1,1]
 
@@ -166,6 +176,38 @@ def genFigureGalea(fnames,outname):
         pdf.savefig()
         plt.close()
         genReachingByPhase(fileToPlot)
+        pdf.savefig()
+        plt.close()
+
+        fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
+        ax = axs[0,1]
+        genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),1)
+        ax.set_xticks(pp.trials1[::10])
+        ax_ = ax.twiny()
+        ax_.set_xlim(0, len(pp.trials1))
+        ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
+        ax_.set_xticklabels(['ADAPT1','POST1'])
+        ax_.xaxis.grid(True,color='w')
+
+        fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
+        ax = axs[0,0]
+        genCBStatePlot(fig,ax,fileToPlot.replace('arm','CBState'))
+        ax.set_xticks(pp.trials1[::10])
+        ax_ = ax.twiny()
+        ax_.set_xlim(0, len(pp.trials1))
+        ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
+        ax_.set_xticklabels(['ADAPT1','POST1'])
+        ax_.xaxis.grid(True,color='w')
+
+        ax = axs[0,1]
+        genCBTuningPlot(fig,ax,fileToPlot.replace('arm','CBTuning'))
+        ax.set_xticks(pp.trials1[::10])
+        ax_ = ax.twiny()
+        ax_.set_xlim(0, len(pp.trials1))
+        ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
+        ax_.set_xticklabels(['ADAPT1','POST1'])
+        ax_.xaxis.grid(True,color='w')
+
         pdf.savefig()
         plt.close()
 
@@ -279,7 +321,7 @@ def genCritAnglePics(fnames):
 
 def printParams(fig,pos):
     axlm= fig.add_axes(pos,frameon=False); 
-    initX = 0.06;  initY = 0.5; ysubtr=0.02;
+    initX = 0.06;  initY = 0.8; ysubtr=0.02;
     fsz = 15
 
     paramsToPlot = []
@@ -288,18 +330,26 @@ def printParams(fig,pos):
     paramsToPlot.append("learn_bg")
     paramsToPlot.append("learn_cb")
     paramsToPlot.append("cb_learn_rate")
+    paramsToPlot.append("randomCBStateInit")
+    paramsToPlot.append("randomCBStateInitAmpl")
+    paramsToPlot.append("trainCBEveryTrial")
+    paramsToPlot.append("")
     paramsToPlot.append("wmmax")
     paramsToPlot.append("wmmax_action")
     paramsToPlot.append("fake_prelearn")
     paramsToPlot.append("numTrialsPrelearn")
+    if "fake_prelearn_tempWAmpl" in pp.paramsEnv:
+        paramsToPlot.append("fake_prelearn_tempWAmpl")
     paramsToPlot.append("A_exp")
     paramsToPlot.append("Q")
     paramsToPlot.append("finalNoiseAmpl")
     paramsToPlot.append("")
-    paramsToPlot.append("action_change1")
-    paramsToPlot.append("endpoint_rotation1")
     paramsToPlot.append("target_rotation1")
     paramsToPlot.append("cue_change1")
+    paramsToPlot.append("action_change1")
+    paramsToPlot.append("endpoint_rotation1")
+    paramsToPlot.append("endpoint_xreverse1")
+    paramsToPlot.append("force_field1")
     paramsToPlot.append("")
     if "sess_seed" in pp.paramsEnv:
         paramsToPlot.append("sess_seed")
@@ -346,36 +396,46 @@ def printParams(fig,pos):
 
 pp.paramsInit('galea.ini') 
 
+import sys
+print 'Python plotting number of arguments: ', len(sys.argv)
+if(len(sys.argv)>1):
+    dat_basename = sys.argv[1]
+else:
+    dat_basename = "" #pp.paramsEnv["dat_basename"]
+#print 'Argument List:', str(sys.argv)
+
 fnames = []
+matchStr = dat_basename + '*_arm_*.dat'
+print 'matching string for *.dat files:', matchStr
 for filename in os.listdir(pp.out_dir):
-    if fnmatch.fnmatch(filename, '*_arm_*.dat'):
+    if fnmatch.fnmatch(filename, matchStr):
         fnames.append(pp.out_dir+filename)
 
 pdfForEachSession = int(pp.paramsEnv["pdfForEachSession"])  #it is important to init it here and not later
 
-filename = fnames[0]
+if(len(fnames) == 0):
+    print "No .dat files found"
+else:
+    filename = fnames[0]
 
-ree = '(.*)_\w+\.dat'
-basename = os.path.basename(filename)
-name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-pp.paramsInit(filename.replace("_arm","_modParams"),False)
-
-
-genFigureGalea(fnames,'galea')
-
-if pdfForEachSession:
-    print "Generate pictures for each seed"
-    for i,filename in enumerate(fnames):
-        ree = '(.*)_\w+\.dat'
-        basename = os.path.basename(filename)
-        name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-        modParamsFileName = filename.replace("_arm","_modParams")
-        print "making graph "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
-        pp.paramsInit(modParamsFileName,False)
-        genFigureGalea([filename],name);
+    ree = '(.*)_\w+\.dat'
+    basename = os.path.basename(filename)
+    name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
+    pp.paramsInit(filename.replace("_arm","_modParams"),False)
 
 
+    genFigureGalea(fnames,'galea_'+pp.paramsEnv["pdfSuffix"])
 
+    if pdfForEachSession:
+        print "Generate pictures for each seed"
+        for i,filename in enumerate(fnames):
+            ree = '(.*)_\w+\.dat'
+            basename = os.path.basename(filename)
+            name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
+            modParamsFileName = filename.replace("_arm","_modParams")
+            print "making graph "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
+            pp.paramsInit(modParamsFileName,False)
+            genFigureGalea([filename],name);
 
 #print fnames
 

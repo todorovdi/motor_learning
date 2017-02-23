@@ -135,6 +135,8 @@ class BG_model
 
         void setwm(int cue, int action, float val);
         float getwm(int cue, int action);
+        void setw1(int cue, int action, float val);
+        void setw2(int cue, int action, float val);
 
         // sets to max firing all PMC that have habit associations
         // used to speed up computation when basal ganglia activity is not interesting

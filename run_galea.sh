@@ -4,13 +4,13 @@ mkdir -p $calc_dir
 rm -f output_galea/*.dat
 rm -f $calc_dir/*.dat
 if [ $# -eq 4 ]; then
-    ./galea --n=$1 --learn_cb=$2 --cb_learn_rate=$3 --seed=$4
+    ./galea --nsessions=$1 --learn_cb=$2 --cb_learn_rate=$3 --seed=$4
 elif [ $# -eq 3 ]; then
-    ./galea --n=$1 --learn_cb=$2 --cb_learn_rate=$3
+    ./galea --nsessions=$1 --learn_cb=$2 --cb_learn_rate=$3
 elif [ $# -eq 2 ];  then
-    ./galea --n=$1 --learn_cb=$2
+    ./galea --nsessions=$1 --learn_cb=$2
 elif [ $# -eq 1 ];  then
-    ./galea --n=$1
+    ./galea --nsessions=$1
 fi
 #gnuplot galea.plot
 python galea.plot.py

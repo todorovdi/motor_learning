@@ -22,6 +22,7 @@ class testExperimentEnv: public Environment
     float sector_thickness;
     float sector_width;
     float wmmax_fake_prelearn;
+    float fake_prelearn_tempWAmpl;
     float armReachRadius;
     int  numPhases;
 
@@ -35,11 +36,14 @@ class testExperimentEnv: public Environment
     bool target_rotation2;
     bool cue_change1;
     bool cue_change2;
+    bool endpoint_xreverse1;
+    float force_field1;
 
     int learn_cb;                
     int learn_bg;
     float cb_learn_rate;
-    float randomCBStateInit;
+    int randomCBStateInit;
+    float randomCBStateInitAmpl;
 
     int dirShiftInc;
     unsigned int sess_seed;

@@ -82,77 +82,83 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     float x[nc];
     // cycle over trials
     for(int k=indAdd;k<(ntrials+indAdd);k++)
+    {
+
+      bg.resetForTrialBegin();
+
+      int cueActive = env->turnOnCues(x);
+      bg.setCues(x);
+
+      if(learn_bg)
       {
 
-        bg.resetForTrialBegin();
+        if(doExport)
+        { 
+            bg.exportCuesState(k);
+        }
 
-        int cueActive = env->turnOnCues(x);
-        bg.setCues(x);
+        int nsteps = 0;
+        float dt = 0;
+        bool CONT_OUT = false;
+              // integrate the equations
 
-        if(learn_bg)
-	  {
+        if (CONT_OUT) {bg.exportContOpen(k); }
 
-            if(doExport)
-	      { 
-                bg.exportCuesState(k);
-	      }
-
-            int nsteps = 0;
-            float dt = 0;
-	    bool CONT_OUT = false;
-            // integrate the equations
-
-	    if (CONT_OUT) {bg.exportContOpen(k); }
-
-            for(float t=0; t<T; )
-	      {   
-                dt = bg.do_step();
-		if (CONT_OUT) {bg.exportContState(t);}
-                nsteps++;
-                t+= dt;
-                if(dt >= 1.)
-		  break;
-	      };
-	    if (CONT_OUT) {bg.exportContClose();}
-	  } 
-        else
-	  {
-            bg.habit2PMCdirectly(cueActive);
-	  }
-
-        float y[na];
-        bg.getPMC(y);
-
-        float addInfoItem[5];
-        float sc = env->getSuccess(x,y,k,addInfoItem);   // here arm export happens
-        float endpt_percieved_x = addInfoItem[1];
-        float endpt_percieved_y = addInfoItem[2];
-        float endpt_x = addInfoItem[3];
-        float endpt_y = addInfoItem[4];
-
-        float t; // is may be set in the following function (it passes as a reference argument)
-        float R = env->getReward(sc,x,y,t);
-
-        if(doExport )
-	  { 
-            bg.exportBGstate(k,0);
-	  } 
-
-        //rnd();  // just to follow same seed as Slava's code
-        if(learn_bg)
-	  bg.learn(R- Rpre[cueActive]);
-
-        if(learn_cb)
-	  { 
-            //if( fzero(R) )
-            { cb.learn(endpt_percieved_x, endpt_percieved_y); }
-	    // else
-	    // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
-	  }
-
-        updateRpre(cueActive,R,0);   
-
+          for(float t=0; t<T; )
+          {   
+            dt = bg.do_step();
+            if (CONT_OUT) {bg.exportContState(t);}
+                        nsteps++;
+                        t+= dt;
+                        if(dt >= 1.)
+              break;
+          };
+        if (CONT_OUT) {bg.exportContClose();}
+      } 
+      else
+      {
+        bg.habit2PMCdirectly(cueActive);
       }
+
+      float y[na];
+      bg.getPMC(y);
+
+      if(learn_cb && trainCBEveryTrial)
+      {
+          cb.trainCurPt(y,ffield,false,retrainCB_useCurW);  // flushW= false, useCurW = true
+      }
+
+      float addInfoItem[5];
+      float sc = env->getSuccess(x,y,k,addInfoItem);   // here arm export happens
+      float endpt_percieved_x = addInfoItem[1];
+      float endpt_percieved_y = addInfoItem[2];
+      float endpt_x = addInfoItem[3];
+      float endpt_y = addInfoItem[4];
+
+      float t; // is may be set in the following function (it passes as a reference argument)
+      float R = env->getReward(sc,x,y,t);
+
+      if(doExport )
+      { 
+        bg.exportBGstate(k,0);
+        cb.CBExport(k);
+      } 
+
+          //rnd();  // just to follow same seed as Slava's code
+      if(learn_bg)
+        bg.learn(R- Rpre[cueActive]);
+
+      if(learn_cb)
+      { 
+              //if( fzero(R) )
+        { cb.learn(endpt_percieved_x, endpt_percieved_y); }
+        // else
+        // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
+      }
+
+    updateRpre(cueActive,R,0);   
+
+    }
     if(doExport)
       bg.exportWeightsOnce();
 
@@ -162,6 +168,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     return 0;
 }
 
+
 void MotorLearning::backupWeights()
 {
     bg.backupWeights();
@@ -170,6 +177,12 @@ void MotorLearning::backupWeights()
 void MotorLearning::setHabit(int cue, int action, float strength)
 {
     bg.setwm(cue,action,strength);
+}
+
+void MotorLearning::fakePrelearnReaching(int cue, int action, float habitAmpl, float tempWAmpl)
+{
+  setHabit(cue,action,habitAmpl);
+  bg.setw1(cue,action,tempWAmpl);
 }
 
 float MotorLearning::getHabit(int cue, int action)
@@ -184,11 +197,13 @@ void MotorLearning::restoreWeights(bool w12too)
 
 MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & params ) 
 {
-    init(env_,exporter_,params);
+  ffield = 0;
+  init(env_,exporter_,params);
 }
 
 MotorLearning::MotorLearning()
 {
+  ffield = 0.;
 }
 
 MotorLearning::~MotorLearning()
@@ -205,6 +220,8 @@ void MotorLearning::initParams(parmap & params)
     learn_bg = stoi(params["learn_bg"]); 
     rewardSize =  stof(params["rewardSize"]);
 
+    trainCBEveryTrial = stoi(params["trainCBEveryTrial"]);
+    retrainCB_useCurW = stoi(params["retrainCB_useCurW"]);
     textExport=stoi(params["textExport"]);
 
     nc=stoi(params["nc"]);
@@ -243,6 +260,11 @@ void MotorLearning::trainCB(float x0, float y0, float * yy, float coef, bool flu
 void MotorLearning::flushWeights(bool wmtoo)
 {
     bg.flushWeights(wmtoo);
+}
+
+void MotorLearning::setFfield(float ff)
+{
+  ffield = ff;
 }
 
 //void initWeightNormFactor(unsigned int memoryLen)  // should be called ONLY ONCE

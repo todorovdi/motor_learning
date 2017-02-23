@@ -1,7 +1,7 @@
 #include "BG_model.h"
 #include "CB_model.h"
 
-void CB_model::train(float x0, float y0, float * yy, float coef, bool flushW)
+void CB_model::train(float x0, float y0, float * yy, bool flushW, bool useCurW, float ffield)
     // coef is the coef of the addition to the existing value
 {
     float endpt[2];
@@ -16,14 +16,28 @@ void CB_model::train(float x0, float y0, float * yy, float coef, bool flushW)
         for(int l=0;l<6;l++) 
             wcb_backup[k][l] = wcb[k][l];
 
-	for(int i=0;i<6;i++) 
+
+    if(useCurW)
+    {
+      for(int k=0;k<6;k++) 
+        for(int l=0;l<6;l++) 
+        { 
+          wcb[k][l]=wcb_backup[k][l];
+        }
+    }
+    else
+    {
+      for(int k=0;k<6;k++) 
+        for(int l=0;l<6;l++) 
+        { 
+          wcb[k][l]=0;
+        }
+    }
+
+
+	  for(int i=0;i<6;i++) 
         for(int j=0;j<6;j++)
         {  
-            // flush wcb
-            for(int k=0;k<6;k++) 
-                for(int l=0;l<6;l++) 
-                    wcb[k][l]=0;
-
             // this is not needed because we add W*(activities ) to existing activities. So we actually do (Id + W)*(activities)
             //for(int l=0;l<6;l++) 
             //    wcb[l][l] = 1.;
@@ -34,11 +48,14 @@ void CB_model::train(float x0, float y0, float * yy, float coef, bool flushW)
             //x[0]=a; x[1]=b;
             
             // it influences update of DR which is basically some precalc * neuron activity
-            arm->move(yy,endpt,wcb,0.);
+            arm->move(yy,endpt,wcb,ffield);
 
             // compute error vector
-            dfwx[i][j]= (1.-coef)*dfwx[i][j] + coef*(endpt[0]-x_cb_target)/cb_init_shift_size; 
-            dfwy[i][j]= (1.-coef)*dfwy[i][j] + coef* (endpt[1]-y_cb_target)/cb_init_shift_size;
+            dfwx[i][j]= (endpt[0]-x_cb_target)/cb_init_shift_size; 
+            dfwy[i][j]= (endpt[1]-y_cb_target)/cb_init_shift_size;
+
+            // restore
+            wcb[i][j]-=cb_init_shift_size;
         }
 
     // flush cb weights so that they do not influence normal movements
@@ -49,7 +66,7 @@ void CB_model::train(float x0, float y0, float * yy, float coef, bool flushW)
             for(int l=0;l<6;l++) 
                 wcb[k][l]=0;
     }
-    else
+    else  // maybe redundant
     { 
         for(int k=0;k<6;k++) 
             for(int l=0;l<6;l++) 
@@ -57,6 +74,11 @@ void CB_model::train(float x0, float y0, float * yy, float coef, bool flushW)
     } 
 
     //learn_cb = true;
+}
+
+void CB_model::trainCurPt(float * yy, float ffield, bool flushW, bool useCurW)
+{
+    train(x_cb_target,y_cb_target,yy,flushW, useCurW, ffield);
 }
 
 void CB_model::cblearn(float dx,float dy)
@@ -85,7 +107,7 @@ void CB_model::setRandomState(float a)
 {
     for(int k=0;k<6;k++) 
         for(int l=0;l<6;l++) 
-            wcb[k][l] = a*rnd();
+            wcb[k][l] = a*2*rnd() - a;
 }
 
 void CB_model::setArm(Arm * arm_)
@@ -114,11 +136,17 @@ void CB_model::moveArm(float * y, float * out, float ffield)
     arm->move(y,out,wcb,ffield);
 }
 
-void CB_model::init(parmap & params,Exporter *exporter, Arm * arm_)
+void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
 {
     //readIni(iniCBname,params);
 
     cb_learn_rate = stof(params["cb_learn_rate"]);
     cb_init_shift_size = stof(params["cb_init_shift_size"]);
     arm = arm_;
+    exporter = exporter_;
+}
+
+void CB_model::CBExport(int k)
+{
+  exporter->CBExport(k,wcb,dfwx,dfwy);
 }
