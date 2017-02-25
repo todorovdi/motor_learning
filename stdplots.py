@@ -60,12 +60,36 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False):
             bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
             arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
 
-    rewardSpot1 = plt.Circle((0.2, 0.4), pp.rewardDist, color='b', fill=False)
-    rewardSpot2 = plt.Circle((0.0, 0.6), pp.rewardDist, color='b', fill=False)
+    xc = 0
+    yc = 0.4
+
+    import math
+
+    arrad = float(pp.paramsEnv["armReachRadius"])
+    tgtPre1 = float(pp.paramsEnv["targetPre1"])
+    xr1 = xc + arrad*math.cos(tgtPre1 )
+    yr1 = yc + arrad*math.sin(tgtPre1)
+
+
+    tgtRot =  int(pp.paramsEnv["target_rotation1"] ) 
+    tgtRev =  int(pp.paramsEnv["target_xreverse1"] ) 
+
+    if(tgtRot):
+        xr2 = xc + arrad*math.cos(tgtPre1 + pp.dirShift)
+        yr2 = yc + arrad*math.sin(tgtPre1 + pp.dirShift)
+    if(tgtRev):
+        xr2 = xc - arrad*math.cos(tgtPre1)
+        yr2 = yc + arrad*math.sin(tgtPre1)
+
+    rewardSpot1 = plt.Circle((xr1, yr1), pp.rewardDist, color='b', fill=False)
+    if(tgtRot or tgtRev):
+        rewardSpot2 = plt.Circle((xr2, yr2), pp.rewardDist, color='r', fill=False)
 
     learn_bg = int(pp.paramsEnv["learn_bg"] )
     if(learn_bg>0):
         ax.add_artist(rewardSpot1)
+        if(tgtRot or tgtRev):
+            ax.add_artist(rewardSpot2)
 #        ax.add_artist(rewardSpot2)
 
 

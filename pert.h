@@ -5,7 +5,7 @@
 #include "environment.h"
 
 
-class testExperimentEnv: public Environment
+class perturbationExperimentEnv: public Environment
 {
     float targetPre1; // in degrees
     float targetPre2;  // in degrees
@@ -31,6 +31,8 @@ class testExperimentEnv: public Environment
     bool action_change1;
     bool endpoint_rotation1;
     bool target_rotation1;
+    bool target_xreverse1;
+
     bool action_change2;
     bool endpoint_rotation2;
     bool target_rotation2;
@@ -59,8 +61,8 @@ class testExperimentEnv: public Environment
     //void setParams();
     int deg2action(float degAngle);
 
-    testExperimentEnv(parmap & params, int num_sess, unsigned int sess_seed);
-    ~testExperimentEnv();
+    perturbationExperimentEnv(parmap & params, int num_sess, unsigned int sess_seed);
+    ~perturbationExperimentEnv();
 
     // experiment-specific
     void initCBdir(float dir, bool resetState);

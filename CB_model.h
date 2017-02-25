@@ -17,6 +17,7 @@ class CB_model
     float cb_learn_rate;   // learning rate for the CB 
     float cb_init_shift_size; // stepsize used for computation of DF in cerebellum
     float x_cb_target, y_cb_target;  // current CB target
+    float updateCBStateDist;
 
     float wcb[6][6];                 // current CB state
     float dfwx[6][6],dfwy[6][6];     // CB state corrections, corresponding to the current CB target

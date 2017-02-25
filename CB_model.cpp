@@ -90,7 +90,12 @@ void CB_model::cblearn(float dx,float dy)
 
 void CB_model::learn(float x,float y)
 {
-    cblearn(x-x_cb_target, y-y_cb_target);
+  float dx = x-x_cb_target;
+  float dy = y-y_cb_target;
+  if( sqrt(dx*dx +dy*dy)<updateCBStateDist )
+  { 
+    cblearn(dx, dy);
+  }
 }
 
 void CB_model::flush()
@@ -142,6 +147,7 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
 
     cb_learn_rate = stof(params["cb_learn_rate"]);
     cb_init_shift_size = stof(params["cb_init_shift_size"]);
+    updateCBStateDist = stof(params["updateCBStateDist"]);
     arm = arm_;
     exporter = exporter_;
 }

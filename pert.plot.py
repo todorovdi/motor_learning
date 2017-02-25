@@ -333,6 +333,8 @@ def printParams(fig,pos):
     paramsToPlot.append("randomCBStateInit")
     paramsToPlot.append("randomCBStateInitAmpl")
     paramsToPlot.append("trainCBEveryTrial")
+    paramsToPlot.append("retrainCB_useCurW")
+    paramsToPlot.append("updateCBStateDist")
     paramsToPlot.append("")
     paramsToPlot.append("wmmax")
     paramsToPlot.append("wmmax_action")
@@ -345,6 +347,7 @@ def printParams(fig,pos):
     paramsToPlot.append("finalNoiseAmpl")
     paramsToPlot.append("")
     paramsToPlot.append("target_rotation1")
+    paramsToPlot.append("target_xreverse1")
     paramsToPlot.append("cue_change1")
     paramsToPlot.append("action_change1")
     paramsToPlot.append("endpoint_rotation1")
@@ -405,7 +408,7 @@ else:
 #print 'Argument List:', str(sys.argv)
 
 fnames = []
-matchStr = dat_basename + '*_arm_*.dat'
+matchStr = '*' + dat_basename + '*_arm_*.dat'
 print 'matching string for *.dat files:', matchStr
 for filename in os.listdir(pp.out_dir):
     if fnmatch.fnmatch(filename, matchStr):

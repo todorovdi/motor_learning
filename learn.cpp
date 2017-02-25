@@ -24,6 +24,10 @@
 #include "galea.h"
 #endif
 
+#ifdef  BUILD_PERT
+#include "pert.h"
+#endif
+
 #include <time.h>
 
 

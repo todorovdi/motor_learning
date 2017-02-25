@@ -1,4 +1,4 @@
-#include "galea.h"
+#include "pert.h"
 #include <boost/program_options.hpp>
 
 #define ACTION_CHANGE_SECOND
@@ -9,7 +9,7 @@ void runExperiment(int argc, char** argv)
     po::options_description desc("Options");
 
     parmap paramsPre;
-    readIni("galea.ini",paramsPre);
+    readIni("pert.ini",paramsPre);
     parmap::iterator it = paramsPre.begin();
     for(;it!=paramsPre.end();it++)
     {
@@ -48,7 +48,7 @@ void runExperiment(int argc, char** argv)
     { 
         paramsEnvFile =vm["iniEnv"].as<string>();
         if(!paramsEnvFile.length())
-            paramsEnvFile = "galea.ini";
+            paramsEnvFile = "pert.ini";
     }
 
     parmap params;
@@ -122,6 +122,7 @@ void runExperiment(int argc, char** argv)
     //    params[s] = vm[s].as<string>();
 
     cout<<"pdfSuffix="<<params["pdfSuffix"]<<endl;
+    params["datPrefix"] = params["pdfSuffix"]; 
 
     //int nsessions = vm["n"].as<int>(); 
     //params["nsessions"] = to_string(nsessions); 
@@ -170,13 +171,13 @@ void runExperiment(int argc, char** argv)
         srand(seeds[i]);   // it happens in parallel threads, I hope
         cout<<"seed number "<<i<<" is "<<seeds[i]<<endl;
         cout<<"sess num "<<i<<" rnd is "<<rnd()<<endl;
-        testExperimentEnv te(params,i,seeds[i]);
+        perturbationExperimentEnv te(params,i,seeds[i]);
         te.runSession();
     }
 }
 
 // should output everything to files
-void testExperimentEnv::runSession()
+void perturbationExperimentEnv::runSession()
 {
     ml.flushWeights(true); 
 //    if(prelearnEachTime)
@@ -199,8 +200,9 @@ void testExperimentEnv::runSession()
 //        ml.setCBlearning(true);
 //#endif
 
-        string prefix = string("BG")+to_string(learn_bg) +  string("_CB")+to_string(learn_cb) + string("_learnRate_") + to_string(cb_learn_rate) +  string("_rot_")+to_string(dirShift)+string("_target_")+to_string(targetPre1)+string("_sess_seed_")+to_string(sess_seed);
+        //string prefix = string("BG")+to_string(learn_bg) +  string("_CB")+to_string(learn_cb) + string("_learnRate_") + to_string(cb_learn_rate) +  string("_rot_")+to_string(dirShift)+string("_target_")+to_string(targetPre1)+string("_sess_seed_")+to_string(sess_seed);
         //string putInBeg = to_string(dirShift)+string("\n")+to_string(targetPre1) + string("\n");
+        string prefix = params["datPrefix"];
         exporter.exportInit(prefix,string("_numSess_")+std::to_string(num_sess),"");
         exporter.exportParams(params);
 
@@ -226,8 +228,12 @@ void testExperimentEnv::runSession()
         { 
           if(target_rotation1)
           { 
-              initCBdir(targetPre1+dirShift,false);
+            initCBdir(targetPre1+dirShift,false);
           } 
+          else if(target_xreverse1)
+          {
+            initCBdir(180-targetPre1,false);
+          }
           if(randomCBStateInit)
           {
             ml.setRandomCBState(randomCBStateInitAmpl);
@@ -236,7 +242,7 @@ void testExperimentEnv::runSession()
 
         if(stoi(params["trainWith_force_field1"]))
           ml.setFfield(stof(params["force_field1"]));
-        if(target_rotation1 && learn_cb)
+        if( (target_rotation1 || target_xreverse1) && learn_cb)
             initCBdir(targetPre1,false);
         experimentPhase = ADAPT1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
@@ -279,7 +285,7 @@ void testExperimentEnv::runSession()
         exporter.exportClose();
 }
 
-void testExperimentEnv::prelearn(int n, float * addInfo)
+void perturbationExperimentEnv::prelearn(int n, float * addInfo)
 {
     ml.flushWeights(true);
     experimentPhase = PRELEARN;
@@ -352,7 +358,7 @@ void testExperimentEnv::prelearn(int n, float * addInfo)
     ml.backupWeights();
 }
 
-void testExperimentEnv::initCBdir(float dir, bool resetState)
+void perturbationExperimentEnv::initCBdir(float dir, bool resetState)
 {
     float xc,yc;
     ml.getReachCenterPos(xc,yc);
@@ -366,12 +372,12 @@ void testExperimentEnv::initCBdir(float dir, bool resetState)
     ml.trainCB(x0,y0,yylast,1.,resetState);
 }
 
-int testExperimentEnv::deg2action(float degAngle)
+int perturbationExperimentEnv::deg2action(float degAngle)
 {
     return int(float(degAngle) / 360. * 100.);
 }
 
-int testExperimentEnv::turnOnCues(float * cues)
+int perturbationExperimentEnv::turnOnCues(float * cues)
 { 
     int cueInd=-100;     
     for(int i=0; i<nc; i++)
@@ -404,7 +410,7 @@ int testExperimentEnv::turnOnCues(float * cues)
     return cueInd;
 }
 
-float testExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *addInfo)
+float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *addInfo)
 {
     float target = 0;
     float rot = 0;
@@ -427,6 +433,8 @@ float testExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *ad
                 rot = dirShift;
             if(target_rotation1)
                 target = targetPre1+dirShift;
+            else if(target_xreverse1)   // here we suppose tragetPre1 < 180
+                target = 180-targetPre1;
             else
                 target = targetPre1; 
             if(endpoint_xreverse1)
@@ -520,7 +528,7 @@ float testExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *ad
     return sc;
 }
 
-float testExperimentEnv::getReward(float sc, float * x,float * y, float & param)
+float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float & param)
 {
     float R = 0;
 
@@ -543,7 +551,7 @@ float testExperimentEnv::getReward(float sc, float * x,float * y, float & param)
 }  
 
 //    string paramsEnvFile, int num_sess_,float tgt,int learn_cb_,float cb_learn_rate_,unsigned int seed
-testExperimentEnv::testExperimentEnv(parmap & params,int num_sess_,unsigned int sess_seed_):Environment(params,num_sess_)
+perturbationExperimentEnv::perturbationExperimentEnv(parmap & params,int num_sess_,unsigned int sess_seed_):Environment(params,num_sess_)
 {
     sess_seed = sess_seed_;
     params["sess_seed"] = to_string(sess_seed);
@@ -559,9 +567,11 @@ testExperimentEnv::testExperimentEnv(parmap & params,int num_sess_,unsigned int 
     action_change1 = stoi(params["action_change1"]);
     action_change2 = stoi(params["action_change2"]);
     endpoint_rotation1 = stoi(params["endpoint_rotation1"]);
-    target_rotation1 = stoi(params["target_rotation1"]);
     endpoint_rotation2 = stoi(params["endpoint_rotation2"]);
     target_rotation2 = stoi(params["target_rotation2"]);
+    target_rotation1 = stoi(params["target_rotation1"]);
+    target_xreverse1 = stoi(params["target_xreverse1"]);
+
     sector_reward = stoi(params["sector_reward"]);
     cue_change1 = stoi(params["cue_change1"]);
     cue_change2 = stoi(params["cue_change2"]);
@@ -608,6 +618,6 @@ testExperimentEnv::testExperimentEnv(parmap & params,int num_sess_,unsigned int 
     phasesNames.push_back("PRELEARN");
 }
 
-testExperimentEnv::~testExperimentEnv()
+perturbationExperimentEnv::~perturbationExperimentEnv()
 {
 }
