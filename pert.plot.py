@@ -89,7 +89,7 @@ def doStats(fnames,n,xerr):
 
 ###############################
 
-def genFigureGalea(fnames,outname):
+def genFigurePert(fnames,outname):
     fileToPlot = fnames[0]
     armData = armFileRead(fileToPlot)
     #armData = np.loadtxt(fnames[0])
@@ -111,6 +111,11 @@ def genFigureGalea(fnames,outname):
     #ax_.set_xlabel("x-transformed")
     ax_.set_xticklabels(['ADAPT1','POST1'])
     ax_.xaxis.grid(True,color='w')
+
+    #lines = ax_.get_lines()
+    #lines = ax.get_legend().get_lines()
+    #for line in lines:
+    #    line.set_dashes([20,170])
 
     ax = axs[0,1]
     genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'))
@@ -212,7 +217,7 @@ def genFigureGalea(fnames,outname):
         plt.close()
 
     #plt.savefig(pp.out_dir_pdf+outname+".pdf")
-    #plt.close(fig)
+    plt.close(fig)
 
     #plt.clf()
     #plt.cla()
@@ -397,7 +402,7 @@ def printParams(fig,pos):
 #exec(open('plotparams.py').read()) 
 #
 
-pp.paramsInit('galea.ini') 
+pp.paramsInit('pert.ini') 
 
 import sys
 print 'Python plotting number of arguments: ', len(sys.argv)
@@ -408,7 +413,7 @@ else:
 #print 'Argument List:', str(sys.argv)
 
 fnames = []
-matchStr = '*' + dat_basename + '*_arm_*.dat'
+matchStr = '*' + dat_basename + '*_arm*.dat'
 print 'matching string for *.dat files:', matchStr
 for filename in os.listdir(pp.out_dir):
     if fnmatch.fnmatch(filename, matchStr):
@@ -427,7 +432,7 @@ else:
     pp.paramsInit(filename.replace("_arm","_modParams"),False)
 
 
-    genFigureGalea(fnames,'galea_'+pp.paramsEnv["pdfSuffix"])
+    genFigurePert(fnames,'pert_'+pp.paramsEnv["pdfSuffix"])
 
     if pdfForEachSession:
         print "Generate pictures for each seed"
@@ -438,7 +443,7 @@ else:
             modParamsFileName = filename.replace("_arm","_modParams")
             print "making graph "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
             pp.paramsInit(modParamsFileName,False)
-            genFigureGalea([filename],name);
+            genFigurePert([filename],name);
 
 #print fnames
 

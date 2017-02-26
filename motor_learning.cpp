@@ -235,6 +235,11 @@ void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & params)
 
     exporter = exporter_;
 
+    if( stoi(params["learn_bg"]) == 0 )
+    {
+      params["updateCBStateDist"] = to_string(10.);
+    }
+
     arm.init(params);
     cb.init(params,exporter,&arm);
     bg.init(params,exporter);

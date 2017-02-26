@@ -162,6 +162,16 @@ def genBGActivityPlot(fig,ax,fname,cols=range(0,300)):
     #ax.set_ylabel('y   d1   d2   gpe   gpi',rotation=90)
     ax.set_ylabel('y   d1   d2',rotation=90)
 
+
+#[8, 4, 2, 4, 2, 4] means
+#
+#    8 points on, (dash)
+#    4 points off,
+#    2 points on, (dot)
+#    4 points off,
+#    2 points on, (dot)
+#    4 points off.
+
     addColorBar(fig,ax_=ax,dat=pcol,wd=0.01)
 
 def genBGWeightsPlot(fig,ax,fname,cue=0):

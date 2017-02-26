@@ -39,6 +39,12 @@ void runExperiment(int argc, char** argv)
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     //notify(vm);
+    //
+    cout<<"cmd line args are "<<endl;
+    for(int i=0;i<argc;i++)
+    {
+      cout<<argv[i]<<endl;
+    }
 
     if (vm.count("help"))
       std::cout << desc << '\n';
@@ -202,8 +208,8 @@ void perturbationExperimentEnv::runSession()
 
         //string prefix = string("BG")+to_string(learn_bg) +  string("_CB")+to_string(learn_cb) + string("_learnRate_") + to_string(cb_learn_rate) +  string("_rot_")+to_string(dirShift)+string("_target_")+to_string(targetPre1)+string("_sess_seed_")+to_string(sess_seed);
         //string putInBeg = to_string(dirShift)+string("\n")+to_string(targetPre1) + string("\n");
-        string prefix = params["datPrefix"];
-        exporter.exportInit(prefix,string("_numSess_")+std::to_string(num_sess),"");
+        string prefix = params["datPrefix"] + string("_numSess_")+std::to_string(num_sess);
+        exporter.exportInit(prefix,"","");
         exporter.exportParams(params);
 
         params["dat_basename"] = prefix;
