@@ -63,6 +63,12 @@ void MotorLearning::setCBtarget(float x, float y)
     cb.setCBtarget(x,y);
 }
 
+void MotorLearning::getCBtarget(float & x, float & y)
+{
+    x = x_cb_target;
+    y = y_cb_target;
+}
+
 void MotorLearning::setRandomCBState(float a)
 {
     cb.setRandomState(a);
@@ -128,7 +134,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
           cb.trainCurPt(y,ffield,false,retrainCB_useCurW);  // flushW= false, useCurW = true
       }
 
-      float addInfoItem[5];
+      float addInfoItem[7];
       float sc = env->getSuccess(x,y,k,addInfoItem);   // here arm export happens
       float endpt_percieved_x = addInfoItem[1];
       float endpt_percieved_y = addInfoItem[2];
@@ -151,7 +157,16 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       if(learn_cb)
       { 
               //if( fzero(R) )
-        { cb.learn(endpt_percieved_x, endpt_percieved_y); }
+        float dx = endpt_percieved_x-x_cb_target;
+        float dy = endpt_percieved_y-y_cb_target;
+        float mod_dx = dx*cos(rotateErr) - dy*sin(rotateErr);
+        float mod_dy = dx*sin(rotateErr) + dy*cos(rotateErr);
+        if(xreverseErr)
+          mod_dx = -mod_dx;
+        if(modError)
+          cb.learn(mod_dx, mod_dy); 
+        else
+          cb.learn(dx,dy);
         // else
         // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
       }
@@ -199,11 +214,17 @@ MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & 
 {
   ffield = 0;
   init(env_,exporter_,params);
+  x_cb_target = 0;
+  y_cb_target = 0;
+  modError = false;
 }
 
 MotorLearning::MotorLearning()
 {
   ffield = 0.;
+  x_cb_target = 0;
+  y_cb_target = 0;
+  modError = false;
 }
 
 MotorLearning::~MotorLearning()
@@ -224,8 +245,16 @@ void MotorLearning::initParams(parmap & params)
     retrainCB_useCurW = stoi(params["retrainCB_useCurW"]);
     textExport=stoi(params["textExport"]);
 
+    rotateErr=stof(params["rotateErr"]); ;
+    xreverseErr=stoi(params["xreverseErr"]); ;
+
     nc=stoi(params["nc"]);
     na=stoi(params["na"]);
+}
+
+void MotorLearning::setModError(bool me)
+{
+  modError = me;
 }
 
 void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & params)
@@ -259,7 +288,9 @@ void MotorLearning::moveArm(float * PMC_activity, float * out, float ffield)
 
 void MotorLearning::trainCB(float x0, float y0, float * yy, float coef, bool flushW) 
 {
-    cb.train(x0,y0,yy,coef,flushW);
+  x_cb_target = x0;
+  y_cb_target = y0;
+  cb.train(x0,y0,yy,coef,flushW);
 }
 
 void MotorLearning::flushWeights(bool wmtoo)

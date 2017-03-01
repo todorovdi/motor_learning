@@ -31,5 +31,5 @@ pert: $(addc2) $(addh2)
 	g++ -std=c++11 -D BUILD_PERT  -g $(addc2)  -o   $@_dbg     -lboost_system   -lboost_program_options
 
 pert_prl: $(addc2) $(addh2)
-	g++ -std=c++11 -D BUILD_PERT -fopenmp -O2 $(addc2) -o   $@        -lboost_system -lboost_program_options
+	g++ -std=c++11 -D BUILD_PERT -D PARALLEL -fopenmp -O2 $(addc2) -o   $@        -lboost_system -lboost_program_options
 #	g++ -std=c++11 -D BUILD_GALEA -fopenmp -g $(addc2)  -o   $@_dbg     -lboost_system   -lboost_program_options

@@ -61,7 +61,7 @@ class perturbationExperimentEnv: public Environment
     //void setParams();
     int deg2action(float degAngle);
 
-    perturbationExperimentEnv(parmap & params, int num_sess, unsigned int sess_seed);
+    perturbationExperimentEnv(const parmap & params, int num_sess, unsigned int sess_seed);
     ~perturbationExperimentEnv();
 
     // experiment-specific

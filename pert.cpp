@@ -1,6 +1,10 @@
 #include "pert.h"
 #include <boost/program_options.hpp>
 
+#ifdef PARALLEL
+#include <omp.h>
+#endif
+
 #define ACTION_CHANGE_SECOND
 
 void runExperiment(int argc, char** argv)
@@ -8,6 +12,7 @@ void runExperiment(int argc, char** argv)
     namespace po = boost::program_options;
     po::options_description desc("Options");
 
+    // possible command line params are taken from pert.ini file. Even if you supply another iniEnv later
     parmap paramsPre;
     readIni("pert.ini",paramsPre);
     parmap::iterator it = paramsPre.begin();
@@ -84,48 +89,10 @@ void runExperiment(int argc, char** argv)
       string s = it->first;
       if(vm.count(s) )
       { 
-        //cout<<s<<"  "<<vm[s].as<string>()<<endl;
         params[s] = vm[s].as<string>();
       }
     }
 
-    //float targetPre1 = -1;
-    //if (vm.count("targetPre1"))
-    //{
-    //    targetPre1 = vm["targetPre1"].as<float>();
-    //    params["targetPre1"] = to_string(targetPre1);
-    //    params["targetPre2"] = to_string(targetPre1);
-    //}
-
-    //// TODO: make for loop
-    //string s = "learn_cb";
-    //if(vm.count(s) )
-    //    params[s] = to_string(vm[s].as<int>());
-    //s = "learn_bg";
-    //if(vm.count(s) )
-    //    params[s] = to_string(vm[s].as<int>());
-    //s = "cb_learn_rate";
-    //if(vm.count(s))
-    //    params[s] = to_string(vm[s].as<int>());
-    //s = "endpoint_rotation1";
-    //if(vm.count(s))
-    //    params[s] = to_string(vm[s].as<int>());
-    //s = "endpoint_xreverse1";
-    //if(vm.count(s))
-    //    params[s] = to_string(vm[s].as<int>());
-    //s = "force_field1";
-    //if(vm.count(s))
-    //    params[s] = to_string(vm[s].as<float>());
-    //s = "action_change1";
-    //if(vm.count(s))
-    //    params[s] = to_string(vm[s].as<int>());
-    //s = "cue_change1";
-    //if(vm.count(s))
-    //    params[s] = to_string(vm[s].as<int>());
-
-    //s = "pdfSuffix";
-    //if(vm.count(s))
-    //    params[s] = vm[s].as<string>();
 
     cout<<"pdfSuffix="<<params["pdfSuffix"]<<endl;
     params["datPrefix"] = params["pdfSuffix"]; 
@@ -154,6 +121,7 @@ void runExperiment(int argc, char** argv)
     cout<<"nsessions is "<<nsessions<<endl;
 
     vector<unsigned int> seeds(nsessions);
+    vector<parmap> paramsThreadSeparate(nsessions);   // so that params modifications made in one thread do not affect othere parallel running sessions
     if(nsessions > 1)
     { 
         for(int i = 0; i<nsessions; i++)
@@ -165,19 +133,21 @@ void runExperiment(int argc, char** argv)
     {
         seeds[0] = seed;
     }
+    for(int i = 0; i<nsessions; i++)
+      paramsThreadSeparate[i] = params;
 
 
     // parallel works only if compiled with a special flag. At least with gcc
 #pragma omp parallel for
     for(int i = 0; i<nsessions; i++)
     { 
-#ifdef RND_BOOST
+#ifdef RND_BOOST    // flag set in suppl.h
         rng.seed(seeds[i]);
 #endif
         srand(seeds[i]);   // it happens in parallel threads, I hope
         cout<<"seed number "<<i<<" is "<<seeds[i]<<endl;
         cout<<"sess num "<<i<<" rnd is "<<rnd()<<endl;
-        perturbationExperimentEnv te(params,i,seeds[i]);
+        perturbationExperimentEnv te(paramsThreadSeparate[i],i,seeds[i]);
         te.runSession();
     }
 }
@@ -185,6 +155,7 @@ void runExperiment(int argc, char** argv)
 // should output everything to files
 void perturbationExperimentEnv::runSession()
 {
+  //cout<<"runSession thread Num "<<omp_get_thread_num()<<endl;
     ml.flushWeights(true); 
 //    if(prelearnEachTime)
     //     Maybe we have to do longer prelarn
@@ -194,25 +165,15 @@ void perturbationExperimentEnv::runSession()
         prelearn(numTrialsPrelearn, addInfoTemp);
     }
 
-    // now it is set via ini file
-//    ml.setBGlearning(false);
-//    ml.setCBlearning(false);
-
-//#ifdef   BG_ENABLED
-//        ml.setBGlearning(true);
-//#endif
-//
-//#ifdef   CEREBELLUM_ENABLED
-//        ml.setCBlearning(true);
-//#endif
-
-        //string prefix = string("BG")+to_string(learn_bg) +  string("_CB")+to_string(learn_cb) + string("_learnRate_") + to_string(cb_learn_rate) +  string("_rot_")+to_string(dirShift)+string("_target_")+to_string(targetPre1)+string("_sess_seed_")+to_string(sess_seed);
-        //string putInBeg = to_string(dirShift)+string("\n")+to_string(targetPre1) + string("\n");
         string prefix = params["datPrefix"] + string("_numSess_")+std::to_string(num_sess);
         exporter.exportInit(prefix,"","");
+
         exporter.exportParams(params);
 
         params["dat_basename"] = prefix;
+
+        float rotateErr=stof(params["rotateErr"]); ;
+        bool xreverseErr=stoi(params["xreverseErr"]); ;
 
         // if we did prelearn above
         ml.restoreWeights(true);  // false == not restoring w1,w2
@@ -221,20 +182,24 @@ void perturbationExperimentEnv::runSession()
         //float rpre = 3.;
         ml.setRpreMax();   // if we use only CB not need this
 
-        if(learn_cb)
+        int offset = 0;
+        if(numTrialsPre > 0)
         { 
-            initCBdir(targetPre1,true);
+          if(learn_cb)
+          { 
+              initCBdir(targetPre1,true);
+          }
+          experimentPhase = PRE1;
+          cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
+          ml.makeTrials(numTrialsPre,0,false,0);
+          offset = numTrialsPre;
         }
-        experimentPhase = PRE1;
-        cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        ml.makeTrials(numTrialsPre,0,false,0);
-        int offset = numTrialsPre;
 
         if(learn_cb)
         { 
           if(target_rotation1)
           { 
-            initCBdir(targetPre1+dirShift,false);
+            initCBdir(angDegAdd(targetPre1,dirShift),false);
           } 
           else if(target_xreverse1)
           {
@@ -248,19 +213,28 @@ void perturbationExperimentEnv::runSession()
 
         if(stoi(params["trainWith_force_field1"]))
           ml.setFfield(stof(params["force_field1"]));
-        if( (target_rotation1 || target_xreverse1) && learn_cb)
-            initCBdir(targetPre1,false);
+        if(fabs(rotateErr) > EPS || xreverseErr)
+          ml.setModError(true);
         experimentPhase = ADAPT1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         ml.makeTrials(numTrialsAdapt,0,false,offset);
         offset += numTrialsAdapt;
 
-        if(stoi(params["trainWith_force_field1"]))
-          ml.setFfield(0.);
-        experimentPhase = POST1;
-        cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        ml.makeTrials(numTrialsPost,0,false,offset);
-        offset += numTrialsPost;
+        if(numTrialsPost > 0)
+        { 
+          if(stoi(params["trainWith_force_field1"]))
+            ml.setFfield(0.);
+          if(learn_cb)
+          { 
+              initCBdir(targetPre1,true);
+          }
+          ml.setModError(false);
+          experimentPhase = ADAPT1;
+          experimentPhase = POST1;
+          cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
+          ml.makeTrials(numTrialsPost,0,false,offset);
+          offset += numTrialsPost;
+        } 
 
 //#ifdef TWO_PARTS
         if(numPhases > 3)
@@ -273,7 +247,7 @@ void perturbationExperimentEnv::runSession()
             offset+= numTrialsPre;
 
             if(target_rotation2 && learn_cb)
-                initCBdir(targetPre2+dirShift,false);
+                initCBdir(angDegAdd(targetPre2,dirShift),false);
 
             experimentPhase = ADAPT2;
             cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
@@ -301,9 +275,9 @@ void perturbationExperimentEnv::prelearn(int n, float * addInfo)
     { 
         wmmax = wmmax_fake_prelearn;
         int dirIndPre1 = deg2action(targetPre1);
-        int dirIndAdapt1 = deg2action(targetPre1+dirShift);
+        int dirIndAdapt1 = deg2action(angDegAdd(targetPre1,dirShift));
         int dirIndPre2 = deg2action(targetPre2);
-        int dirIndAdapt2 = deg2action(targetPre2+dirShift);
+        int dirIndAdapt2 = deg2action(angDegAdd(targetPre2,dirShift));
 
 
         float tempWAmpl = fake_prelearn_tempWAmpl;
@@ -336,7 +310,7 @@ void perturbationExperimentEnv::prelearn(int n, float * addInfo)
         ml.setBGlearning(true);
         //ml.setCBlearning(true);
 
-        exporter.exportInit("prelearn",to_string(num_sess),"");
+        exporter.exportInit("prelearn_",to_string(num_sess),"");
         ml.makeTrials(n,addInfo,true,0,false);  // last arg is whether we do export, or not
         exporter.exportClose();
 
@@ -372,6 +346,8 @@ void perturbationExperimentEnv::initCBdir(float dir, bool resetState)
     float radAngle = 2*M_PI*dir/360;
     float x0=xc+armReachRadius*cos(radAngle);
     float y0=yc+armReachRadius*sin(radAngle);
+
+    //cout<<"train CB for pt= "<<x0<<"  "<<y0<<endl;
 
     float yylast[na] = {}; 
     yylast[deg2action(dir)] = 1.;
@@ -438,7 +414,7 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
             if(endpoint_rotation1)
                 rot = dirShift;
             if(target_rotation1)
-                target = targetPre1+dirShift;
+                target = angDegAdd(targetPre1,dirShift);
             else if(target_xreverse1)   // here we suppose tragetPre1 < 180
                 target = 180-targetPre1;
             else
@@ -455,7 +431,7 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
             if(endpoint_rotation1)
                 rot = dirShift;
             if(target_rotation2)
-                target = targetPre2+dirShift;
+                target = angDegAdd(targetPre2,dirShift);
             else
                 target = targetPre2; 
             break;
@@ -530,6 +506,11 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
     addInfo[1] = xcur;
     addInfo[2] = ycur;
 
+    float xcbt,ycbt;
+    ml.getCBtarget(xcbt,ycbt); // pass params as references
+    addInfo[5] = xcbt;
+    addInfo[6] = ycbt;
+
     exporter.exportArm(k,xcur,ycur,x0,y0,xc,yc,addInfo);  // export percieved point
     return sc;
 }
@@ -557,7 +538,7 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
 }  
 
 //    string paramsEnvFile, int num_sess_,float tgt,int learn_cb_,float cb_learn_rate_,unsigned int seed
-perturbationExperimentEnv::perturbationExperimentEnv(parmap & params,int num_sess_,unsigned int sess_seed_):Environment(params,num_sess_)
+perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int num_sess_,unsigned int sess_seed_):Environment(params_,num_sess_)
 {
     sess_seed = sess_seed_;
     params["sess_seed"] = to_string(sess_seed);
@@ -594,7 +575,6 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params,int num_ses
 
     targetPre1        = stof(params["targetPre1"]);
     targetPre2        = stof(params["targetPre2"]);
-    dirShift          = stof(params["dirShift"]);
 
     learn_cb = stoi(params["learn_cb"]); // it may look stupid to do so right after prev. line but note that the same parameters object are passed to MotorLearning
     learn_bg = stoi(params["learn_bg"]); 
@@ -604,7 +584,9 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params,int num_ses
     ml.init(this,&exporter,params);  // we did it once in the Environemnt constructor but we might have changed learn_cb so do it again
 
 
-    numTrials = numTrialsPre*2+numTrialsAdapt*2+numTrialsPost*2;
+    numTrials = numTrialsPre+numTrialsAdapt+numTrialsPost;
+    if(numPhases == 6)
+      numTrials = numTrialsPre*2+numTrialsAdapt*2+numTrialsPost*2;
 
     sector_thickness = stof(params["sector_thickness"]);
     sector_width = stof(params["sector_width"]);

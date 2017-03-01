@@ -4,6 +4,10 @@
 #include <sys/types.h>
 #include <pwd.h>
 
+#ifdef PARALLEL
+#include <omp.h>
+#endif
+
 void Exporter::init(string prefix_,string suffix_,string dir_)   // prefix = "RC" for example
 {
   prefix = prefix_;
@@ -27,6 +31,10 @@ void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix
 {
   prefix_for_cont = prefix;
   suffix_for_cont = suffix;
+
+  this->suffix = suffix;
+  this->prefix = prefix;
+
     foutPerTrial.open( dir+prefix+string("_output")+suffix+string(".dat")) ;
     foutVarDyn.open  ( dir+prefix+string("_var_dyn")+suffix+string(".dat") );
     foutVarDyn2.open  ( dir+prefix+string("_var_dyn2")+suffix+string(".dat") );
@@ -56,6 +64,9 @@ void Exporter::exportParams(parmap & params)
     {
         foutModParams<<it->first<<"="<<it->second<<"\n";
     }
+//#ifdef PARALLEL
+//    cout<<"exporter thread Num "<<omp_get_thread_num()<<"  dirShift "<<params["dirShift"]<<" for prefix "<<prefix<<endl;
+//#endif
     foutModParams.flush();
 }
 
@@ -215,6 +226,10 @@ void Exporter::exportWeightsOnce(float ** w1,float ** w2,float **wm)
 void Exporter::exportArm(unsigned int trialNum,float xcur,float ycur, float x0, float y0, float xc, float yc, float * addInfo)
 {
     float d = addInfo[0];
+    float x_actual = addInfo[3];
+    float y_actual = addInfo[4];
+    float xcbt = addInfo[5];
+    float ycbt = addInfo[6];
     unsigned int k = trialNum;
     foutArm<<k<<'\t'       //1
            <<xcur<<'\t'    //2
@@ -224,6 +239,10 @@ void Exporter::exportArm(unsigned int trialNum,float xcur,float ycur, float x0, 
            <<d   <<'\t'    //6
            <<xc  <<'\t'    //7
            <<yc  <<'\t'    //8
+           <<x_actual  <<'\t'    //9
+           <<y_actual  <<'\t'    //10
+           <<xcbt  <<'\t'    //11
+           <<ycbt  <<'\t'    //12
            <<endl;
 }
 

@@ -21,7 +21,7 @@ def armFileRead(fname):
     armData = np.loadtxt(fname,skiprows=pp.armFileSkiprows)
     return armData
 
-def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False):
+def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_actual=[],cbtgt_actual=[]):
     ax.set_xticks(np.arange(-0.5,0.5,0.1))
     ax.set_yticks(np.arange(0.0,0.9,0.1))
 
@@ -42,20 +42,36 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False):
     ax.grid()
     ax.set_title('Reaching points '+title)
 
+    lastx=0
+    lasty=0
     if len(xs)<=30:
         for i, x, y in zip(nums, xs, ys):
-            ax.annotate(int(i), (x,y))
+            if (math.sqrt( (lastx-x)**2 + (lasty-y)**2 ) > 0.03):
+                ax.annotate(int(i), (x,y))
+            lastx = x
+            lasty = y
 
     addxs = [0.]
     addys = [0.4]
-    addnum = [0]
+    #addnum = [0]
     addlabel = ["center"]
+
+    learn_cb = int(pp.paramsEnv["learn_cb"] )
+
+    if(len(cbtgt) > 0 and learn_cb):
+        addxs.append(cbtgt[0][0])
+        addys.append(cbtgt[0][1])
+        addlabel.append("CBtgt_p")
+    if(len(cbtgt_actual) > 0 and learn_cb):
+        addxs.append(cbtgt_actual[0][0])
+        addys.append(cbtgt_actual[0][1])
+        addlabel.append("CBtgt_a")
 
     # todo make additional labels for targets
     for label, x, y in zip(addlabel, addxs, addys):
         ax.annotate(
             label,
-            xy=(x, y), xytext=(-20, 20),
+            xy=(x, y), xytext=(0, -300),
             textcoords='offset points', ha='right', va='bottom',
             bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
             arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
@@ -63,33 +79,47 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False):
     xc = 0
     yc = 0.4
 
-    import math
-
-    arrad = float(pp.paramsEnv["armReachRadius"])
-    tgtPre1 = float(pp.paramsEnv["targetPre1"])
-    xr1 = xc + arrad*math.cos(tgtPre1 )
-    yr1 = yc + arrad*math.sin(tgtPre1)
-
-
     tgtRot =  int(pp.paramsEnv["target_rotation1"] ) 
     tgtRev =  int(pp.paramsEnv["target_xreverse1"] ) 
+    tgt1_defined=False
+    tgt2_defined=False
 
-    if(tgtRot):
-        xr2 = xc + arrad*math.cos(tgtPre1 + pp.dirShift)
-        yr2 = yc + arrad*math.sin(tgtPre1 + pp.dirShift)
-    if(tgtRev):
-        xr2 = xc - arrad*math.cos(tgtPre1)
-        yr2 = yc + arrad*math.sin(tgtPre1)
+    if(len(tgt) == 0):
+        arrad = float(pp.paramsEnv["armReachRadius"])
+        tgtPre1 = float(pp.paramsEnv["targetPre1"])
+        tgtPre1 = (tgtPre1 / 360.) * 2 * math.pi
+        xr1 = xc + arrad*math.cos(tgtPre1)
+        yr1 = yc + arrad*math.sin(tgtPre1)
+        tgt1_defined = True
 
-    rewardSpot1 = plt.Circle((xr1, yr1), pp.rewardDist, color='b', fill=False)
-    if(tgtRot or tgtRev):
+        if(tgtRot):
+            shiftedTgt =  tgtPre1 + ( pp.dirShift/360.) * 2 * math.pi
+            xr2 = xc + arrad*math.cos(shiftedTgt)
+            yr2 = yc + arrad*math.sin(shiftedTgt)
+            tgt2_defined = True
+        if(tgtRev):
+            xr2 = xc - arrad*math.cos(tgtPre1)
+            yr2 = yc + arrad*math.sin(tgtPre1)
+            tgt2_defined = True
+    else:
+        xr1 = tgt[0][0]
+        yr1 = tgt[0][1]
+        tgt1_defined = True
+        if(len(tgt_actual)>0):
+            tgt2_defined = True
+            xr2 = tgt_actual[0][0]
+            yr2 = tgt_actual[0][1]
+
+    if(tgt1_defined):
+        rewardSpot1 = plt.Circle((xr1, yr1), pp.rewardDist, color='b', fill=False)
+    if(tgt2_defined):
         rewardSpot2 = plt.Circle((xr2, yr2), pp.rewardDist, color='r', fill=False)
 
-    learn_bg = int(pp.paramsEnv["learn_bg"] )
-    if(learn_bg>0):
+    #learn_bg = int(pp.paramsEnv["learn_bg"] )
+    if(tgt1_defined):
         ax.add_artist(rewardSpot1)
-        if(tgtRot or tgtRev):
-            ax.add_artist(rewardSpot2)
+    if(tgt2_defined):
+        ax.add_artist(rewardSpot2)
 #        ax.add_artist(rewardSpot2)
 
 

@@ -316,8 +316,6 @@ BG_model::~BG_model()
 
 void BG_model::init(parmap & params,Exporter *exporter_)
 {
-    //params = params_;
-
     y_drive = stof(params["y_drive"]);
     y_d1 = stof(params["y_d1"]);
     y_d2 = stof(params["y_d2"]);

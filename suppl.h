@@ -50,4 +50,17 @@ inline float rnd() {
 inline float rnd() { return 1.*rand()/(RAND_MAX+1.); } 
 #endif
 
+inline float fmod(float f,float reminder) 
+{ 
+  while(f>=reminder)
+  {
+    f-= reminder;
+  }
+  return f;
+} 
+
+inline float fmodAng(float f){return fmod(f,360.);} 
+
+inline float angDegAdd(float ang1, float ang2){return fmodAng(ang1+ang2);}
+
 #endif

@@ -25,8 +25,12 @@ class MotorLearning
     float Rpre_coef;              // how much of current reward we use for the new reward prediction error
     float T;                      // integration duration max limit
     float rewardSize;
+    float rotateErr;
+    bool xreverseErr;
+    bool modError;
 
     //parmap & params;
+    float x_cb_target,y_cb_target;
 
     int na; // number of actions
     int nc; // number of cues
@@ -60,6 +64,7 @@ class MotorLearning
     void setBGlearning(bool bglearns);
     void setCBlearning(bool cblearns);
     void setFfield(float ff);
+    void setModError(bool me);
 
     // sets paritcular habit, does not flush existing habits
     void setHabit(int cue, int action, float strength);
@@ -84,6 +89,7 @@ class MotorLearning
     void flushRpre();
 
     void setCBtarget(float x, float y);
+    void getCBtarget(float & x, float & y);
     void flushCB();  // CB_model method description 
     void setRandomCBState(float amplRand);  // CB_model method description 
 

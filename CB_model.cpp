@@ -88,10 +88,8 @@ void CB_model::cblearn(float dx,float dy)
             wcb[i][j]-=cb_learn_rate*(dx*dfwx[i][j]+dy*dfwy[i][j]);
 }
 
-void CB_model::learn(float x,float y)
+void CB_model::learn(float dx,float dy)
 {
-  float dx = x-x_cb_target;
-  float dy = y-y_cb_target;
   if( sqrt(dx*dx +dy*dy)<updateCBStateDist )
   { 
     cblearn(dx, dy);

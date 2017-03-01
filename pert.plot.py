@@ -44,7 +44,7 @@ import re
 #    return params
 
 
-def getErrs(armData,xerr):
+def getErrs(armData,xerr=False):
     nums = armData[:,0]
     xs = armData[:,1]
     ys = armData[:,2]
@@ -177,7 +177,12 @@ def genFigurePert(fnames,outname):
     posLeftMargin = [0,0,xLeft-0.00,1]             # from left, from down, width, height 
     printParams(fig,posLeftMargin)
 
-    with PdfPages(pp.out_dir_pdf+outname+".pdf") as pdf:
+    if(len(fnames) == 1):
+        pdfname = pp.out_dir_pdf+outname+".pdf"
+    else:
+        pdfname = pp.out_dir_pdf+outname+"_stats_n="+str(len(fnames))+".pdf"
+
+    with PdfPages(pdfname) as pdf:
         pdf.savefig()
         plt.close()
         genReachingByPhase(fileToPlot)
@@ -223,6 +228,116 @@ def genFigurePert(fnames,outname):
     #plt.cla()
     #return armData,dirShift,targetPre1,errs
 
+def genFigurePertMulti(dat_basenames):
+    fig, axs = plt.subplots(ncols=len(dat_basenames), nrows=2, figsize=(30, 20), sharex=False, sharey=False)
+
+    for ind,dat_basename in enumerate(dat_basenames):
+        if dat_basename=="":
+            continue
+        fnames = []
+        matchStr = '*' + dat_basename + '*_arm*.dat'
+        print 'matching string for *.dat files:', matchStr
+        for filename in os.listdir(pp.out_dir):
+            if fnmatch.fnmatch(filename, matchStr):
+                fnames.append(pp.out_dir+filename)
+
+        if(len(fnames) == 0):
+            print "No .dat files found"
+            return 0
+
+        filename = fnames[0]
+
+        ree = '(.*)_\w+\.dat'
+        basename = os.path.basename(filename)
+        name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
+        pp.paramsInit(filename.replace("_arm","_modParams"),False)
+
+        fileToPlot = fnames[0]
+        armData = armFileRead(fileToPlot)
+        #armData = np.loadtxt(fnames[0])
+        nums = armData[:,0]
+        nums = nums.astype(np.int)
+        xs = armData[:,1]
+        ys = armData[:,2]
+        x_target = armData[:,3]
+        y_target = armData[:,4]
+        x_cbtgt = armData[:,10]
+        y_cbtgt = armData[:,11]
+        n = len(xs)
+        lastNum = nums[-1]
+
+        ax = axs[0,ind]
+
+        errs,SEMs = doStats(fnames,n,False)
+        #ax.errorbar(nums, means, yerr=SEMs)
+
+        if(len(fnames) == 1):
+            ax.plot(nums, errs)
+        else:
+            ax.errorbar(nums, errs, yerr=SEMs)
+
+        ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
+        ax.set_xticks(np.arange(0,n,5))
+        ax.set_yticks(np.arange(-0.9,0.9,0.1))
+        ax.set_ylim([-0.5,0.5])
+        ax.set_xlim([0,n])
+        ax.grid()
+
+        ax_ = ax.twiny()
+        #ax_.set_xlabel("x-transformed")
+        ax_.set_xlim(0, n)
+        if pp.numPhases > 3:
+            ticks = [pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt, pp.numTrialsPre+pp.numTrialsAdapt+pp.numTrialsPost, pp.numTrialsPre*2+pp.numTrialsAdapt+pp.numTrialsPost ,pp.numTrialsPre*2 + pp.numTrialsAdapt*2+pp.numTrialsPost]
+            ax_.set_xticks(ticks)
+            ax_.set_xticklabels(['ADAPT1','POST1','PRE2','ADAPT2','POST2'])
+        else:
+            ticks = [pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt]
+            ax_.set_xticks(ticks)
+            ax_.set_xticklabels(['ADAPT1','POST1'])
+
+        ax.set_xticks(ticks,minor=True)
+        ax.xaxis.grid(True, which='minor')
+
+        subphase1 = pp.numTrialsPre
+        subphase2 = subphase1 + pp.numTrialsAdapt
+        subphase3 = subphase2 + pp.numTrialsPost
+        subphase4 = subphase3 + pp.numTrialsPre
+        subphase5 = subphase4 + pp.numTrialsAdapt
+        subphase6 = subphase5 + pp.numTrialsPost
+
+        rangePre1 = range(0,subphase1)
+        rangeAdapt1 = range(subphase1,subphase2)
+        rangePost1 = range(subphase2,subphase3)
+        #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
+        genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+
+    pos1 = axs[0,0].get_position()
+    pos2 = axs[1,0].get_position()
+    xLeft = pos1.x0
+    yTop = pos1.y0+pos1.height
+    posLeftMargin = [0,0,xLeft-0.00,1]             # from left, from down, width, height 
+    printParams(fig,posLeftMargin)
+
+    bb = 'pert_'+pp.paramsEnv["pdfSuffix"]
+    bb = re.sub('bg._cb.', '', bb)
+    
+    if(len(fnames) == 1):
+        pdfname = pp.out_dir_pdf+bb+"_multi.pdf"
+    else:
+        pdfname = pp.out_dir_pdf+bb+"_stats_n_="+str(len(fnames))+"_multi.pdf"
+
+    print 'multi',pdfname
+    with PdfPages(pdfname) as pdf:
+        pdf.savefig()
+        plt.close()
+
+    #plt.savefig(pp.out_dir_pdf+outname+".pdf")
+    plt.close(fig)
+
+    #plt.clf()
+    #plt.cla()
+    #return armData,dirShift,targetPre1,errs
+
 def genReachingByPhase(fname):
     fileToPlot = fname
     armData = armFileRead(fileToPlot)
@@ -230,6 +345,12 @@ def genReachingByPhase(fname):
     nums = nums.astype(np.int)
     xs = armData[:,1]
     ys = armData[:,2]
+    x_target = armData[:,3]
+    y_target = armData[:,4]
+    x_actual = armData[:,8]
+    y_actual = armData[:,9]
+    x_cbtgt = armData[:,10]
+    y_cbtgt = armData[:,11]
     n = len(xs)
     lastNum = nums[-1]
 
@@ -245,9 +366,13 @@ def genReachingByPhase(fname):
     rangePre1 = range(0,subphase1)
     rangeAdapt1 = range(subphase1,subphase2)
     rangePost1 = range(subphase2,subphase3)
-    genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1")
-    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1")
-    genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
+    if(len(rangePre1)>0):
+        genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1")
+    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target[rangeAdapt1],y_target[rangeAdapt1]),cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+    if(len(rangePost1)>0):
+        genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
+
+    genReachPlot(fig,axs[1,1],x_actual[rangeAdapt1],y_actual[rangeAdapt1],nums[rangeAdapt1],"Adapt actual pos")
 
     if(pp.numPhases > 3):
         rangeAdapt2 = range(subphase4,subphase5)
@@ -303,17 +428,18 @@ def genCritAnglePics(fnames):
     dirShifts=[]
     ends=[]
     for fname in fnames:
-        armData,errs = genFigureSingleSess(fname)
+        #armData,errs = genFigureSingleSess(fname)
         #
         armData = armFileRead(fname)
         errs = getErrs(armData)
 
+        ree = '(.*)_\w+\.dat'
         basename = os.path.basename(fname)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-        modParamsFileName = filename.replace("_arm","_modParams")
+        modParamsFileName = fname.replace("_arm","_modParams")
         pp.paramsInit(modParamsFileName,False)
 
-        dirShifts.append(int(pp.paramsEnv["dirShift"]))
+        dirShifts.append(float(pp.paramsEnv["dirShift"]))
         ends.append(errs[pp.numTrialsPre+pp.numTrialsAdapt-1] )
 
     fig=plt.figure()
@@ -358,6 +484,8 @@ def printParams(fig,pos):
     paramsToPlot.append("endpoint_rotation1")
     paramsToPlot.append("endpoint_xreverse1")
     paramsToPlot.append("force_field1")
+    paramsToPlot.append("rotateErr")
+    paramsToPlot.append("xreverseErr")
     paramsToPlot.append("")
     if "sess_seed" in pp.paramsEnv:
         paramsToPlot.append("sess_seed")
@@ -406,44 +534,58 @@ pp.paramsInit('pert.ini')
 
 import sys
 print 'Python plotting number of arguments: ', len(sys.argv)
-if(len(sys.argv)>1):
+for ind,arg in enumerate(sys.argv):
+    print 'Plotting argument ',ind,' is ',arg
+do_multi = 0
+if(len(sys.argv)==2):
     dat_basename = sys.argv[1]
-else:
+elif(len(sys.argv)<=1):
     dat_basename = "" #pp.paramsEnv["dat_basename"]
+else:
+    do_multi=1
 #print 'Argument List:', str(sys.argv)
 
-fnames = []
-matchStr = '*' + dat_basename + '*_arm*.dat'
-print 'matching string for *.dat files:', matchStr
-for filename in os.listdir(pp.out_dir):
-    if fnmatch.fnmatch(filename, matchStr):
-        fnames.append(pp.out_dir+filename)
+if(do_multi == 0):
+    fnames = []
+    matchStr = '*' + dat_basename + '*_arm*.dat'
+    print 'matching string for *.dat files:', matchStr
+    for filename in os.listdir(pp.out_dir):
+        if fnmatch.fnmatch(filename, matchStr):
+            fnames.append(pp.out_dir+filename)
 
-pdfForEachSession = int(pp.paramsEnv["pdfForEachSession"])  #it is important to init it here and not later
+    pdfForEachSession = int(pp.paramsEnv["pdfForEachSession"])  #it is important to init it here and not later
 
-if(len(fnames) == 0):
-    print "No .dat files found"
-else:
-    filename = fnames[0]
+    if(len(fnames) == 0):
+        print "No .dat files found"
+    else:
+        filename = fnames[0]
 
-    ree = '(.*)_\w+\.dat'
-    basename = os.path.basename(filename)
-    name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-    pp.paramsInit(filename.replace("_arm","_modParams"),False)
+        #ree = '(.*)_\w+\.dat'
+        ree = '(.*).dat'
+        basename = os.path.basename(filename)
+        name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
+        pp.paramsInit(filename.replace("_arm","_modParams"),False)
 
-
-    genFigurePert(fnames,'pert_'+pp.paramsEnv["pdfSuffix"])
+        if( abs(float(pp.paramsEnv["dirShiftInc"]) )>0.00001 ):
+            genCritAnglePics(fnames)
+        else:
+            genFigurePert(fnames,'pert_'+pp.paramsEnv["pdfSuffix"])
 
     if pdfForEachSession:
         print "Generate pictures for each seed"
         for i,filename in enumerate(fnames):
-            ree = '(.*)_\w+\.dat'
+            #ree = '(.*)_\w+\.dat'
+            ree = '(.*).dat'
             basename = os.path.basename(filename)
             name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
             modParamsFileName = filename.replace("_arm","_modParams")
-            print "making graph "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
+            print "making graph # "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
             pp.paramsInit(modParamsFileName,False)
             genFigurePert([filename],name);
+
+elif(do_multi == 1):
+    genFigurePertMulti(sys.argv[1:len(sys.argv)])
+
 
 #print fnames
 

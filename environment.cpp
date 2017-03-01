@@ -11,7 +11,7 @@ void Environment::prelearn(int nTrials, float * addInfo)
     ml.backupWeights();
 } 
 
-Environment::Environment(parmap & params_, int num_sess_)
+Environment::Environment(const parmap & params_, int num_sess_)
 {
     params = params_;
     exporter.init(params["prefix"],params["suffix"],params["output_dir"]);
