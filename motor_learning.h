@@ -28,6 +28,9 @@ class MotorLearning
     float rotateErr;
     bool xreverseErr;
     bool modError;
+    bool habit2PMCdirectly;
+
+    //vector<float> prevy;
 
     //parmap & params;
     float x_cb_target,y_cb_target;
@@ -58,17 +61,21 @@ class MotorLearning
     /////////////////////////////////////
     
     // it is here because we don't have direct access from Environment to the cerebellum
-    void trainCB(float x0, float y0, float * yy, float coef, bool flushW=true) ; // CB_model method description
+    void trainCB(float x0, float y0, float * yy, bool flushW=true) ; // CB_model method description
+    void resetCBerr();
+    void resetCBLRate();
     
     // turns off and on BG nd cerebellum learning, respectively
     void setBGlearning(bool bglearns);
     void setCBlearning(bool cblearns);
     void setFfield(float ff);
+    // whether we use distorted error for cb learning
     void setModError(bool me);
 
     // sets paritcular habit, does not flush existing habits
     void setHabit(int cue, int action, float strength);
     float getHabit(int cue, int action);
+    void getLasty(float * lasty);
     void fakePrelearnReaching(int cue, int action, float habitAmpl, float tempWAmpl);
 
     // backs up weights (see BG_model methods for more details)

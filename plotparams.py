@@ -27,6 +27,7 @@ def paramsInit(fname,readMultParamFiles = True):
     global trials2
     global out_dir
     global out_dir_pdf
+    global out_dir_pdf_single
     global numPhases
     global numTrialsPre
     global numTrialsAdapt
@@ -39,11 +40,14 @@ def paramsInit(fname,readMultParamFiles = True):
     rewardDist = float(paramsEnv["rewardDist"] )
     out_dir = paramsEnv["output_dir"]
     out_dir_pdf = paramsEnv["output_dir_pdf"]
+    out_dir_pdf_single = paramsEnv["output_dir_pdf_singleSession"]
     #iniBG = paramsEnv["iniBG"]
     #iniArm = paramsEnv["iniArm"]
 
     from os.path import expanduser
     out_dir = expanduser(out_dir)
+    out_dir_pdf = expanduser(out_dir_pdf)
+    out_dir_pdf_single = expanduser(out_dir_pdf_single)
 
     armFileSkiprows = int(paramsEnv["armFileSkiprows"])
 

@@ -62,9 +62,10 @@ void CB_model::train(float x0, float y0, float * yy, bool flushW, bool useCurW, 
     // we will set them to nonzero if we do cblearn
     if(flushW)
     { 
-        for(int k=0;k<6;k++) 
-            for(int l=0;l<6;l++) 
-                wcb[k][l]=0;
+      cout<<"flushing CB state"<<endl;
+      for(int k=0;k<6;k++) 
+          for(int l=0;l<6;l++) 
+              wcb[k][l]=0;
     }
     else  // maybe redundant
     { 
@@ -83,17 +84,62 @@ void CB_model::trainCurPt(float * yy, float ffield, bool flushW, bool useCurW)
 
 void CB_model::cblearn(float dx,float dy)
 {
+  //float norm = matrixNorm(wcb);
 	for(int i=0;i<6;i++) 
+  {
         for(int j=0;j<6;j++) 
-            wcb[i][j]-=cb_learn_rate*(dx*dfwx[i][j]+dy*dfwy[i][j]);
+        { 
+            wcb[i][j]-=cbLRate*(dx*dfwx[i][j]+dy*dfwy[i][j]); 
+            wcb[i][j]-=cbRateDepr * wcb[i][j];
+        } 
+  }
 }
-
+ 
 void CB_model::learn(float dx,float dy)
-{
-  if( sqrt(dx*dx +dy*dy)<updateCBStateDist )
+{      
+  float errAbs = sqrt(dx*dx +dy*dy);
+  float ratio = 0.;
+  if(prevErrAbs < 10.)   // if not, it is set artificially
+  {
+    //float mult = ( 1./(1.+m)  );
+
+    if(errAbs < prevErrAbs)       // prevErrAbs < errAbs
+    { 
+      ratio = fmin(cbLRateUpdSpdMax,prevErrAbs/errAbs);
+      cbLRate += ratio* cbLRateUpdSpdUp;
+    }
+    else
+    { 
+      ratio = -fmin(cbLRateUpdSpdMax,errAbs/prevErrAbs); 
+      cbLRate += ratio* cbLRateUpdSpdDown;
+    } 
+
+    cbLRate = fmax(cbLRate , 0.001);  // to avoid negativity
+
+    float m = errAbs/updateCBStateDist;
+    cbLRate = fmin( cbLRate, cbLRate_init/m);
+
+    //cbLRate *= mult;     // like that we kill the rate as we do it each trial
+  }
+  //if( errAbs < updateCBStateDist )
   { 
     cblearn(dx, dy);
-  }
+  }                  
+  exporter->exportCBMisc(cbLRate,errAbs,ratio,prevErrAbs);
+
+  prevErrAbs = errAbs;
+
+  //cout<<"errAbs "<<errAbs<<", learn_rate  "<<cbLRate<<",  W norm "<<matrixNorm(wcb)<<endl;
+}
+
+void CB_model::resetPrevErr(float pe)
+{
+  prevErrAbs = pe;
+}
+
+void CB_model::resetLearnRate()
+{
+  cbLRate = cbLRate_init;
 }
 
 void CB_model::flush()
@@ -122,11 +168,13 @@ CB_model::CB_model(Arm * arm_)
 {
     setArm(arm_);
     x_cb_target=0., y_cb_target=0.;
+    prevErrAbs = 100;
 }
 
 CB_model::CB_model()
 { 
     x_cb_target=0., y_cb_target=0.;
+    prevErrAbs = 100;
 }
 
 void CB_model::setCBtarget(float x, float y)
@@ -143,9 +191,15 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
 {
     //readIni(iniCBname,params);
 
-    cb_learn_rate = stof(params["cb_learn_rate"]);
+    cbLRate = stof(params["cbLRate"]);
+    cbLRate_init = cbLRate;
     cb_init_shift_size = stof(params["cb_init_shift_size"]);
     updateCBStateDist = stof(params["updateCBStateDist"]);
+    cbLRateUpdSpdUp = stof(params["cbLRateUpdSpdUp"]);
+    cbLRateUpdSpdDown = stof(params["cbLRateUpdSpdDown"]);
+    cbLRateUpdSpdMax = stof(params["cbLRateUpdSpdMax"]);
+    cbRateDepr = stof(params["cbRateDepr"]);
+
     arm = arm_;
     exporter = exporter_;
 }

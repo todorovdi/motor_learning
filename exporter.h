@@ -20,6 +20,7 @@ class Exporter
     ofstream foutVarDyn2;
     ofstream foutWeights2;
     ofstream foutWeightsOnce;
+    ofstream foutLasty;
     ofstream foutArm;
     ofstream foutErr;
     
@@ -27,6 +28,7 @@ class Exporter
     ofstream foutModParams;
     ofstream foutCBState;
     ofstream foutCBTuning;
+    ofstream foutCBMisc;
 
     int na,nc;
 public: 
@@ -38,17 +40,20 @@ public:
 
     // this method should be called before any actual data write method
     // you may put anything you want to putInBeg string
-    void exportInit(string prefix,string suffix,string putInBeg);   // prefix = "RC" for example
+    void exportInit(string prefix,string suffix,string putInBeg, bool minimumExport=false);   // prefix = "RC" for example, minimumExport -- used for prelearn to export only the weights at the end
     void exportClose();
     void exportContOpen(int k);
     void exportContClose();
 
     void exportParams(parmap & params);
+    void exportCBMisc(float lrate,float errAbs,float ratio,float prevErrAbs);
     
     // data write methods
     void exportDynData(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi, float* addInfo);
     void exportWeights(unsigned int trialNum,float ** w1,float ** w2,float **wm);
     void exportWeightsOnce(float ** w1,float ** w2,float **wm);
+    void exportLasty(float * y);
+
     void exportArm(unsigned int trialNum,float xcur,float ycur, float x0, float y0, float xc, float yc, float * addInfo);
     void exportContState(float t,float *y,float *d1,float *d2,float * gpe,float *gpi);
     // methods mostly for compatibility, old stuff

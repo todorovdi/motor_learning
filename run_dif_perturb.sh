@@ -6,7 +6,7 @@ perturb()
   pdfSuffix="${1}_bg${2}_cb${3}"
   echo $pdfSuffix
   if [ $useOldData == "0" ]; then
-    $runfile --nsessions=$4 --learn_bg=$2 --learn_cb=$3 --pdfSuffix="$pdfSuffix" $1 --seed=2
+    $runfile --nsessions=$4 --learn_bg=$2 --learn_cb=$3 --pdfSuffix="$pdfSuffix" $1 --seed=$seed
   fi
   python pert.plot.py "$pdfSuffix"
   #rm -f $calc_dir/*.dat
@@ -24,6 +24,7 @@ perturbAllConfig()
   fi
   if [ $bg_off_cb_on -eq 1 ]; then
     perturb "$args" 0 1 $1
+    #perturb "$args" 0 1 1
     args_mult2="${args}_bg0_cb1"
   fi
   if [ $bg_on_cb_off -eq 1 ]; then
@@ -54,13 +55,15 @@ else
     echo "Plotting without recalc"
   fi
 
-  bg_on_cb_on=1
+  bg_on_cb_on=0
   bg_off_cb_on=1
-  bg_on_cb_off=1
+  bg_on_cb_off=0
 
-  #perturbAllConfig $1 "--endpoint_rotation1=1 --cb_learn_rate=4 --trainCBEveryTrial=0 --retrainCB_useCurW=0 --dirShift=90" 
-  #perturbAllConfig $1 "--endpoint_rotation1=1 --cb_learn_rate=4 --dirShift=90" 
-  #perturbAllConfig $1 "--endpoint_rotation1=1 --retrainCB_useCurW=0 --cb_learn_rate=4 --dirShift=90" 
+  seed=0     #makes <more or less> random seed
+
+  #perturbAllConfig $1 "--endpoint_rotation1=1 --cbLRate=4 --trainCBEveryTrial=0 --retrainCB_useCurW=0 --dirShift=90" 
+  #perturbAllConfig $1 "--endpoint_rotation1=1 --cbLRate=4 --dirShift=90" 
+  #perturbAllConfig $1 "--endpoint_rotation1=1 --retrainCB_useCurW=0 --cbLRate=4 --dirShift=90" 
   
   #perturbAllConfig $1 "--rotateErr=90." 
   #perturbAllConfig $1 "--endpoint_rotation1=1 --dirShift=90" 
@@ -71,10 +74,45 @@ else
   #perturbAllConfig $1 "--action_change1=1 --cue_change1=1" 
   #perturbAllConfig $1 "--action_change1=1 --cue_change1=1 --retrainCB_useCurW=0" 
 
-  #perturbAllConfig $1 "--endpoint_rotation1=1 --dirShift=90 --cb_learn_rate=4" 
-  perturbAllConfig $1 "--endpoint_rotation1=1 --cue_change1=1 --action_change1=1 --dirShift=90 --target_rotation1=1" 
+  #perturbAllConfig $1 "--endpoint_rotation1=1 --dirShift=90 --cbLRate=4" 
   #perturbAllConfig $1 "--endpoint_xreverse1=1" 
-  perturbAllConfig $1 "--endpoint_xreverse1=1 --cue_change1=1 --action_change1=1 --dirShift=180 --target_xreverse1=1" 
+  #perturbAllConfig $1 "--endpoint_rotation1=1 --cue_change1=1 --action_change1=1 --dirShift=90 --target_rotation1=1 --updateCBStateDist=10" 
+  #perturbAllConfig $1 "--endpoint_xreverse1=1 --cue_change1=1 --action_change1=1 --dirShift=180 --target_xreverse1=1 --updateCBStateDist=10" 
+
+  ###############
+  #perturbAllConfig $1 "--endpoint_rotation1=1 --cue_change1=1 --action_change1=1 --dirShift=90 --target_rotation1=1  cbRateDepr=0.05 cbLRateUpdSpd=0.1"
+  #perturbAllConfig $1 "--percept_rot1=1 --dirShift=90" 
+  
+  #p="--cbLRate=2 --cbRateDepr=0.03 --cbLRateUpdSpdUp=0.8 --cbLRateUpdSpdDown=1  --cbLRateUpdSpdMax=3 --Q=0.05" 
+  p="--Q=0.05" 
+  ud="--updateCBStateDist=0.12"
+
+  perturbAllConfig $1 "--percept_xshift1=-0.25 --fake_prelearn=0 --numTrialsPrelearn=1400 $p $ud" 
+
+  #perturbAllConfig $1 "--actcue_change1=1 --dirShift=90 $p $ud" 
+  #perturbAllConfig $1 "--percept_xshift1=-0.1 --percept_yshift1=0.1 --fake_prelearn=0 --numTrialsPrelearn=1400 $p $ud" 
+  #perturbAllConfig $1 "--percept_rot1=1 $p --dirShift=90 $ud" 
+  #perturbAllConfig $1 "--percept_rot1=1 $p --dirShift=30 $ud" 
+  #perturbAllConfig $1 "--percept_xrev1=1 $p              $ud" 
+  #perturbAllConfig $1 "--force_field1=-3.0 --targetPre1=90 $p" 
+
+  #bg_on_cb_on=1
+  #bg_off_cb_on=1
+  #bg_on_cb_off=1
+
+  #ud="--updateCBStateDist=0.06"
+
+  #perturbAllConfig $1 "--action_change1=1 --cue_change1=1 --dirShift=30 $p $ud" 
+  #perturbAllConfig $1 "--percept_xshift1=-0.1 --percept_yshift1=0.1 --fake_prelearn=0 --numTrialsPrelearn=1400 $p $ud" 
+  #perturbAllConfig $1 "--percept_xrev=1 $p  $ud" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=90 $ud" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=30 $ud" 
+  #perturbAllConfig $1 "--force_field1=-3.0 --targetPre1=90 $p $ud" 
+
+  #perturbAllConfig $1 "--endpoint_rotation1=1 --cue_change1=1 --action_change1=1 --dirShift=30 --target_rotation1=1" 
+  ###############
+
+
 
   #perturbAllConfig $1 "--endpoint_rotation1=1 --retrainCB_useCurW=0 --dirShift=90" 
   #perturbAllConfig $1 "--endpoint_xreverse1=1 --retrainCB_useCurW=0" 

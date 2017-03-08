@@ -74,6 +74,16 @@ void MotorLearning::setRandomCBState(float a)
     cb.setRandomState(a);
 }
 
+void MotorLearning::resetCBerr()
+{
+  cb.resetPrevErr();
+}
+
+void MotorLearning::resetCBLRate()
+{
+  cb.resetLearnRate();
+}
+
 // calls getSuccess, which calls moveArm
 float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flushData, unsigned int indAdd, bool doExport)
 {
@@ -86,16 +96,17 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     }
 
     float x[nc];
+    float y[na];
     // cycle over trials
     for(int k=indAdd;k<(ntrials+indAdd);k++)
     {
 
       bg.resetForTrialBegin();
 
-      int cueActive = env->turnOnCues(x);
+      int cueActive = env->turnOnCues(k,x);
       bg.setCues(x);
 
-      if(learn_bg)
+      if(learn_bg || !habit2PMCdirectly)
       {
 
         if(doExport)
@@ -121,16 +132,27 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
           };
         if (CONT_OUT) {bg.exportContClose();}
       } 
-      else
+      else if(!learn_bg && habit2PMCdirectly )
       {
-        bg.habit2PMCdirectly(cueActive);
+        bg.habit2PMCdirectly(cueActive);   // works only for non-composite actions
       }
 
-      float y[na];
       bg.getPMC(y);
 
       if(learn_cb && trainCBEveryTrial)
       {
+        // no! even if the program is unchanged, the W may have changed
+        //bool ychanged = false;
+        //for(int i=0;i<na; i++)
+        //{
+        //  // if at least one activity has changed, then do retrain
+        //  if(fabs(y[i]-prevy[i]) > 0.1)
+        //  { 
+        //    ychanged = true;
+        //    break;
+        //  }
+        //}
+        //if(ychanged)
           cb.trainCurPt(y,ffield,false,retrainCB_useCurW);  // flushW= false, useCurW = true
       }
 
@@ -172,17 +194,18 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       }
 
     updateRpre(cueActive,R,0);   
+    //std::copy(y, y+na, prevy.begin());
 
     }
-    if(doExport)
-      bg.exportWeightsOnce();
+    //if(doExport)
+    bg.exportWeightsOnce();
+    exporter->exportLasty(y);
 
     //    if(doExport)
     //        trialEndExport(sumM1freq, 0);
 
     return 0;
 }
-
 
 void MotorLearning::backupWeights()
 {
@@ -217,6 +240,8 @@ MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & 
   x_cb_target = 0;
   y_cb_target = 0;
   modError = false;
+  //prevy.resize(na);
+  //std::fill(prevy.begin(),prevy.end(),0.);
 }
 
 MotorLearning::MotorLearning()
@@ -247,6 +272,10 @@ void MotorLearning::initParams(parmap & params)
 
     rotateErr=stof(params["rotateErr"]); ;
     xreverseErr=stoi(params["xreverseErr"]); ;
+ 
+    habit2PMCdirectly=stoi(params["habit2PMCdirectly"]);
+    if(habit2PMCdirectly)
+      cout<<"habit2PMCdirectly mode is active!"<<endl;
 
     nc=stoi(params["nc"]);
     na=stoi(params["na"]);
@@ -264,10 +293,10 @@ void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & params)
 
     exporter = exporter_;
 
-    if( stoi(params["learn_bg"]) == 0 )
-    {
-      params["updateCBStateDist"] = to_string(10.);
-    }
+    //if( stoi(params["learn_bg"]) == 0 )
+    //{
+    //  params["updateCBStateDist"] = to_string(10.);
+    //}
 
     arm.init(params);
     cb.init(params,exporter,&arm);
@@ -281,16 +310,21 @@ void MotorLearning::getReachCenterPos(float &x, float&y)
     arm.getReachCenterPos(x,y);
 }
 
+void MotorLearning::getLasty(float * lasty)
+{
+  bg.getPMC(lasty);
+}
+
 void MotorLearning::moveArm(float * PMC_activity, float * out, float ffield)
 {
     cb.moveArm(PMC_activity,out,ffield);
 }
 
-void MotorLearning::trainCB(float x0, float y0, float * yy, float coef, bool flushW) 
+void MotorLearning::trainCB(float x0, float y0, float * yy, bool flushW) 
 {
   x_cb_target = x0;
   y_cb_target = y0;
-  cb.train(x0,y0,yy,coef,flushW);
+  cb.train(x0,y0,yy,flushW,retrainCB_useCurW);
 }
 
 void MotorLearning::flushWeights(bool wmtoo)

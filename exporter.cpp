@@ -27,7 +27,7 @@ void Exporter::init(string prefix_,string suffix_,string dir_)   // prefix = "RC
 
 }
 
-void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix = "RC" for example
+void Exporter::exportInit(string prefix,string suffix,string begPut,bool minimumExport)   // prefix = "RC" for example
 {
   prefix_for_cont = prefix;
   suffix_for_cont = suffix;
@@ -35,26 +35,38 @@ void Exporter::exportInit(string prefix,string suffix,string begPut)   // prefix
   this->suffix = suffix;
   this->prefix = prefix;
 
+  if(!minimumExport)
+  { 
     foutPerTrial.open( dir+prefix+string("_output")+suffix+string(".dat")) ;
     foutVarDyn.open  ( dir+prefix+string("_var_dyn")+suffix+string(".dat") );
     foutVarDyn2.open  ( dir+prefix+string("_var_dyn2")+suffix+string(".dat") );
     foutWeights.open  ( dir+prefix+string("_weights")+suffix+string(".dat") );
     foutWeights2.open  ( dir+prefix+string("_weights2")+suffix+string(".dat") );
-    foutWeightsOnce.open  ( dir+prefix+string("_weights_once")+suffix+string(".dat") );
     foutArm.open  ( dir+prefix+string("_arm")+suffix+string(".dat") );
     foutModParams.open  ( dir+prefix+string("_modParams")+suffix+string(".dat") );
+
     foutCBState.open  ( dir+prefix+string("_CBState")+suffix+string(".dat") );
     foutCBTuning.open  ( dir+prefix+string("_CBTuning")+suffix+string(".dat") );
+    foutCBMisc.open ( dir+prefix+string("_CBMisc")+suffix+string(".dat") ); 
     if(begPut != "")
     { 
         foutArm<<begPut;
     }
+
+  }
+  foutWeightsOnce.open  ( dir+prefix+string("_weights_once")+suffix+string(".dat") );
+  foutLasty.open  ( dir+prefix+string("_Lasty")+suffix+string(".dat") );
 }
 
 void Exporter::exportContOpen(int k)
 {
 
   foutContState.open( dir+prefix_for_cont+string("_cont_state_")+std::to_string(k)+"_"+suffix_for_cont+string(".dat") );
+}
+
+void Exporter::exportCBMisc(float lrate,float errAbs,float ratio,float prevErrAbs)
+{
+  foutCBMisc<<lrate<<'\t'<<errAbs<<'\t'<<ratio<<'\t'<<prevErrAbs<<endl;
 }
 
 void Exporter::exportParams(parmap & params)
@@ -80,6 +92,7 @@ void Exporter::exportClose()
     foutWeightsOnce.close();
     foutArm.close();
     foutModParams.close();
+    foutLasty.close();
 }
 
 void Exporter::exportContClose()
@@ -194,6 +207,12 @@ void Exporter::exportWeights(unsigned int trialNum,float ** w1,float ** w2,float
       for(int i=0;i<na;i++) foutWeights2<<wm[cue][i]<<'\t';
     }
     foutWeights2<<endl;
+}
+
+void Exporter::exportLasty(float * y)
+{
+  for(int i=0;i<na;i++) foutLasty<<y[i]<<'\t';
+  foutLasty<<endl;
 }
 
 void Exporter::exportWeightsOnce(float ** w1,float ** w2,float **wm)

@@ -52,9 +52,19 @@ inline float rnd() { return 1.*rand()/(RAND_MAX+1.); }
 
 inline float fmod(float f,float reminder) 
 { 
-  while(f>=reminder)
+  if( f >= 0 )
+  { 
+    while(f>=reminder)
+    {
+      f-= reminder;
+    }
+  }
+  else
   {
-    f-= reminder;
+    while(f<0.)
+    { 
+      f+= reminder;
+    }
   }
   return f;
 } 

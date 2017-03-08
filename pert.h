@@ -28,10 +28,15 @@ class perturbationExperimentEnv: public Environment
 
     bool fake_prelearn;
     bool sector_reward;
+
     bool action_change1;
     bool endpoint_rotation1;
     bool target_rotation1;
     bool target_xreverse1;
+    float endpt_xshift1;
+    float endpt_yshift1;
+    float tgt_xshift1;
+    float tgt_yshift1;
 
     bool action_change2;
     bool endpoint_rotation2;
@@ -43,15 +48,18 @@ class perturbationExperimentEnv: public Environment
 
     int learn_cb;                
     int learn_bg;
-    float cb_learn_rate;
+    float cbLRate;
     int randomCBStateInit;
     float randomCBStateInitAmpl;
 
     int dirShiftInc;
     unsigned int sess_seed;
 
+    vector<float> prelearn_PMC_0;
+    vector<float> prelearn_PMC_1;
+
     public:
-    int turnOnCues(float * cues);
+    int turnOnCues(int trialNum, float * cues);
     float getSuccess(float * x,float * y,unsigned int k,float *addInfo);
     float getReward(float success, float * x,float * y, float & param);  
     void setParams(int argc, char** argv){}
@@ -60,14 +68,15 @@ class perturbationExperimentEnv: public Environment
 
     //void setParams();
     int deg2action(float degAngle);
+    void getCurTgt(float * x, float & x0, float & y0, float & tgtAngleDeg);
 
     perturbationExperimentEnv(const parmap & params, int num_sess, unsigned int sess_seed);
     ~perturbationExperimentEnv();
 
     // experiment-specific
-    void initCBdir(float dir, bool resetState);
+    void initCBdir(float x0, float y0, vector<float> patPMC, bool resetState);
 };
 
 void runExperiment(int argc, char** argv);
 
-enum experimentPhases {PRE1=0, PRE2=1, ADAPT1=2, POST1=3,  ADAPT2=4, POST2=5, PRELEARN=6};
+enum experimentPhases {PRE1=0, PRE2=1, ADAPT1=2, POST1=3,  ADAPT2=4, POST2=5, PRELEARN_0=6, PRELEARN_1=7};

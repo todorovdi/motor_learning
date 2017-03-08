@@ -104,7 +104,7 @@ def genFigurePert(fnames,outname):
 
     ax = axs[0,0]
     genBGActivityPlot(fig,ax,fileToPlot.replace('arm','var_dyn2'))
-    ax.set_xticks(pp.trials1[::10] )
+    ax.set_xticks(pp.trials1[::xtickSkip] )
     ax_ = ax.twiny()
     ax_.set_xlim(0, len(pp.trials1))
     ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
@@ -119,7 +119,7 @@ def genFigurePert(fnames,outname):
 
     ax = axs[0,1]
     genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'))
-    ax.set_xticks(pp.trials1[::10])
+    ax.set_xticks(pp.trials1[::xtickSkip])
     ax_ = ax.twiny()
     ax_.set_xlim(0, len(pp.trials1))
     ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
@@ -130,7 +130,7 @@ def genFigurePert(fnames,outname):
 
     ax = axs[1,0]
     genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),1)
-    ax.set_xticks(pp.trials1[::10])
+    ax.set_xticks(pp.trials1[::xtickSkip])
     ax_ = ax.twiny()
     ax_.set_xlim(0, len(pp.trials1))
     ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
@@ -151,7 +151,7 @@ def genFigurePert(fnames,outname):
     ax.set_title('Errors averaged and SEMs',y=1.04)
     ax.set_xticks(np.arange(0,n,5))
     ax.set_yticks(np.arange(-0.9,0.9,0.1))
-    ax.set_ylim([-0.5,0.5])
+    ax.set_ylim([-0.0,0.8])
     ax.set_xlim([0,n])
     ax.grid()
 
@@ -178,7 +178,7 @@ def genFigurePert(fnames,outname):
     printParams(fig,posLeftMargin)
 
     if(len(fnames) == 1):
-        pdfname = pp.out_dir_pdf+outname+".pdf"
+        pdfname = pp.out_dir_pdf_single+outname+".pdf"
     else:
         pdfname = pp.out_dir_pdf+outname+"_stats_n="+str(len(fnames))+".pdf"
 
@@ -192,7 +192,7 @@ def genFigurePert(fnames,outname):
         fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
         ax = axs[0,1]
         genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),1)
-        ax.set_xticks(pp.trials1[::10])
+        ax.set_xticks(pp.trials1[::xtickSkip])
         ax_ = ax.twiny()
         ax_.set_xlim(0, len(pp.trials1))
         ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
@@ -202,7 +202,7 @@ def genFigurePert(fnames,outname):
         fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
         ax = axs[0,0]
         genCBStatePlot(fig,ax,fileToPlot.replace('arm','CBState'))
-        ax.set_xticks(pp.trials1[::10])
+        ax.set_xticks(pp.trials1[::xtickSkip])
         ax_ = ax.twiny()
         ax_.set_xlim(0, len(pp.trials1))
         ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
@@ -211,12 +211,41 @@ def genFigurePert(fnames,outname):
 
         ax = axs[0,1]
         genCBTuningPlot(fig,ax,fileToPlot.replace('arm','CBTuning'))
-        ax.set_xticks(pp.trials1[::10])
+        ax.set_xticks(pp.trials1[::xtickSkip])
         ax_ = ax.twiny()
         ax_.set_xlim(0, len(pp.trials1))
         ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
         ax_.set_xticklabels(['ADAPT1','POST1'])
         ax_.xaxis.grid(True,color='w')
+
+        ax = axs[1,0]
+        genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
+        ax.set_xticks(pp.trials1[::2])
+        ax_ = ax.twiny()
+        ax_.set_xlim(0, len(pp.trials1))
+        ax_.set_xticks([pp.numTrialsPre, pp.numTrialsPre+pp.numTrialsAdapt])
+        ax_.set_xticklabels(['ADAPT1','POST1'])
+        ax_.xaxis.grid(True)
+        ax.grid(True)
+
+        #x_target = armData[:,3]
+        #y_target = armData[:,4]
+        x_cbtgt = armData[:,10]
+        y_cbtgt = armData[:,11]
+
+        subphase1 = pp.numTrialsPre
+        subphase2 = subphase1 + pp.numTrialsAdapt
+        subphase3 = subphase2 + pp.numTrialsPost
+        subphase4 = subphase3 + pp.numTrialsPre
+        subphase5 = subphase4 + pp.numTrialsAdapt
+        subphase6 = subphase5 + pp.numTrialsPost
+
+        rangePre1 = range(0,subphase1)
+        rangeAdapt1 = range(subphase1,subphase2)
+        rangePost1 = range(subphase2,subphase3)
+        #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
+        ax=axs[1,1]
+        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
 
         pdf.savefig()
         plt.close()
@@ -279,7 +308,7 @@ def genFigurePertMulti(dat_basenames):
         ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
         ax.set_xticks(np.arange(0,n,5))
         ax.set_yticks(np.arange(-0.9,0.9,0.1))
-        ax.set_ylim([-0.5,0.5])
+        ax.set_ylim([-0.0,0.8])
         ax.set_xlim([0,n])
         ax.grid()
 
@@ -398,7 +427,7 @@ def genFigureSingleSess(fname,outname=""):
     ax.set_title('Errors averaged and SEMs',y=1.04)
     ax.set_xticks(np.arange(0,n,10))
     ax.set_yticks(np.arange(-0.9,0.9,0.1))
-    ax.set_ylim([-0.5,0.5])
+    ax.set_ylim([-0.0,0.8])
     ax.set_xlim([0,n])
     ax.grid()
 
@@ -452,7 +481,7 @@ def genCritAnglePics(fnames):
 
 def printParams(fig,pos):
     axlm= fig.add_axes(pos,frameon=False); 
-    initX = 0.06;  initY = 0.8; ysubtr=0.02;
+    initX = 0.01;  initY = 0.8; ysubtr=0.02;
     fsz = 15
 
     paramsToPlot = []
@@ -460,15 +489,21 @@ def printParams(fig,pos):
     paramsToPlot.append("dirShift")
     paramsToPlot.append("learn_bg")
     paramsToPlot.append("learn_cb")
-    paramsToPlot.append("cb_learn_rate")
+    paramsToPlot.append("cbLRate")
     paramsToPlot.append("randomCBStateInit")
     paramsToPlot.append("randomCBStateInitAmpl")
     paramsToPlot.append("trainCBEveryTrial")
     paramsToPlot.append("retrainCB_useCurW")
     paramsToPlot.append("updateCBStateDist")
+    paramsToPlot.append("cbRateDepr")
+    paramsToPlot.append("cbLRateUpdSpdUp")
+    paramsToPlot.append("cbLRateUpdSpdDown")
+    paramsToPlot.append("cbLRateUpdSpdMax")
     paramsToPlot.append("")
-    paramsToPlot.append("wmmax")
-    paramsToPlot.append("wmmax_action")
+    paramsToPlot.append("wmmax0")
+    paramsToPlot.append("wmmax_action0")
+    paramsToPlot.append("wmmax1")
+    paramsToPlot.append("wmmax_action1")
     paramsToPlot.append("fake_prelearn")
     paramsToPlot.append("numTrialsPrelearn")
     if "fake_prelearn_tempWAmpl" in pp.paramsEnv:
@@ -532,10 +567,14 @@ def printParams(fig,pos):
 
 pp.paramsInit('pert.ini') 
 
+maxNumXtics = 30
+xtickSkip = (pp.numTrialsPre+pp.numTrialsPost+pp.numTrialsAdapt)/maxNumXtics
+xtickSkip = int(xtickSkip)
+
 import sys
 print 'Python plotting number of arguments: ', len(sys.argv)
-for ind,arg in enumerate(sys.argv):
-    print 'Plotting argument ',ind,' is ',arg
+#for ind,arg in enumerate(sys.argv):
+#    print 'Plotting argument ',ind,' is ',arg
 do_multi = 0
 if(len(sys.argv)==2):
     dat_basename = sys.argv[1]
@@ -545,7 +584,9 @@ else:
     do_multi=1
 #print 'Argument List:', str(sys.argv)
 
-if(do_multi == 0):
+if(do_multi == 1):
+    genFigurePertMulti(sys.argv[1:len(sys.argv)])
+elif(do_multi == 0):
     fnames = []
     matchStr = '*' + dat_basename + '*_arm*.dat'
     print 'matching string for *.dat files:', matchStr
@@ -560,8 +601,8 @@ if(do_multi == 0):
     else:
         filename = fnames[0]
 
-        #ree = '(.*)_\w+\.dat'
-        ree = '(.*).dat'
+        ree = '(.*)_\w+\.dat'
+        #ree = '(.*).dat'
         basename = os.path.basename(filename)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
         pp.paramsInit(filename.replace("_arm","_modParams"),False)
@@ -574,18 +615,14 @@ if(do_multi == 0):
     if pdfForEachSession:
         print "Generate pictures for each seed"
         for i,filename in enumerate(fnames):
-            #ree = '(.*)_\w+\.dat'
-            ree = '(.*).dat'
+            ree = '(.*)_\w+\.dat'
+            #ree = '(.*).dat'
             basename = os.path.basename(filename)
             name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
             modParamsFileName = filename.replace("_arm","_modParams")
             print "making graph # "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
             pp.paramsInit(modParamsFileName,False)
             genFigurePert([filename],name);
-
-elif(do_multi == 1):
-    genFigurePertMulti(sys.argv[1:len(sys.argv)])
-
 
 #print fnames
 

@@ -22,11 +22,13 @@ def armFileRead(fname):
     return armData
 
 def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_actual=[],cbtgt_actual=[]):
-    ax.set_xticks(np.arange(-0.5,0.5,0.1))
-    ax.set_yticks(np.arange(0.0,0.9,0.1))
 
-    ax.set_ylim([0,0.8])
-    ax.set_xlim([-0.4,0.4])
+    ylim = 1.1
+    xlim = 0.6
+    ax.set_ylim([0,ylim])
+    ax.set_xlim([-xlim,xlim])
+    ax.set_xticks(np.arange(-xlim,xlim,0.1))
+    ax.set_yticks(np.arange(0.0,ylim,0.1))
 
     if(twoPhases and int(pp.paramsEnv["numPhases"]) > 3 ):
         ax.scatter(xs[pp.trials1],ys[pp.trials1],c=nums[pp.trials1],lw=0.0,cmap='inferno',s=45)
@@ -71,7 +73,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
     for label, x, y in zip(addlabel, addxs, addys):
         ax.annotate(
             label,
-            xy=(x, y), xytext=(0, -300),
+            xy=(x, y), xytext=(0, -270),
             textcoords='offset points', ha='right', va='bottom',
             bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
             arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
@@ -226,3 +228,33 @@ def genCBTuningPlot(fig,ax,fname):
     ax.set_yticks(range(0,6*6*2,6))
     ax.set_ylabel('dfwx dfwy',rotation=90)
     ax.set_ylim(0,36*2)
+
+def genCBMiscPlot(fig,ax,fname):
+    errMult = 7.
+    errMultSmall = 5.
+
+    misc = np.loadtxt(fname)
+    rates = misc[:,0]
+    errAbsLarge = errMult * misc[:,1]
+    errAbsSmall = errMultSmall * misc[:,1]
+    ratios = misc[:,2]
+    #prevErrAbs = errMult * misc[:,3]
+    #(nrows, ncols) = misc.shape
+
+    ax.plot(rates,label='rate')
+    ax.plot(errAbsLarge,label=str(errMult)+'*cur_errAbs')
+    ax.plot(ratios,label='ratio')
+    #ax.plot(prevErrAbs,label=str(errMult)+'*prevErrAbs')
+    #ax.plot(errAbsSmall,label=str(errMultSmall)+'*cur_errAbs')
+    pos = ax.get_position()
+    ax.legend(loc='lower left')
+    
+    mx = float(pp.paramsEnv["cbLRate"])
+    mux =float(pp.paramsEnv["cbLRateUpdSpdMax"])  
+    cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
+
+    ylmax =  cbUpdDst/0.01 #1.8*mx
+    ylmin = -mux
+    ax.set_ylim(ylmin,ylmax)
+    ax.set_yticks(np.arange(ylmin,ylmax,1.))
+    #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)

@@ -31,7 +31,7 @@ void runExperiment(int argc, char** argv)
 //      ("targetPre1", po::value<float>(), "targetPre1")
 //      ("learn_cb", po::value<int>(), "learn_cb")
 //      ("learn_bg", po::value<int>(), "learn_bg")
-//      ("cb_learn_rate", po::value<float>(), "cb_learn_rate")
+//      ("cbLRate", po::value<float>(), "cbLRate")
 //      ("endpoint_rotation1", po::value<int>(), "endpoint_rotation1")
 //      ("endpoint_xreverse1", po::value<int>(), "endpoint_xreverse1")
 //      ("action_change1", po::value<int>(), "action_change1")
@@ -145,8 +145,8 @@ void runExperiment(int argc, char** argv)
         rng.seed(seeds[i]);
 #endif
         srand(seeds[i]);   // it happens in parallel threads, I hope
-        cout<<"seed number "<<i<<" is "<<seeds[i]<<endl;
-        cout<<"sess num "<<i<<" rnd is "<<rnd()<<endl;
+        //cout<<"seed number "<<i<<" is "<<seeds[i]<<endl;
+        //cout<<"sess num "<<i<<" rnd is "<<rnd()<<endl;
         perturbationExperimentEnv te(paramsThreadSeparate[i],i,seeds[i]);
         te.runSession();
     }
@@ -182,29 +182,44 @@ void perturbationExperimentEnv::runSession()
         //float rpre = 3.;
         ml.setRpreMax();   // if we use only CB not need this
 
+        float cues[nc];
+        float x0,y0,angle;
         int offset = 0;
         if(numTrialsPre > 0)
         { 
+          experimentPhase = PRE1;
           if(learn_cb)
           { 
-              initCBdir(targetPre1,true);
+            ml.resetCBerr();
+            ml.resetCBLRate();
+            
+            turnOnCues(0,cues);
+            getCurTgt(cues,x0,y0,angle);
+            initCBdir(x0,y0,prelearn_PMC_0,true); 
           }
-          experimentPhase = PRE1;
           cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
           ml.makeTrials(numTrialsPre,0,false,0);
           offset = numTrialsPre;
         }
 
+
+        experimentPhase = ADAPT1;
         if(learn_cb)
         { 
-          if(target_rotation1)
-          { 
-            initCBdir(angDegAdd(targetPre1,dirShift),false);
-          } 
-          else if(target_xreverse1)
-          {
-            initCBdir(180-targetPre1,false);
-          }
+          ml.resetCBerr();
+          ml.resetCBLRate();
+
+          turnOnCues(0,cues);
+          getCurTgt(cues,x0,y0,angle);
+          initCBdir(x0,y0,prelearn_PMC_1,false); 
+          //if(target_rotation1)
+          //{ 
+          //  initCBdir(angDegAdd(targetPre1,dirShift),prelearn_PMC_0,false);
+          //} 
+          //else if(target_xreverse1)
+          //{
+          //  initCBdir(180-targetPre1,prelearn_PMC_0,false);
+          //}
           if(randomCBStateInit)
           {
             ml.setRandomCBState(randomCBStateInitAmpl);
@@ -215,22 +230,24 @@ void perturbationExperimentEnv::runSession()
           ml.setFfield(stof(params["force_field1"]));
         if(fabs(rotateErr) > EPS || xreverseErr)
           ml.setModError(true);
-        experimentPhase = ADAPT1;
         cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
         ml.makeTrials(numTrialsAdapt,0,false,offset);
         offset += numTrialsAdapt;
 
         if(numTrialsPost > 0)
         { 
+          experimentPhase = POST1;
           if(stoi(params["trainWith_force_field1"]))
             ml.setFfield(0.);
           if(learn_cb)
           { 
-              initCBdir(targetPre1,true);
+            ml.resetCBerr();
+            ml.resetCBLRate();
+            turnOnCues(0,cues);
+            getCurTgt(cues,x0,y0,angle);
+            initCBdir(x0,y0,prelearn_PMC_0,false); 
           }
           ml.setModError(false);
-          experimentPhase = ADAPT1;
-          experimentPhase = POST1;
           cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
           ml.makeTrials(numTrialsPost,0,false,offset);
           offset += numTrialsPost;
@@ -239,24 +256,35 @@ void perturbationExperimentEnv::runSession()
 //#ifdef TWO_PARTS
         if(numPhases > 3)
         { 
-            if(learn_cb)
-                initCBdir(targetPre2,true);   // update but do not save W, for testing purposes
             experimentPhase = PRE2;
+            if(learn_cb)
+            { 
+              turnOnCues(0,cues);
+              getCurTgt(cues,x0,y0,angle);
+              initCBdir(x0,y0,prelearn_PMC_0,true); 
+            }
             cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
             ml.makeTrials(numTrialsPre,0,false,offset);
             offset+= numTrialsPre;
 
-            if(target_rotation2 && learn_cb)
-                initCBdir(angDegAdd(targetPre2,dirShift),false);
-
             experimentPhase = ADAPT2;
+            if(learn_cb)
+            { 
+              turnOnCues(0,cues);
+              getCurTgt(cues,x0,y0,angle);
+              initCBdir(x0,y0,prelearn_PMC_1,false); 
+            }
             cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
             ml.makeTrials(numTrialsAdapt,0,false,offset);
             offset += numTrialsAdapt;
             
-            if(target_rotation2 && learn_cb)
-                initCBdir(targetPre2,false);
             experimentPhase = POST2;
+            if(learn_cb)
+            { 
+              turnOnCues(0,cues);
+              getCurTgt(cues,x0,y0,angle);
+              initCBdir(x0,y0,prelearn_PMC_0,false); 
+            }
             cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
             ml.makeTrials(numTrialsPost,0,false,offset);
         } 
@@ -268,12 +296,13 @@ void perturbationExperimentEnv::runSession()
 void perturbationExperimentEnv::prelearn(int n, float * addInfo)
 {
     ml.flushWeights(true);
-    experimentPhase = PRELEARN;
-    float wmmax;
-    int wmmax_ind = -1;
+    experimentPhase = PRELEARN_0;
+    float wmmax0=0,wmmax1=0;
+    int wmmax_ind0=-1,wmmax_ind1 = -1;
     if(fake_prelearn)
     { 
-        wmmax = wmmax_fake_prelearn;
+        wmmax0 = wmmax_fake_prelearn;
+        wmmax1 = wmmax_fake_prelearn;
         int dirIndPre1 = deg2action(targetPre1);
         int dirIndAdapt1 = deg2action(angDegAdd(targetPre1,dirShift));
         int dirIndPre2 = deg2action(targetPre2);
@@ -282,76 +311,97 @@ void perturbationExperimentEnv::prelearn(int n, float * addInfo)
 
         float tempWAmpl = fake_prelearn_tempWAmpl;
 
-        ml.fakePrelearnReaching(0,dirIndPre1,wmmax,tempWAmpl);
-        ml.fakePrelearnReaching(2,dirIndPre2,wmmax,tempWAmpl);
+        ml.fakePrelearnReaching(0,dirIndPre1,wmmax0,tempWAmpl);
+        ml.fakePrelearnReaching(2,dirIndPre2,wmmax0,tempWAmpl);
 
         if(action_change1)
-            ml.fakePrelearnReaching(1,dirIndAdapt1,wmmax,tempWAmpl);
+            ml.fakePrelearnReaching(1,dirIndAdapt1,wmmax0,tempWAmpl);
         else
-            ml.fakePrelearnReaching(1,dirIndPre1,wmmax,tempWAmpl);
+            ml.fakePrelearnReaching(1,dirIndPre1,wmmax0,tempWAmpl);
 
         if(action_change2)
-            ml.fakePrelearnReaching(3,dirIndAdapt2,wmmax,tempWAmpl);
+            ml.fakePrelearnReaching(3,dirIndAdapt2,wmmax0,tempWAmpl);
         else
-            ml.fakePrelearnReaching(3,dirIndPre2,wmmax,tempWAmpl);
+            ml.fakePrelearnReaching(3,dirIndPre2,wmmax0,tempWAmpl);
 
         xcur = 0.2;
         ycur = 0.4;
-        cout<<"Fake prelearn max weight is "<<wmmax<<endl;
+        cout<<"Fake prelearn max weight is "<<wmmax0<<endl;
     
-        wmmax_ind = 0;
+        wmmax_ind0 = dirIndPre1;
+        wmmax_ind1 = dirIndAdapt1;
+
+        prelearn_PMC_0[wmmax_ind0] = wmmax0;
+        prelearn_PMC_1[wmmax_ind1] = wmmax1;
     }
     else
     { 
-        cout<<"experimentPhase is "<<phasesNames[PRELEARN]<<endl;
         cout<<"num prelearn trials "<<numTrialsPrelearn<<endl;
+        cout<<"experimentPhase is "<<phasesNames[experimentPhase]<<endl;
 
         // TODO: careful here!
         ml.setBGlearning(true);
-        //ml.setCBlearning(true);
+        ml.setCBlearning(false);
 
-        exporter.exportInit("prelearn_",to_string(num_sess),"");
-        ml.makeTrials(n,addInfo,true,0,false);  // last arg is whether we do export, or not
+        string prefix = string("prelearn_") + params["datPrefix"] + string("_numSess_")+std::to_string(num_sess);
+
+        exporter.exportInit(prefix,"","",true);
+        ml.makeTrials(n/2,addInfo,true,0,false);  // last arg is whether we do export, or not (except final weights -- we export them anyway)
+        ml.getLasty(&prelearn_PMC_0[0]);
+
+        experimentPhase = PRELEARN_1;
+        cout<<"experimentPhase is "<<phasesNames[experimentPhase]<<endl;
+
+        ml.makeTrials(n/2,addInfo,false,0,false);  // last arg is whether we do export, or not (except final weights -- we export them anyway)
+        ml.getLasty(&prelearn_PMC_1[0]);
         exporter.exportClose();
 
         ml.initParams(params);  // restore bg and cb learning params from ini file
         //
-        wmmax = 0;
-        for(int i = 0; i<nc; i++)
-        {
-            for(int j = 0; j<na; j++)
-            {        
-                float wmcur = ml.getHabit(i,j);
-                if(wmcur > wmmax)
-                { 
-                    wmmax = wmcur;
-                    wmmax_ind = j;
-                } 
-            }
+        int i = 0;
+        for(int j = 0; j<na; j++)
+        {        
+            float wmcur = ml.getHabit(i,j);
+            if(wmcur > wmmax0)
+            { 
+                wmmax0 = wmcur;
+                wmmax_ind0 = j;
+            } 
+        }
+        i = 1;
+        for(int j = 0; j<na; j++)
+        {        
+            float wmcur = ml.getHabit(i,j);
+            if(wmcur > wmmax1)
+            { 
+                wmmax1 = wmcur;
+                wmmax_ind1 = j;
+            } 
         }
 
-        cout<<"True prelearn max weight is "<<wmmax<<" for action "<<wmmax_ind<<endl;
+        cout<<"True prelearn max weight is (cue 0) "<<wmmax0<<" for action "<<wmmax_ind0<<endl;
+        cout<<"True prelearn max weight is (cue 1) "<<wmmax1<<" for action "<<wmmax_ind1<<endl;
     }
-    params["wmmax"] = to_string(wmmax);
-    params["wmmax_action"] = to_string(wmmax_ind);
+    params["wmmax0"] = to_string(wmmax0);
+    params["wmmax_action0"] = to_string(wmmax_ind0);
+    params["wmmax1"] = to_string(wmmax1);
+    params["wmmax_action1"] = to_string(wmmax_ind1);
 
     ml.backupWeights();
 }
 
-void perturbationExperimentEnv::initCBdir(float dir, bool resetState)
+void perturbationExperimentEnv::initCBdir(float x0,float y0, vector<float> patPMC, bool resetState)
 {
-    float xc,yc;
-    ml.getReachCenterPos(xc,yc);
+    //float xc,yc;
+    //ml.getReachCenterPos(xc,yc);
 
-    float radAngle = 2*M_PI*dir/360;
-    float x0=xc+armReachRadius*cos(radAngle);
-    float y0=yc+armReachRadius*sin(radAngle);
+    //float radAngle = 2*M_PI*dir/360;
+    //float x0=xc+armReachRadius*cos(radAngle);
+    //float y0=yc+armReachRadius*sin(radAngle);
 
     //cout<<"train CB for pt= "<<x0<<"  "<<y0<<endl;
 
-    float yylast[na] = {}; 
-    yylast[deg2action(dir)] = 1.;
-    ml.trainCB(x0,y0,yylast,1.,resetState);
+    ml.trainCB(x0,y0,&patPMC[0],resetState);
 }
 
 int perturbationExperimentEnv::deg2action(float degAngle)
@@ -359,7 +409,7 @@ int perturbationExperimentEnv::deg2action(float degAngle)
     return int(float(degAngle) / 360. * 100.);
 }
 
-int perturbationExperimentEnv::turnOnCues(float * cues)
+int perturbationExperimentEnv::turnOnCues(int k, float * cues)
 { 
     int cueInd=-100;     
     for(int i=0; i<nc; i++)
@@ -383,78 +433,131 @@ int perturbationExperimentEnv::turnOnCues(float * cues)
         else
             cueInd = 2;
     } 
-    else if (experimentPhase == PRELEARN)
+    else if (experimentPhase == PRELEARN_0)
     {
-        cueInd = 0;
+      cueInd = 0;
+      if(numPhases == 6)  // then we use two cues
+      {
+        cueInd = 2*(k < numTrialsPrelearn/2 ? 0 : 1);
+      }
+    }
+    else if (experimentPhase == PRELEARN_1)
+    {
+      cueInd = 1;
+      if(numPhases == 6)  // then we use two cues
+      {
+        cueInd = 1 + 2*(k < numTrialsPrelearn/2 ? 0 : 1);
+      }
     }
 
     cues[cueInd] = 1.;
     return cueInd;
 }
 
-float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *addInfo)
+void perturbationExperimentEnv::getCurTgt(float * x, float & x0, float & y0, float & tgtAngleDeg)
 {
-    float target = 0;
-    float rot = 0;
-    float sign = 1;
-    float ffield = 0.;
-    switch(experimentPhase)
-    {
+  float target = 0;
+  float tgt_xshift = 0;
+  float tgt_yshift = 0;
+  switch (experimentPhase)
+  { 
         case PRE1:
-            rot = 0;
             target = targetPre1;
             break;
         case PRE2:
             // Do something to mimic this simuations, occurin at random
-            rot = 0;
             target = targetPre2; 
             break;
         case ADAPT1:
             // Do something to mimic this simuations, occurin at random
-            if(endpoint_rotation1)
-                rot = dirShift;
             if(target_rotation1)
                 target = angDegAdd(targetPre1,dirShift);
             else if(target_xreverse1)   // here we suppose tragetPre1 < 180
-                target = 180-targetPre1;
+                target = angDegAdd(180,-targetPre1);
             else
                 target = targetPre1; 
-            if(endpoint_xreverse1)
-              sign = -1;
-            ffield = force_field1;
+            tgt_xshift = tgt_xshift1;
+            tgt_yshift = tgt_yshift1;
             break;
         case POST1:
-            rot = 0;
             target = targetPre1;
             break;
         case ADAPT2:
-            if(endpoint_rotation1)
-                rot = dirShift;
             if(target_rotation2)
                 target = angDegAdd(targetPre2,dirShift);
             else
                 target = targetPre2; 
             break;
         case POST2:
-            rot = 0;
             target = targetPre2;
             break;
-        case PRELEARN:
-            rot =0;
+        case PRELEARN_0:
             target = targetPre1;
+            break;
+        case PRELEARN_1:
+            target = targetPre1;
+            if(nc>1 && x[1] > EPS && action_change1)
+            { 
+              if(target_rotation1)
+                  target = angDegAdd(targetPre1,dirShift);
+              else if(target_xreverse1)   // here we suppose tragetPre1 < 180
+                  target = angDegAdd(180,-targetPre1);
+              else
+                  target = targetPre1; 
+
+              tgt_xshift = tgt_xshift1;
+              tgt_yshift = tgt_yshift1;
+            }
             break;
     }
 
-    float x0,y0;
+  float xc,yc;
+    ml.getReachCenterPos(xc,yc);
 
     //float A=.2;
-    float targetAngle = 2*M_PI*target/360;   // in radians
+    tgtAngleDeg = target;   
+    float tgtAngleRad = 2*M_PI*tgtAngleDeg/360;   // in radians
+
+    x0=xc+armReachRadius*cos(tgtAngleRad) + tgt_xshift;
+    y0=yc+armReachRadius*sin(tgtAngleRad) + tgt_yshift;
+}
+
+float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,float *addInfo)
+{
+    float rot = 0;
+    float sign = 1;
+    float ffield = 0.;
+    float endpt_xshift = 0;
+    float endpt_yshift = 0;
+
+    bool doExport = true;
+    switch(experimentPhase)
+    {
+        case ADAPT1:
+            // Do something to mimic this simuations, occurin at random
+            if(endpoint_rotation1)
+                rot = dirShift;
+            endpt_xshift = endpt_xshift1;
+            endpt_yshift = endpt_yshift1;
+            if(endpoint_xreverse1)
+              sign = -1;
+            ffield = force_field1;
+            break;
+        case ADAPT2:
+            if(endpoint_rotation1)
+                rot = dirShift;
+            break;
+        case PRELEARN_0:
+        case PRELEARN_1:
+            doExport = false;
+            break;
+    }
 
     float xc,yc;
     ml.getReachCenterPos(xc,yc);
 
-    x0=xc+armReachRadius*cos(targetAngle),
-    y0=yc+armReachRadius*sin(targetAngle);
+    float x0,y0,tgtAngleDeg;
+    getCurTgt(x,x0,y0,tgtAngleDeg);
 
     //setCBtarget(x0,y0);
 
@@ -477,6 +580,8 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
         ycur = xtmp*sin(angle) + ytmp*cos(angle) + yc;
     } 
     xcur = sign*xcur;
+    xcur += endpt_xshift;
+    ycur += endpt_yshift;
     float sc = rewardDist+0.01;  // to be unrewarded by default
     if(sector_reward)
     { 
@@ -488,7 +593,7 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
             angleCur0 = atan(-xd/yd)/ (2*M_PI) * 360  + (yd>0?90:-90) ;
         //float angleCur = angleCur1 < 180 ? angleCur1 : angleCur0 - 180;
         float angleCur = angleCur0 > 0 ? angleCur0 : angleCur0+360.;
-        float dif = angleCur-targetAngle/(2*M_PI)*360;
+        float dif = angleCur - tgtAngleDeg;
         float dif1 = (dif < 180. ? dif : dif-360);
         if( fabs(dist0 - armReachRadius)  < sector_thickness )
             sc = dif1;
@@ -511,7 +616,8 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
     addInfo[5] = xcbt;
     addInfo[6] = ycbt;
 
-    exporter.exportArm(k,xcur,ycur,x0,y0,xc,yc,addInfo);  // export percieved point
+    if(doExport)
+      exporter.exportArm(k,xcur,ycur,x0,y0,xc,yc,addInfo);  
     return sc;
 }
 
@@ -537,7 +643,7 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
     return R;
 }  
 
-//    string paramsEnvFile, int num_sess_,float tgt,int learn_cb_,float cb_learn_rate_,unsigned int seed
+//    string paramsEnvFile, int num_sess_,float tgt,int learn_cb_,float cbLRate_,unsigned int seed
 perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int num_sess_,unsigned int sess_seed_):Environment(params_,num_sess_)
 {
     sess_seed = sess_seed_;
@@ -550,6 +656,45 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
     numPhases         = stoi(params["numPhases"]);
 
     fake_prelearn     = stoi(params["fake_prelearn"]);
+
+    int percept_rot1=stoi(params["percept_rot1"]);
+    if(percept_rot1)
+    { 
+      params["actcue_change1"] = "1";
+      params["target_rotation1"] = "1";
+      params["endpoint_rotation1"] = "1";
+    }
+    int percept_xrev1=stoi(params["percept_xrev1"]);
+    if(percept_xrev1)
+    { 
+      params["actcue_change1"] = "1";
+      params["target_xreverse1"] = "1";
+      params["dirShift"] = "180";
+      params["endpoint_xreverse1"] = "1";
+    }
+
+    float percept_xshift1=stof(params["percept_xshift1"]);
+    if(fabs(percept_xshift1) > EPS)
+    { 
+      params["actcue_change1"] = "1";
+      params["endpt_xshift1"] = to_string(percept_xshift1);
+      params["tgt_xshift1"] = to_string(percept_xshift1);
+    }
+
+    float percept_yshift1=stof(params["percept_yshift1"]);
+    if(fabs(percept_yshift1) > EPS)
+    { 
+      params["actcue_change1"] = "1";
+      params["endpt_yshift1"] = to_string(percept_yshift1);
+      params["tgt_yshift1"] = to_string(percept_yshift1);
+    }
+
+    int actcue_change1=stoi(params["actcue_change1"]);
+    if(actcue_change1)
+    { 
+      params["cue_change1"] = "1";
+      params["action_change1"] = "1";
+    }
 
     action_change1 = stoi(params["action_change1"]);
     action_change2 = stoi(params["action_change2"]);
@@ -564,6 +709,10 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
     cue_change2 = stoi(params["cue_change2"]);
     endpoint_xreverse1 = stoi(params["endpoint_xreverse1"]);
     force_field1 = stof(params["force_field1"]);
+    endpt_xshift1 = stof(params["endpt_xshift1"]);
+    endpt_yshift1 = stof(params["endpt_yshift1"]);
+    tgt_xshift1 = stof(params["tgt_xshift1"]);
+    tgt_yshift1 = stof(params["tgt_yshift1"]);
 
     dirShift          = stof(params["dirShift"]);
     dirShiftInc       = stof(params["dirShiftInc"]);
@@ -578,7 +727,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
 
     learn_cb = stoi(params["learn_cb"]); // it may look stupid to do so right after prev. line but note that the same parameters object are passed to MotorLearning
     learn_bg = stoi(params["learn_bg"]); 
-    cb_learn_rate = stof(params["cb_learn_rate"]);
+    cbLRate = stof(params["cbLRate"]);
 
         
     ml.init(this,&exporter,params);  // we did it once in the Environemnt constructor but we might have changed learn_cb so do it again
@@ -597,13 +746,17 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
     randomCBStateInit = stoi(params["randomCBStateInit"]);
     randomCBStateInitAmpl = stof(params["randomCBStateInitAmpl"]);
 
+    prelearn_PMC_0.resize(na);
+    prelearn_PMC_1.resize(na);
+
     phasesNames.push_back("PRE1");
     phasesNames.push_back("PRE2");
     phasesNames.push_back("ADAPT1");
     phasesNames.push_back("POST1");
     phasesNames.push_back("ADAPT2");
     phasesNames.push_back("POST2");
-    phasesNames.push_back("PRELEARN");
+    phasesNames.push_back("PRELEARN_0");
+    phasesNames.push_back("PRELEARN_1");
 }
 
 perturbationExperimentEnv::~perturbationExperimentEnv()
