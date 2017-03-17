@@ -163,8 +163,10 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       float endpt_x = addInfoItem[3];
       float endpt_y = addInfoItem[4];
 
-      float t; // is may be set in the following function (it passes as a reference argument)
+      float t; // is may be set in the following function (it passes as a reference argument) -- originally thought to be randomness, determining whether we get reward or not, based on success (Piron setup)
       float R = env->getReward(sc,x,y,t);
+      if(error_clamp_mode)
+        R = rewardSize;
 
       if(doExport )
       { 
@@ -185,12 +187,22 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         float mod_dy = dx*sin(rotateErr) + dy*cos(rotateErr);
         if(xreverseErr)
           mod_dx = -mod_dx;
+
+        if(error_clamp_mode)
+        {
+          dx = 0, dy =0, mod_dx=0, mod_dy=0;
+        }
+
         if(modError)
           cb.learn(mod_dx, mod_dy); 
         else
           cb.learn(dx,dy);
         // else
         // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
+      }
+      else
+      {
+        exporter->exportCBMisc(0,0,0,0);
       }
 
     updateRpre(cueActive,R,0);   
@@ -242,6 +254,7 @@ MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & 
   modError = false;
   //prevy.resize(na);
   //std::fill(prevy.begin(),prevy.end(),0.);
+  error_clamp_mode = false;
 }
 
 MotorLearning::MotorLearning()
@@ -250,6 +263,8 @@ MotorLearning::MotorLearning()
   x_cb_target = 0;
   y_cb_target = 0;
   modError = false;
+
+  error_clamp_mode = false;
 }
 
 MotorLearning::~MotorLearning()
@@ -261,10 +276,10 @@ void MotorLearning::initParams(parmap & params)
     //expCoefRpre = paramsML["expCoefRpre"]; 
     Rpre_coef = stof(params["Rpre_coef"]); 
     T = stof(params["T"]); 
+    rewardSize = stof(params["rewardSize"]);
 
     learn_cb = stoi(params["learn_cb"]);
     learn_bg = stoi(params["learn_bg"]); 
-    rewardSize =  stof(params["rewardSize"]);
 
     trainCBEveryTrial = stoi(params["trainCBEveryTrial"]);
     retrainCB_useCurW = stoi(params["retrainCB_useCurW"]);
@@ -284,6 +299,11 @@ void MotorLearning::initParams(parmap & params)
 void MotorLearning::setModError(bool me)
 {
   modError = me;
+}
+
+void MotorLearning::setErrorClamp(bool ec)
+{
+  error_clamp_mode = ec;
 }
 
 void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & params)

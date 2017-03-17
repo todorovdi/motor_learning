@@ -1,5 +1,4 @@
 #include "pert.h"
-#include <boost/program_options.hpp>
 
 #ifdef PARALLEL
 #include <omp.h>
@@ -7,98 +6,8 @@
 
 #define ACTION_CHANGE_SECOND
 
-void runExperiment(int argc, char** argv)
+void runExperiment(parmap & params)
 {
-    namespace po = boost::program_options;
-    po::options_description desc("Options");
-
-    // possible command line params are taken from pert.ini file. Even if you supply another iniEnv later
-    parmap paramsPre;
-    readIni("pert.ini",paramsPre);
-    parmap::iterator it = paramsPre.begin();
-    for(;it!=paramsPre.end();it++)
-    {
-      desc.add_options()(it->first.c_str(),po::value<std::string>()->default_value(it->second),it->first.c_str());
-    }
-    desc.add_options()("iniEnv", po::value<string>()->default_value(""), "Ini params for the environment file name");
-    desc.add_options()("help,h", "Help screen");
-
-    // read command line parameters. Most imortant -- number of sessions and name of the iniFile
-//    desc.add_options()
-//      ("help,h", "Help screen")
-//      ("n", po::value<int>()->default_value(1), "Number of experiment runs (sessions)")
-//      ("prefix", po::value<string>(), "prefix")
-//      ("targetPre1", po::value<float>(), "targetPre1")
-//      ("learn_cb", po::value<int>(), "learn_cb")
-//      ("learn_bg", po::value<int>(), "learn_bg")
-//      ("cbLRate", po::value<float>(), "cbLRate")
-//      ("endpoint_rotation1", po::value<int>(), "endpoint_rotation1")
-//      ("endpoint_xreverse1", po::value<int>(), "endpoint_xreverse1")
-//      ("action_change1", po::value<int>(), "action_change1")
-//      ("cue_change1", po::value<int>(), "cue_change1")
-//      ("force_field1", po::value<float>(), "force_field1")
-//      ("seed", po::value<unsigned int>(), "seed")
-//      ("pdfSuffix", po::value<string>(), "pdfSuffix")
-//      ("suffix", po::value<string>(), "Suffix");
-
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    //notify(vm);
-    //
-    cout<<"cmd line args are "<<endl;
-    for(int i=0;i<argc;i++)
-    {
-      cout<<argv[i]<<endl;
-    }
-
-    if (vm.count("help"))
-      std::cout << desc << '\n';
-
-    string paramsEnvFile;
-    if (vm.count("iniEnv"))
-    { 
-        paramsEnvFile =vm["iniEnv"].as<string>();
-        if(!paramsEnvFile.length())
-            paramsEnvFile = "pert.ini";
-    }
-
-    parmap params;
-    readIni(paramsEnvFile,params);
-    
-    /////////   before I used several files to store parameters
-    // so just to maintain backward compatibility
-    parmap::iterator i;
-    i = params.find("iniBG");
-    if(i!= params.end())
-        readIni(i->second,params);
-
-    i = params.find("iniCB");
-    if(i!= params.end())
-        readIni(i->second,params);
-
-    i = params.find("iniArm");
-    if(i!= params.end())
-        readIni(i->second,params);
-
-    i = params.find("iniML");
-    if(i!= params.end())
-        readIni(i->second,params);
-
-    for(it = params.begin();it!=params.end();it++)
-    {
-      string s = it->first;
-      if(vm.count(s) )
-      { 
-        params[s] = vm[s].as<string>();
-      }
-    }
-
-
-    cout<<"pdfSuffix="<<params["pdfSuffix"]<<endl;
-    params["datPrefix"] = params["pdfSuffix"]; 
-
-    //int nsessions = vm["n"].as<int>(); 
-    //params["nsessions"] = to_string(nsessions); 
     int nsessions = stoi(params["nsessions"]); 
 
     unsigned int seed =   time(NULL);  
@@ -585,7 +494,6 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
     float sc = rewardDist+0.01;  // to be unrewarded by default
     if(sector_reward)
     { 
-        float dist0=hypot(xcur-xc,ycur-yc); 
         float xd = (xcur-xc);  
         float yd = (ycur-yc);  
         float angleCur0 = atan( yd/xd) / (2*M_PI) * 360;
@@ -595,6 +503,8 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
         float angleCur = angleCur0 > 0 ? angleCur0 : angleCur0+360.;
         float dif = angleCur - tgtAngleDeg;
         float dif1 = (dif < 180. ? dif : dif-360);
+
+        float dist0=hypot(xd,yd); 
         if( fabs(dist0 - armReachRadius)  < sector_thickness )
             sc = dif1;
         else
@@ -715,9 +625,9 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
     tgt_yshift1 = stof(params["tgt_yshift1"]);
 
     dirShift          = stof(params["dirShift"]);
-    dirShiftInc       = stof(params["dirShiftInc"]);
+    dirShiftIncSess       = stof(params["dirShiftIncSess"]);
 
-    dirShift += num_sess * dirShiftInc;
+    dirShift += num_sess * dirShiftIncSess;
 
     // Note that we than save all the params with modifications, to the output
     params["dirShift"] = to_string(dirShift);
@@ -732,10 +642,11 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
         
     ml.init(this,&exporter,params);  // we did it once in the Environemnt constructor but we might have changed learn_cb so do it again
 
-
     numTrials = numTrialsPre+numTrialsAdapt+numTrialsPost;
     if(numPhases == 6)
       numTrials = numTrialsPre*2+numTrialsAdapt*2+numTrialsPost*2;
+
+    // experiment phase params -- one of the pert (or several), name of the phase, numTrials
 
     sector_thickness = stof(params["sector_thickness"]);
     sector_width = stof(params["sector_width"]);

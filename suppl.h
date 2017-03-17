@@ -73,4 +73,19 @@ inline float fmodAng(float f){return fmod(f,360.);}
 
 inline float angDegAdd(float ang1, float ang2){return fmodAng(ang1+ang2);}
 
+//inline float dirDiff(float ang1, float ang2) // in deg
+//{
+//  float res = 0;
+//  if(ang1 < 180 && ang2 < 180)
+//  {
+//    res = ang1-ang2;
+//  }
+//  else if(ang1 < 180 && ang2 > 180)
+//  {
+//    res = fmin(  ang1 + (360 - ang2) );
+//  }
+//
+//  return res;
+//}
+
 #endif

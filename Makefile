@@ -1,9 +1,10 @@
 addhCbonly = par.h params*
 addcCbonly = reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                  
-#addh = suppl.h learn.h file_export.h par.h params*
-#addc = learn.cpp suppl.cc file_export.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                                 
-addh2 = pert.h BG_model.h suppl.h exporter.h environment.h arm.h motor_learning.h par.h 
-addc2 = pert.cpp learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp exporter.cpp environment.cpp suppl.cpp reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                                 
+
+addh = pert.h BG_model.h suppl.h exporter.h environment.h arm.h motor_learning.h par.h 
+addc = pert.cpp learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp exporter.cpp environment.cpp suppl.cpp reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                                 
+addh2 = BG_model.h suppl.h exporter.h environment.h arm.h motor_learning.h par.h 
+addc2 = learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp exporter.cpp environment.cpp suppl.cpp reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                                 
 
 #learn: learn.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc   par.h
 #	g++  -O2  learn.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc  muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc  -o    $@
@@ -18,18 +19,20 @@ addc2 = pert.cpp learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp 
 #cb_orig_dbg: reach_cb_orig.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc   par.h
 #	g++  -g  reach_cb_orig.cc TrajectoriesAnglesVelocityAcceleration.cc  muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc  -o    $@
 #
-#galea: galea.cc galea.h galea_export.h galea_export.cc $(addc) $(addh)
-#	g++  -D BUILD_GALEA -O2 $(addc) galea.cc galea_export.cc -o   $@
-#	g++  -D BUILD_GALEA -g $(addc) galea.cc galea_export.cc -o   $@_dbg
-#
-#force_field: force_field.cc force_field.h force_field_export.h force_field_export.cc $(addc) $(addh)
-#	g++  -D BUILD_FORCE_FIELD -O2 $(addc) force_field.cc force_field_export.cc -o   $@
-#	g++  -D BUILD_FORCE_FIELD -g $(addc) force_field.cc force_field_export.cc -o   $@_dbg
+pert: $(addc) $(addh)
+	g++ -std=c++11 -D BUILD_PERT  -O2 $(addc2) pert.cpp -o   $@        -lboost_system -lboost_program_options
+	g++ -std=c++11 -D BUILD_PERT  -g $(addc2) pert.cpp -o   $@_dbg     -lboost_system   -lboost_program_options
 
-pert: $(addc2) $(addh2)
-	g++ -std=c++11 -D BUILD_PERT  -O2 $(addc2) -o   $@        -lboost_system -lboost_program_options
-	g++ -std=c++11 -D BUILD_PERT  -g $(addc2)  -o   $@_dbg     -lboost_system   -lboost_program_options
-
-pert_prl: $(addc2) $(addh2)
-	g++ -std=c++11 -D BUILD_PERT -D PARALLEL -fopenmp -O2 $(addc2) -o   $@        -lboost_system -lboost_program_options
+pert_prl: $(addc) $(addh)
+	g++ -std=c++11 -D BUILD_PERT -D PARALLEL -fopenmp -O2 $(addc2) pert.cpp -o   $@        -lboost_system -lboost_program_options
 #	g++ -std=c++11 -D BUILD_GALEA -fopenmp -g $(addc2)  -o   $@_dbg     -lboost_system   -lboost_program_options
+#
+izshad: $(addc2) $(addh2) izshad.h izshad.cpp
+	g++ -std=c++11 -D BUILD_IZSHAD -O2 $(addc2) izshad.cpp -o   $@        -lboost_system -lboost_program_options
+	g++ -std=c++11 -D BUILD_IZSHAD -g $(addc2) izshad.cpp -o   $@_dbg        -lboost_system -lboost_program_options
+#
+izshad_prl: $(addc2) $(addh2) izshad.h izshad.cpp
+	g++ -std=c++11 -D BUILD_IZSHAD -D PARALLEL -fopenmp -O2 $(addc2) izshad.cpp -o   $@        -lboost_system -lboost_program_options
+
+shmuelof_prl: $(addc2) $(addh2) izshad.h izshad.cpp
+	g++ -std=c++11 -D BUILD_SHMUELOF -D PARALLEL -fopenmp -O2 $(addc2) izshad.cpp -o   $@        -lboost_system -lboost_program_options

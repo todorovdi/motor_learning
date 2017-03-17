@@ -4,11 +4,17 @@ $ make <one of the build targets from Makefile>
 $ run_<experiment name>.sh <param1> <param2> <param3>
 
 this would 
-1) clear <experiment_name>_output  directory
-2) run the compiled program with the parameters given to the script
-(which parameters and how passed to the executable -- see the actuall
-shell script file, it is experiment-specific). It put all output in <experiment_name>_output  directory 
-3) runs data processing with python which is supposed to put all its
+1) clear ~/tmp_out_calc output directory from existing *.dat files
+2) create output_<experiment_name> directory
+3) run the compiled program with the parameters given to the script.
+Which parameters and how passed to the executable -- see the actuall
+shell script file, it is experiment-specific. But you always have to
+provide desired number of sessions. The second parameter is whether
+you want to delete existing .dat files or use the existing ones
+(useful for plotting code testing)
+It put all pdf output in <experiment_name>_output  directory (and .dat
+files with data in ~/tmp_out_calc)
+4) runs data processing with python which is supposed to put all its
 ouput <experiment name>.plot
 
 Note that parameters given in the command line are supposed to

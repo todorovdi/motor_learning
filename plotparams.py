@@ -34,6 +34,8 @@ def paramsInit(fname,readMultParamFiles = True):
     global numTrialsPost
     global trials1End
     global dirShift
+    global phaseEnds
+    global phaseNames
 
     paramsEnv = paramFileRead(fname) 
 
@@ -61,14 +63,37 @@ def paramsInit(fname,readMultParamFiles = True):
             paramsCB = paramFileRead(iniCB)
             paramsEnv.update(paramsCB)
 
-    targetPre1_def = float(paramsEnv["targetPre1"])
-    targetPre2 = float(paramsEnv["targetPre2"])
-    dirShift = float(paramsEnv["dirShift"])
-    numPhases = int(paramsEnv["numPhases"])
-    numTrialsPre = int(paramsEnv["numTrialsPre"])
-    numTrialsAdapt = int(paramsEnv["numTrialsAdapt"])
-    numTrialsPost = int(paramsEnv["numTrialsPost"])
+    if "dirShift" in paramsEnv:
+        dirShift = float(paramsEnv["dirShift"])
+    if "numTrialsPre" in paramsEnv:
+        numTrialsPre = int(paramsEnv["numTrialsPre"])
+    if "numTrialsAdapt" in paramsEnv:
+        numTrialsAdapt = int(paramsEnv["numTrialsAdapt"])
+    if "numTrialsPost" in paramsEnv:
+        numTrialsPost = int(paramsEnv["numTrialsPost"])
 
+    numPhases = int(paramsEnv["numPhases"])
+
+
+    phaseEnds = []
+    phaseNames = []
+    curTrial = 0
+    for i in range(numPhases):
+        keyname = "numTrials" + str(i)
+        if (keyname not in paramsEnv):
+            break
+        n = int(paramsEnv[keyname] )
+        if ("name"+str(i) ) in paramsEnv:
+            name = paramsEnv["name"+str(i)]
+            if(name == ""):
+                continue
+            phaseNames.append(name)
+            phaseEnds.append(curTrial)
+        curTrial = curTrial + n
+    phaseEnds.append(curTrial)
+
+    #if ("numTrialsPre" in paramsEnv) and len(phaseEnds) == 0:
     trials1End = numTrialsPre+numTrialsAdapt+numTrialsPost
     trials1 = range(trials1End)
     trials2 = range(trials1End,trials1End*2)
+    print "fdsfd"

@@ -4,7 +4,6 @@
 #include "exporter.h"
 #include "environment.h"
 
-
 class perturbationExperimentEnv: public Environment
 {
     float targetPre1; // in degrees
@@ -37,14 +36,14 @@ class perturbationExperimentEnv: public Environment
     float endpt_yshift1;
     float tgt_xshift1;
     float tgt_yshift1;
+    bool endpoint_xreverse1;
+    float force_field1;
 
     bool action_change2;
     bool endpoint_rotation2;
     bool target_rotation2;
     bool cue_change1;
     bool cue_change2;
-    bool endpoint_xreverse1;
-    float force_field1;
 
     int learn_cb;                
     int learn_bg;
@@ -52,7 +51,7 @@ class perturbationExperimentEnv: public Environment
     int randomCBStateInit;
     float randomCBStateInitAmpl;
 
-    int dirShiftInc;
+    int dirShiftIncSess;
     unsigned int sess_seed;
 
     vector<float> prelearn_PMC_0;
@@ -77,6 +76,6 @@ class perturbationExperimentEnv: public Environment
     void initCBdir(float x0, float y0, vector<float> patPMC, bool resetState);
 };
 
-void runExperiment(int argc, char** argv);
+void runExperiment(parmap & params);
 
 enum experimentPhases {PRE1=0, PRE2=1, ADAPT1=2, POST1=3,  ADAPT2=4, POST2=5, PRELEARN_0=6, PRELEARN_1=7};

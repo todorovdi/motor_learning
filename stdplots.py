@@ -23,8 +23,15 @@ def armFileRead(fname):
 
 def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_actual=[],cbtgt_actual=[]):
 
-    ylim = 1.1
+    yc = 0.4
     xlim = 0.6
+    yadd = 0.7
+    if "reachBoxXsz" in pp.paramsEnv:
+        xlim = float(pp.paramsEnv["reachBoxXsz"])
+    if "reachBoxYsz" in pp.paramsEnv:
+        yadd = float(pp.paramsEnv["reachBoxYsz"])
+    ylim = yadd + yc
+
     ax.set_ylim([0,ylim])
     ax.set_xlim([-xlim,xlim])
     ax.set_xticks(np.arange(-xlim,xlim,0.1))
@@ -80,15 +87,22 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
 
     xc = 0
     yc = 0.4
-
-    tgtRot =  int(pp.paramsEnv["target_rotation1"] ) 
-    tgtRev =  int(pp.paramsEnv["target_xreverse1"] ) 
+         
+    tgtRot = 0
+    tgtRev = 0
+    if "target_rotation1" in pp.paramsEnv:
+        tgtRot =  int(pp.paramsEnv["target_rotation1"] ) 
+    if "target_xreverse1" in pp.paramsEnv:
+        tgtRev =  int(pp.paramsEnv["target_xreverse1"] ) 
     tgt1_defined=False
     tgt2_defined=False
 
     if(len(tgt) == 0):
         arrad = float(pp.paramsEnv["armReachRadius"])
-        tgtPre1 = float(pp.paramsEnv["targetPre1"])
+        if "defTgt0" in pp.paramsEnv:
+            tgtPre1 = float(pp.paramsEnv["defTgt0"])
+        else:
+            tgtPre1 = 0
         tgtPre1 = (tgtPre1 / 360.) * 2 * math.pi
         xr1 = xc + arrad*math.cos(tgtPre1)
         yr1 = yc + arrad*math.sin(tgtPre1)
@@ -183,7 +197,6 @@ def genBGActivityPlot(fig,ax,fname,cols=range(0,300)):
     #ax.set_aspect(2)
     #fig.savefig('equal.png')
     ax.set_aspect('auto')
-    ax.set_xlim([0,pp.trials1End])
     ax.grid(False)
     ax.set_title('BG populations activity plot',y=1.04)
     #fig.savefig('auto.png')
@@ -231,12 +244,15 @@ def genCBTuningPlot(fig,ax,fname):
 
 def genCBMiscPlot(fig,ax,fname):
     errMult = 7.
-    errMultSmall = 5.
+    #errMultSmall = 5.
+
+    if "cbMiscErrMult" in pp.paramsEnv:
+        errMult = float(pp.paramsEnv["cbMiscErrMult"])
 
     misc = np.loadtxt(fname)
     rates = misc[:,0]
     errAbsLarge = errMult * misc[:,1]
-    errAbsSmall = errMultSmall * misc[:,1]
+    #errAbsSmall = errMultSmall * misc[:,1]
     ratios = misc[:,2]
     #prevErrAbs = errMult * misc[:,3]
     #(nrows, ncols) = misc.shape
@@ -254,6 +270,8 @@ def genCBMiscPlot(fig,ax,fname):
     cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
 
     ylmax =  cbUpdDst/0.01 #1.8*mx
+    if "cbMiscGraph_y_axis_max" in pp.paramsEnv:
+        ylmax = float(pp.paramsEnv["cbMiscGraph_y_axis_max"] )
     ylmin = -mux
     ax.set_ylim(ylmin,ylmax)
     ax.set_yticks(np.arange(ylmin,ylmax,1.))

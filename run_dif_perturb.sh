@@ -1,5 +1,6 @@
 runfile="./pert_prl"
 #runfile="./pert"
+plotfile= "pert.plot.py"
 
 perturb()
 {
@@ -8,7 +9,7 @@ perturb()
   if [ $useOldData == "0" ]; then
     $runfile --nsessions=$4 --learn_bg=$2 --learn_cb=$3 --pdfSuffix="$pdfSuffix" $1 --seed=$seed
   fi
-  python pert.plot.py "$pdfSuffix"
+  python "$plotfile" "$pdfSuffix"
   #rm -f $calc_dir/*.dat
 }
 
@@ -40,6 +41,7 @@ if [ $# -eq 0 ]; then
 else
 
   mkdir -p output_pert
+  mkdir -p output_pert/single_sess
   calc_dir=$HOME/tmp_out_calc 
   mkdir -p $calc_dir
 
@@ -87,8 +89,9 @@ else
   p="--Q=0.05" 
   ud="--updateCBStateDist=0.12"
 
-  perturbAllConfig $1 "--percept_xshift1=-0.25 --fake_prelearn=0 --numTrialsPrelearn=1400 $p $ud" 
+  #perturbAllConfig $1 "--percept_xshift1=-0.25 --fake_prelearn=0 --numTrialsPrelearn=1400 $p $ud" 
 
+  #perturbAllConfig $1 "--actcue_change1=1 --dirShift=30 $p $ud" 
   #perturbAllConfig $1 "--actcue_change1=1 --dirShift=90 $p $ud" 
   #perturbAllConfig $1 "--percept_xshift1=-0.1 --percept_yshift1=0.1 --fake_prelearn=0 --numTrialsPrelearn=1400 $p $ud" 
   #perturbAllConfig $1 "--percept_rot1=1 $p --dirShift=90 $ud" 
@@ -96,18 +99,37 @@ else
   #perturbAllConfig $1 "--percept_xrev1=1 $p              $ud" 
   #perturbAllConfig $1 "--force_field1=-3.0 --targetPre1=90 $p" 
 
-  #bg_on_cb_on=1
-  #bg_off_cb_on=1
-  #bg_on_cb_off=1
+  bg_on_cb_on=1
+  bg_off_cb_on=1
+  bg_on_cb_off=1
 
   #ud="--updateCBStateDist=0.06"
 
+  #perturbAllConfig $1 "--action_change1=1 --cue_change1=1 --dirShift=90 $p $ud" 
   #perturbAllConfig $1 "--action_change1=1 --cue_change1=1 --dirShift=30 $p $ud" 
   #perturbAllConfig $1 "--percept_xshift1=-0.1 --percept_yshift1=0.1 --fake_prelearn=0 --numTrialsPrelearn=1400 $p $ud" 
   #perturbAllConfig $1 "--percept_xrev=1 $p  $ud" 
   #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=90 $ud" 
   #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=30 $ud" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=30 $ud" 
   #perturbAllConfig $1 "--force_field1=-3.0 --targetPre1=90 $p $ud" 
+
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=80 $ud" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=70 $ud" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=50 $ud" 
+
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=80 $ud --rewardDist=0.05" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=70 $ud --rewardDist=0.05" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=50 $ud --rewardDist=0.05" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=30 $ud --rewardDist=0.05" 
+
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=80 $ud --rewardDist=0.03" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=70 $ud --rewardDist=0.03" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=50 $ud --rewardDist=0.03" 
+  #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=30 $ud --rewardDist=0.03" 
+
+  #perturbAllConfig $1 "--actcue_change1=1 $p --dirShift=30 $ud --rewardDist=0.03" 
+  perturbAllConfig $1 "--actcue_change1=1 $p --dirShift=30 $ud --sector_reward=1" 
 
   #perturbAllConfig $1 "--endpoint_rotation1=1 --cue_change1=1 --action_change1=1 --dirShift=30 --target_rotation1=1" 
   ###############

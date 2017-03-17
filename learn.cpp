@@ -5,7 +5,7 @@
 #include "suppl.h"
 #include "exporter.h"
 #include "environment.h"
-
+#include <boost/program_options.hpp>
 
 #ifdef  BUILD_PIRON_ARM
 #include "piron_arm.h"
@@ -26,6 +26,10 @@
 
 #ifdef  BUILD_PERT
 #include "pert.h"
+#endif
+
+#if defined(BUILD_IZSHAD) or defined(BUILD_SHMUELOF)
+#include "izshad.h"
 #endif
 
 #include <time.h>
@@ -57,17 +61,90 @@ int main(int argc, char** argv)
 
     clock_t start = clock();
     cout<<"Calc started"<<endl;
-    //cout<<"Calc started, nc = "<<nc<<" na = "<<na<<" nsessions "<<nsessions<<" numTrials = "<<numTrials<<endl;
-    //bool presetSeed = false;
-    //unsigned int seed =   time(NULL);  presetSeed = false; 
-    //seed = 1486963713;   presetSeed = true;  
-    ////seed = 1486963714;   presetSeed = true;  
-    //srand(seed);
-    //cout<<"seed is "<<seed<<endl;
-    //if(presetSeed)
-    //    cout<<"WARNING: PRESET SEED IS ACTIVE!!!!"<<endl;
 
-    runExperiment(argc,argv);
+    namespace po = boost::program_options;
+    po::options_description desc("Options");
+
+#ifdef BUILD_PERT
+  string defParamFile = "pert.ini";
+#elif defined(BUILD_IZSHAD)
+  string defParamFile = "izshad.ini";
+#elif defined(BUILD_SHMUELOF)
+  string defParamFile = "shmuelof.ini";
+#endif
+
+    // possible command line params are taken from pert.ini file. Even if you supply another iniEnv later
+    parmap paramsPre;
+    readIni(defParamFile,paramsPre);
+
+    parmap::iterator it = paramsPre.begin();
+    for(;it!=paramsPre.end();it++)
+    {
+      desc.add_options()(it->first.c_str(),po::value<std::string>()->default_value(it->second),it->first.c_str());
+    }
+    desc.add_options()("iniEnv", po::value<string>()->default_value(""), "Ini params for the environment file name");
+    desc.add_options()("help,h", "Help screen");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    //
+    cout<<"cmd line args are "<<endl;
+    for(int i=0;i<argc;i++)
+    {
+      cout<<argv[i]<<endl;
+    }
+
+    if (vm.count("help"))
+      std::cout << desc << '\n';
+
+    string paramsEnvFile;
+    if (vm.count("iniEnv"))
+    { 
+        paramsEnvFile =vm["iniEnv"].as<string>();
+        if(!paramsEnvFile.length())
+            paramsEnvFile = defParamFile;
+    }
+
+    parmap params;
+    readIni(paramsEnvFile,params);
+    
+    /////////   before I used several files to store parameters
+    // so just to maintain backward compatibility
+    parmap::iterator i;
+    i = params.find("iniBG");
+    if(i!= params.end())
+        readIni(i->second,params);
+
+    i = params.find("iniCB");
+    if(i!= params.end())
+        readIni(i->second,params);
+
+    i = params.find("iniArm");
+    if(i!= params.end())
+        readIni(i->second,params);
+
+    i = params.find("iniML");
+    if(i!= params.end())
+        readIni(i->second,params);
+
+    for(it = params.begin();it!=params.end();it++)
+    {
+      string s = it->first;
+      if(vm.count(s) )
+      { 
+        params[s] = vm[s].as<string>();
+      }
+    }
+
+
+    cout<<"pdfSuffix="<<params["pdfSuffix"]<<endl;
+    params["datPrefix"] = params["pdfSuffix"]; 
+
+    //int nsessions = vm["n"].as<int>(); 
+    //params["nsessions"] = to_string(nsessions); 
+
+
+    runExperiment(params);
 
     clock_t end = clock();
     cout<<"Calc finished, clock time (in sec) passed is "<<(end-start)/CLOCKS_PER_SEC<<endl;

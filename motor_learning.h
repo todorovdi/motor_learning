@@ -23,6 +23,7 @@ class MotorLearning
     bool retrainCB_useCurW;
     vector<float> Rpre;
     float Rpre_coef;              // how much of current reward we use for the new reward prediction error
+
     float T;                      // integration duration max limit
     float rewardSize;
     float rotateErr;
@@ -30,6 +31,7 @@ class MotorLearning
     bool modError;
     bool habit2PMCdirectly;
 
+    bool error_clamp_mode;
     //vector<float> prevy;
 
     //parmap & params;
@@ -71,6 +73,7 @@ class MotorLearning
     void setFfield(float ff);
     // whether we use distorted error for cb learning
     void setModError(bool me);
+    void setErrorClamp(bool ec);
 
     // sets paritcular habit, does not flush existing habits
     void setHabit(int cue, int action, float strength);
