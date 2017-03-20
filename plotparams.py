@@ -33,8 +33,8 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
 
     armFileSkiprows = int(params_["armFileSkiprows"])
     pdfForEachSession = int(params_["pdfForEachSession"])
-    reachBoxXsz = int(params_["reachBoxXsz"])
-    reachBoxYsz = int(params_["reachBoxYsz"])
+    reachBoxXsz = float(params_["reachBoxXsz"])
+    reachBoxYsz = float(params_["reachBoxYsz"])
     cbMiscGraph_y_axis_max = float(params_["cbMiscGraph_y_axis_max"])
     cbMiscErrMult = float(params_["cbMiscErrMult"])
     xtickSkip = int(params_["xtickSkip"])

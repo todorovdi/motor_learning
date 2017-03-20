@@ -407,8 +407,8 @@ if val == "":
 else:
     paramFileName = val
 
-paramsInit(paramFileName)
-exportVarsInit(pp.paramsEnv)
+pp.paramsInit(paramFileName)
+pp.exportVarsInit(pp.paramsEnv)
 
 dat_basenames = sys.argv[1:]
 
