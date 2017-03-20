@@ -164,7 +164,7 @@ def genFigurePert(fnames,outname):
 
         rangePre1 = range(0,pp.phaseBegins[1])
         figName = "Adapt1"
-        if "emphPhase" in pp.paramsEnv:
+        if pp.emphPhase != -1:
             ep = pp.emphPhase
             rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
             figName = pp.paramsEnv["name"+str(ep)]
@@ -245,7 +245,7 @@ def genFigurePertMulti(dat_basenames):
 
         rangePre1 = range(0,pp.phaseBegins[1])
         figName = "Adapt1"
-        if "emphPhase" in pp.paramsEnv:
+        if pp.emphPhase != -1:
             ep = pp.emphPhase
             rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
             figName = pp.paramsEnv["name"+str(ep)]
@@ -303,7 +303,7 @@ def genReachingByPhase(fname):
 
     rangePre1 = range(0,pp.phaseBegins[1])
     figName = "Adapt1"
-    if "emphPhase" in pp.paramsEnv:
+    if pp.emphPhase != -1:
         ep = pp.emphPhase
         rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
         figName = pp.paramsEnv["name"+str(ep)]

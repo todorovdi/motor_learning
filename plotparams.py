@@ -38,11 +38,20 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     cbMiscGraph_y_axis_max = float(params_["cbMiscGraph_y_axis_max"])
     cbMiscErrMult = float(params_["cbMiscErrMult"])
     xtickSkip = int(params_["xtickSkip"])
-    plotReachAngles = int(params_["plotReachAngles"])
+    y_axis_step = float(params_["y_axis_step"])
+    try:
+        plotReachAngles = int(params_["plotReachAngles"])
+    except KeyError:
+        plotReachAngles = 0
+        print "no emphPhase in params"
     y_axis_max = float(params_["y_axis_max"])
     y_axis_signed = int(params_["y_axis_signed"])
     y_axis_step = float(params_["y_axis_step"])
-    emphPhase = int(params_["emphPhase"])
+    try:
+        emphPhase = int(params_["emphPhase"])
+    except KeyError:
+        emphPhase = -1
+        print "no emphPhase in params"
 
 def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one before calc, or not. The one after calc contains changes from command line
     global paramsEnv
