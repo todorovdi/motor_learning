@@ -75,10 +75,44 @@ void readIni(std::string fname, parmap & configValues)
             if (key[0] == '#')
                 continue;
 
-            if (std::getline(is_line, value))
+            if (std::getline(is_line, value, '#'))
             {
-                configValues[trim_spaces(key)] = trim_spaces(value);
+              key = trim_spaces(key);
+              value = trim_spaces(value);
+              parmap::iterator iter = configValues.find(key);
+              if(iter!= configValues.end())
+              { 
+                cout<<"readIni overwriting key "<<key<<" old val = "<<iter->second<<" new val = "<<value<<endl;
+              } 
+              configValues[key] = value;
             }
         }
     }
+}
+
+void parseCMDargs(int argc, char ** argv, parmap & configValues)
+{
+  for(int i = 0; i<argc; i++)
+  {
+    string s = argv[i];
+    if( s.length() >= 5 && s[0] == '-' && s[1] == '-' )  // --a=b
+    {
+      std::istringstream is_line(argv[i]+2);
+      std::string key, value;
+      if (std::getline(is_line, key, '='))   // key=value, no spaces
+      {
+        if (std::getline(is_line, value))
+        {
+          key = trim_spaces(key);
+          value = trim_spaces(value);
+          parmap::iterator iter = configValues.find(key);
+          if(iter!= configValues.end())
+          { 
+            cout<<"parseCMDargs overwriting key "<<key<<" old val = "<<iter->second<<" new val = "<<value<<endl;
+          } 
+          configValues[key] = value;
+        }
+      }
+    }
+  }
 }

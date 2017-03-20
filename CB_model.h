@@ -43,11 +43,11 @@ class CB_model
         // last argument tells wheter we want to keep current state or reset it to the default
         void train(float x0, float y0, float * yy = 0, bool flushW=true, bool useCurW=false, float ffield=0.);
         void trainCurPt(float * yy=0, float ffield=0., bool flushW=false, bool useCurW=true);
-        void flush();   // resets DF tensor to zeros
+        void flushTuning();   // resets DF tensor to zeros
 
         void moveArm(float * y, float * out, float ffield);   // pretty sefl-descriptive
         void resetPrevErr(float pe = 100.);
-        void resetLearnRate();
+        void resetLearnRate(float lr = -100);
     
         // sets the target directly. Rarely used, because usually you would like 
         // to retrain CB to reach this point -- so you would call train method instead 

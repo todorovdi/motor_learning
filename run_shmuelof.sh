@@ -1,43 +1,46 @@
-make shmuelof_prl
-runfile="./shmuelof_prl"
-plotfile="shmuelof.plot.py"
+runfile="./izshad_prl"
+plotfile="universal.plot.py"
+pdfdir=output_for_paper
+experimentName=shmuelof
+ini="$experimentName.ini"
 
-perturb()
-{
-  pdfSuffix="${1}_bg${2}_cb${3}"
-  echo $pdfSuffix
-  if [ $useOldData == "0" ]; then
-    $runfile --nsessions=$4 --learn_bg=$2 --learn_cb=$3 --pdfSuffix="$pdfSuffix" $1 --seed=$seed
-  fi
-  python "$plotfile" "$pdfSuffix"
-  #rm -f $calc_dir/*.dat
-}
+bg_on_cb_on=1
+bg_off_cb_on=1
+bg_on_cb_off=1
 
-if [ $# -eq 0 ]; then
-  echo "Please supply number of sessions"
-else
+seed=0     #makes <more or less> random seed
 
-  mkdir -p output_shmuelof
-  mkdir -p output_shmuelof/single_sess
-  calc_dir=$HOME/tmp_out_calc 
-  mkdir -p $calc_dir
-
-  useOldData="1"  #by default we use old data
-  if [ $# -ge 2 ]; then
-    useOldData=$2
-  fi
-
-  if [ $useOldData == "0" ]; then
-    rm -f output_ishad/*.dat
-    rm -f $calc_dir/*.dat
-  else
-    echo "Plotting without recalc"
-  fi
-
-  seed=0     #makes <more or less> random seed
-
-  perturb --iniEnv=shmuelof.ini 1 1 $1
-  perturb "--iniEnv=shmuelof.ini --learn_cb2=0" 1 1 $1
-  #perturb --iniEnv=shmuelof_NA.ini 1 1 $1
-
+if [ $# -eq 2 ] & [ $2 -eq 0 ]; then
+  make izshad_prl
 fi
+
+. ./run_dif_perturb.sh    # . means to source a script, so that it can use variables from the current script
+
+if [ $# -ne 0 ]; then
+  args1=""
+  args2=""
+  args3=""
+  args4=""
+  args5=""
+
+  perturb "--ini=$ini $addOptions" 1 1 $1 
+  args1=$pdfSuffix
+
+  onlyBE="--learn_cb2=0 --resetCBState2=1"
+  perturb "--ini=$ini $onlyBE  $addOptions" 1 1 $1 
+  args2=$pdfSuffix
+
+  #testing variations of parameters
+  perturb "--ini=$ini $onlyBE --rewardDist=0.05  $addOptions" 1 1 $1 
+  args3=$pdfSuffix
+
+  perturb "--ini=$ini $onlyBE --inhy=1.6 $addOptions" 1 1 $1 
+  args4=$pdfSuffix
+
+  perturb "--ini=$ini $onlyBE --lam2=0.17 $addOptions" 1 1 $1 
+  args5=$pdfSuffix
+
+  python "$plotfile" "$args1" "$args2" "$args3" "$args4" "$args5"
+fi
+
+#$runfile --nsessions=2 --ini=shmuelof.ini --learn_cb2=0 --resetCBState2=1 --seed=2 --pdfSuffix="shmuelof_--ini=shmuelof.ini --learn_cb2=0 --resetCBState2=1_bg1_cb1" --learn_cb=1 --learn_bg=1

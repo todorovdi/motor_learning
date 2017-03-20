@@ -65,7 +65,7 @@ class MotorLearning
     // it is here because we don't have direct access from Environment to the cerebellum
     void trainCB(float x0, float y0, float * yy, bool flushW=true) ; // CB_model method description
     void resetCBerr();
-    void resetCBLRate();
+    void resetCBLRate(float lr=-100);
     
     // turns off and on BG nd cerebellum learning, respectively
     void setBGlearning(bool bglearns);

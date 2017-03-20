@@ -1,7 +1,7 @@
 runfile="./izshad_prl"
 plotfile="universal.plot.py"
 pdfdir=output_for_paper
-experimentName=force_field
+experimentName=gutierrez
 ini="$experimentName.ini"
 #plotfileArgs="--ini=$ini"
 
@@ -18,5 +18,7 @@ fi
 . ./run_dif_perturb.sh    # . means to source a script, so that it can use variables from the current script
 
 if [ $# -ne 0 ]; then
+
   perturbAllConfig $1 "--ini=$ini $addOptions" 
+  perturbAllConfig $1 "--ini=$ini --percept_xrev1=0 --actPrelearn1=10 $addOptions" 
 fi

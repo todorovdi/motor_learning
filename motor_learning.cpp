@@ -72,6 +72,10 @@ void MotorLearning::getCBtarget(float & x, float & y)
 void MotorLearning::setRandomCBState(float a)
 {
     cb.setRandomState(a);
+    if (fabs(a) <EPS)
+    {
+      cout<<"flushing CB state"<<endl;
+    }
 }
 
 void MotorLearning::resetCBerr()
@@ -79,9 +83,9 @@ void MotorLearning::resetCBerr()
   cb.resetPrevErr();
 }
 
-void MotorLearning::resetCBLRate()
+void MotorLearning::resetCBLRate(float lr)
 {
-  cb.resetLearnRate();
+  cb.resetLearnRate(lr);
 }
 
 // calls getSuccess, which calls moveArm
@@ -91,7 +95,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     if(flushData)
     {
         bg.flushWeights(true);
-        cb.flush();
+        cb.flushTuning();
         flushRpre();
     }
 
@@ -176,7 +180,9 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
 
           //rnd();  // just to follow same seed as Slava's code
       if(learn_bg)
+      { 
         bg.learn(R- Rpre[cueActive]);
+      } 
 
       if(learn_cb)
       { 

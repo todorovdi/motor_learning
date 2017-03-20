@@ -17,11 +17,37 @@ def paramFileRead(fname):
     params_ = dict(items)
     return params_
 
-def paramsInit(fname,readMultParamFiles = True):
+def exportVarsInit(params_):    # to avoid recalc if one just want to change export param (currently one takes all params from last initizlized param file, which is usually one from output data)
+    global armFileSkiprows
+    global pdfForEachSession
+    global reachBoxXsz
+    global reachBoxYsz
+    global cbMiscGraph_y_axis_max
+    global cbMiscErrMult
+    global xtickSkip
+    global plotReachAngles
+    global y_axis_max
+    global y_axis_signed
+    global y_axis_step
+    global emphPhase
+
+    armFileSkiprows = int(params_["armFileSkiprows"])
+    pdfForEachSession = int(params_["pdfForEachSession"])
+    reachBoxXsz = int(params_["reachBoxXsz"])
+    reachBoxYsz = int(params_["reachBoxYsz"])
+    cbMiscGraph_y_axis_max = float(params_["cbMiscGraph_y_axis_max"])
+    cbMiscErrMult = float(params_["cbMiscErrMult"])
+    xtickSkip = int(params_["xtickSkip"])
+    plotReachAngles = int(params_["plotReachAngles"])
+    y_axis_max = float(params_["y_axis_max"])
+    y_axis_signed = int(params_["y_axis_signed"])
+    y_axis_step = float(params_["y_axis_step"])
+    emphPhase = int(params_["emphPhase"])
+
+def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one before calc, or not. The one after calc contains changes from command line
     global paramsEnv
     global paramsML
     global paramsCB
-    global armFileSkiprows
     global rewardDist
     global trials1
     global trials2
@@ -34,9 +60,10 @@ def paramsInit(fname,readMultParamFiles = True):
     global numTrialsPost
     global trials1End
     global dirShift
-    global phaseEnds
+    global phaseBegins
     global phaseNames
 
+    paramsEnv = None
     paramsEnv = paramFileRead(fname) 
 
     rewardDist = float(paramsEnv["rewardDist"] )
@@ -51,17 +78,19 @@ def paramsInit(fname,readMultParamFiles = True):
     out_dir_pdf = expanduser(out_dir_pdf)
     out_dir_pdf_single = expanduser(out_dir_pdf_single)
 
-    armFileSkiprows = int(paramsEnv["armFileSkiprows"])
-
-    if(readMultParamFiles):
+    if(origParamFile):
         if "iniML" in paramsEnv:
-            iniML = paramsEnv["iniML"]
-            paramsML = paramFileRead(iniML)
+            ini = paramsEnv["iniML"]
+            paramsML = paramFileRead(ini)
             paramsEnv.update(paramsML)
         if "iniCB" in paramsEnv:
-            iniCB = paramsEnv["iniCB"]
-            paramsCB = paramFileRead(iniCB)
+            ini = paramsEnv["iniCB"]
+            paramsCB = paramFileRead(ini)
             paramsEnv.update(paramsCB)
+        if "iniAdd" in paramsEnv:
+            ini = paramsEnv["iniAdd"]
+            paramsAdd = paramFileRead(ini)
+            paramsEnv.update(paramsAdd)
 
     if "dirShift" in paramsEnv:
         dirShift = float(paramsEnv["dirShift"])
@@ -75,7 +104,7 @@ def paramsInit(fname,readMultParamFiles = True):
     numPhases = int(paramsEnv["numPhases"])
 
 
-    phaseEnds = []
+    phaseBegins = [0]   # next to last trial index of a phase
     phaseNames = []
     curTrial = 0
     for i in range(numPhases):
@@ -88,12 +117,12 @@ def paramsInit(fname,readMultParamFiles = True):
             if(name == ""):
                 continue
             phaseNames.append(name)
-            phaseEnds.append(curTrial)
+            phaseBegins.append(curTrial)
         curTrial = curTrial + n
-    phaseEnds.append(curTrial)
+    phaseBegins.append(curTrial)   # last is the total num trials
 
-    #if ("numTrialsPre" in paramsEnv) and len(phaseEnds) == 0:
-    trials1End = numTrialsPre+numTrialsAdapt+numTrialsPost
-    trials1 = range(trials1End)
-    trials2 = range(trials1End,trials1End*2)
-    print "fdsfd"
+    if ("numTrialsPre" in paramsEnv) and len(phaseBegins) == 0:
+        trials1End = numTrialsPre+numTrialsAdapt+numTrialsPost
+        trials1 = range(trials1End)
+        trials2 = range(trials1End,trials1End*2)
+        print "fdsfd"

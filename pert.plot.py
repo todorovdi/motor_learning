@@ -306,7 +306,7 @@ def genFigurePertMulti(dat_basenames):
         ree = '(.*)_\w+\.dat'
         basename = os.path.basename(filename)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-        pp.paramsInit(filename.replace("_arm","_modParams"),False)
+        pp.paramsInit(filename.replace("_arm","_modParams"))
 
         fileToPlot = fnames[0]
         armData = armFileRead(fileToPlot)
@@ -496,7 +496,7 @@ def genCritAnglePics(fnames):
         basename = os.path.basename(fname)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
         modParamsFileName = fname.replace("_arm","_modParams")
-        pp.paramsInit(modParamsFileName,False)
+        pp.paramsInit(modParamsFileName)
 
         dirShifts.append(float(pp.paramsEnv["dirShift"]))
         ends.append(errs[pp.numTrialsPre+pp.numTrialsAdapt-1] )
@@ -600,8 +600,6 @@ def printParams(fig,pos):
 #exec(open('plotparams.py').read()) 
 #
 
-pp.paramsInit('pert.ini') 
-
 maxNumXtics = 30
 xtickSkip = (pp.numTrialsPre+pp.numTrialsPost+pp.numTrialsAdapt)/maxNumXtics
 xtickSkip = int(xtickSkip)
@@ -640,7 +638,7 @@ elif(do_multi == 0):
         #ree = '(.*).dat'
         basename = os.path.basename(filename)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-        pp.paramsInit(filename.replace("_arm","_modParams"),False)
+        pp.paramsInit(filename.replace("_arm","_modParams"))
 
         if( "dirShiftInc" in pp.paramsEnv and abs(float(pp.paramsEnv["dirShiftInc"]) )>0.00001 ):
             genCritAnglePics(fnames)
@@ -656,7 +654,7 @@ elif(do_multi == 0):
             name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
             modParamsFileName = filename.replace("_arm","_modParams")
             print "making graph # "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
-            pp.paramsInit(modParamsFileName,False)
+            pp.paramsInit(modParamsFileName)
             genFigurePert([filename],name);
 
 #print fnames

@@ -137,12 +137,18 @@ void CB_model::resetPrevErr(float pe)
   prevErrAbs = pe;
 }
 
-void CB_model::resetLearnRate()
+void CB_model::resetLearnRate(float lr)
 {
-  cbLRate = cbLRate_init;
+  if(lr < -EPS)
+    cbLRate = cbLRate_init;
+  else
+  {
+    cbLRate_init = lr;
+    cbLRate = lr;
+  }
 }
 
-void CB_model::flush()
+void CB_model::flushTuning()
 {
     for(int i = 0; i<6;i++)
         for(int j=0;j<6;j++)

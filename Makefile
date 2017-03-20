@@ -28,11 +28,9 @@ pert_prl: $(addc) $(addh)
 #	g++ -std=c++11 -D BUILD_GALEA -fopenmp -g $(addc2)  -o   $@_dbg     -lboost_system   -lboost_program_options
 #
 izshad: $(addc2) $(addh2) izshad.h izshad.cpp
-	g++ -std=c++11 -D BUILD_IZSHAD -O2 $(addc2) izshad.cpp -o   $@        -lboost_system -lboost_program_options
-	g++ -std=c++11 -D BUILD_IZSHAD -g $(addc2) izshad.cpp -o   $@_dbg        -lboost_system -lboost_program_options
+	g++ -std=c++11 -D BUILD_IZSHAD -O2 $(addc2) izshad.cpp -o   $@    -lboost_system 
+	g++ -std=c++11 -D BUILD_IZSHAD -g $(addc2) izshad.cpp -o   $@_dbg  -lboost_systems
 #
 izshad_prl: $(addc2) $(addh2) izshad.h izshad.cpp
-	g++ -std=c++11 -D BUILD_IZSHAD -D PARALLEL -fopenmp -O2 $(addc2) izshad.cpp -o   $@        -lboost_system -lboost_program_options
-
-shmuelof_prl: $(addc2) $(addh2) izshad.h izshad.cpp
-	g++ -std=c++11 -D BUILD_SHMUELOF -D PARALLEL -fopenmp -O2 $(addc2) izshad.cpp -o   $@        -lboost_system -lboost_program_options
+	g++ -std=c++11 -D BUILD_IZSHAD -D PARALLEL -fopenmp -O2 $(addc2) izshad.cpp -o   $@        -lboost_system 
+	#g++ -std=c++11 -D BUILD_IZSHAD -D PARALLEL -fopenmp -g  $(addc2) izshad.cpp -o   $@_dbg    -lboost_system 

@@ -73,6 +73,8 @@ inline float fmodAng(float f){return fmod(f,360.);}
 
 inline float angDegAdd(float ang1, float ang2){return fmodAng(ang1+ang2);}
 
+void parseCMDargs(int argc, char ** argv, parmap & params);
+
 //inline float dirDiff(float ang1, float ang2) // in deg
 //{
 //  float res = 0;

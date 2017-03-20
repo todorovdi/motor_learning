@@ -5,7 +5,7 @@
 #include "suppl.h"
 #include "exporter.h"
 #include "environment.h"
-#include <boost/program_options.hpp>
+//#include <boost/program_options.hpp>
 
 #ifdef  BUILD_PIRON_ARM
 #include "piron_arm.h"
@@ -62,9 +62,6 @@ int main(int argc, char** argv)
     clock_t start = clock();
     cout<<"Calc started"<<endl;
 
-    namespace po = boost::program_options;
-    po::options_description desc("Options");
-
 #ifdef BUILD_PERT
   string defParamFile = "pert.ini";
 #elif defined(BUILD_IZSHAD)
@@ -73,44 +70,31 @@ int main(int argc, char** argv)
   string defParamFile = "shmuelof.ini";
 #endif
 
-    // possible command line params are taken from pert.ini file. Even if you supply another iniEnv later
-    parmap paramsPre;
-    readIni(defParamFile,paramsPre);
-
-    parmap::iterator it = paramsPre.begin();
-    for(;it!=paramsPre.end();it++)
-    {
-      desc.add_options()(it->first.c_str(),po::value<std::string>()->default_value(it->second),it->first.c_str());
-    }
-    desc.add_options()("iniEnv", po::value<string>()->default_value(""), "Ini params for the environment file name");
-    desc.add_options()("help,h", "Help screen");
-
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    //
     cout<<"cmd line args are "<<endl;
     for(int i=0;i<argc;i++)
     {
       cout<<argv[i]<<endl;
     }
+    
+    parmap params_pre;
+    parseCMDargs(argc,argv,params_pre);
 
-    if (vm.count("help"))
-      std::cout << desc << '\n';
-
+    parmap::iterator i;
+    
+    i = params_pre.find("ini");
     string paramsEnvFile;
-    if (vm.count("iniEnv"))
+    if (i != params_pre.end())
     { 
-        paramsEnvFile =vm["iniEnv"].as<string>();
+        paramsEnvFile =i->second;
         if(!paramsEnvFile.length())
             paramsEnvFile = defParamFile;
     }
 
     parmap params;
     readIni(paramsEnvFile,params);
-    
+
     /////////   before I used several files to store parameters
     // so just to maintain backward compatibility
-    parmap::iterator i;
     i = params.find("iniBG");
     if(i!= params.end())
         readIni(i->second,params);
@@ -127,15 +111,11 @@ int main(int argc, char** argv)
     if(i!= params.end())
         readIni(i->second,params);
 
-    for(it = params.begin();it!=params.end();it++)
-    {
-      string s = it->first;
-      if(vm.count(s) )
-      { 
-        params[s] = vm[s].as<string>();
-      }
-    }
+    i = params.find("iniAdd");
+    if(i!= params.end())
+        readIni(i->second,params);
 
+    parseCMDargs(argc,argv,params);  // to overwrite ini file options
 
     cout<<"pdfSuffix="<<params["pdfSuffix"]<<endl;
     params["datPrefix"] = params["pdfSuffix"]; 

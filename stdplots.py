@@ -17,6 +17,91 @@ from scipy import stats
 
 import plotparams as pp
 
+def getReachAngles(armData,xerr=False):
+    nums = armData[:,0]
+    #xs = armData[:,1]
+    #ys = armData[:,2]
+    x_actual = armData[:,8]
+    y_actual = armData[:,9]
+    #xs_target = armData[:,3]
+    #ys_target = armData[:,4]
+    n = len(x_actual)
+
+    angs = np.zeros(n)
+    for (x,y,j) in zip(x_actual,y_actual,nums):
+        xc = 0
+        yc = 0.4
+        angleDeg = ( math.atan( (y-yc) / (x-xc) )  ) / (2*math.pi) * 360.
+    #print int(j),x,y,xt,yt, d
+        angs[int(j)] = angleDeg
+    return angs
+
+def getErrs(armData,xerr=False):
+    nums = armData[:,0]
+    xs = armData[:,1]
+    ys = armData[:,2]
+    xs_target = armData[:,3]
+    ys_target = armData[:,4]
+    n = len(xs)
+
+    errs = np.zeros(n)
+    for (x,y,xt,yt,j) in zip(xs,ys,xs_target,ys_target,nums):
+        if(int(pp.paramsEnv["sector_reward"]) == 0):
+            if(xerr):
+                d =  -(x-xt)
+            else:
+                d = math.sqrt( (x-xt)**2 + (y-yt)**2 )
+        else:
+            xc = 0
+            yc = 0.4
+            xd = x-xc;
+            yd = y-xc;
+            tgtAngleDeg = ( math.atan( (xt-xc) / (yt-yc) )  ) / (2*math.pi) * 360.
+            angleCur0 = math.atan(yd/xd) / (2*math.pi) * 360.
+            if(xd<0):
+                s = 0
+                if(yd>0):
+                    s = 90
+                else:
+                    s = -90
+                angleCur0 = math.atan(-xd/yd)/ (2*math.pi) * 360  + s 
+            angleCur = angleCur0
+            if(angleCur0 < 0):
+                angleCur = angleCur0 + 360
+            dif = angleCur - tgtAngleDeg;
+            dif1 = dif
+            if(dif > 180.):
+                dif1 = dif-360.
+            d = dif1
+        #print int(j),x,y,xt,yt, d
+        errs[int(j)] = d
+    return errs
+
+def doStats(fnames,n,xerr):
+    nsess = len(fnames)
+    errs = np.zeros(shape=(nsess,n))
+    for i,fname in enumerate(fnames):
+        armData = np.loadtxt(fnames[i])
+        if pp.plotReachAngles != 0 :
+            errs[i,:] = getReachAngles(armData,xerr)
+        else:
+            errs[i,:] = getErrs(armData,xerr) 
+    #print math.isnan(t)
+    means = np.zeros(n)
+    SEMs = np.zeros(n)
+    for i in range(n):
+        means[i] = np.mean(errs[:,i])
+    #tt = errs[:,-1]
+    #print tt
+    #print sum(tt)
+
+    if nsess>1:
+        for i in range(n):
+            SEMs[i] = stats.sem(errs[:,i])
+        
+    #print max(SEMs)
+    return means,SEMs
+
 def armFileRead(fname):
     armData = np.loadtxt(fname,skiprows=pp.armFileSkiprows)
     return armData
@@ -24,12 +109,8 @@ def armFileRead(fname):
 def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_actual=[],cbtgt_actual=[]):
 
     yc = 0.4
-    xlim = 0.6
-    yadd = 0.7
-    if "reachBoxXsz" in pp.paramsEnv:
-        xlim = float(pp.paramsEnv["reachBoxXsz"])
-    if "reachBoxYsz" in pp.paramsEnv:
-        yadd = float(pp.paramsEnv["reachBoxYsz"])
+    xlim = pp.reachBoxXsz
+    yadd = pp.reachBoxYsz
     ylim = yadd + yc
 
     ax.set_ylim([0,ylim])
@@ -91,7 +172,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
     tgtRot = 0
     tgtRev = 0
     if "target_rotation1" in pp.paramsEnv:
-        tgtRot =  int(pp.paramsEnv["target_rotation1"] ) 
+        tgtRot =  float(pp.paramsEnv["target_rotation1"] ) 
     if "target_xreverse1" in pp.paramsEnv:
         tgtRev =  int(pp.paramsEnv["target_xreverse1"] ) 
     tgt1_defined=False
@@ -108,8 +189,13 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
         yr1 = yc + arrad*math.sin(tgtPre1)
         tgt1_defined = True
 
-        if(tgtRot):
-            shiftedTgt =  tgtPre1 + ( pp.dirShift/360.) * 2 * math.pi
+        dirShift = 0
+        if(len(pp.phaseBegins) > 1):  # if using new version of ini files
+            dirShift = tgtRot
+        else:
+            dirShift = pp.dirShift
+        if(math.fabs(tgtRot) > 0.0001 ):
+            shiftedTgt =  tgtPre1 + ( dirShift/360.) * 2 * math.pi
             xr2 = xc + arrad*math.cos(shiftedTgt)
             yr2 = yc + arrad*math.sin(shiftedTgt)
             tgt2_defined = True
@@ -243,11 +329,9 @@ def genCBTuningPlot(fig,ax,fname):
     ax.set_ylim(0,36*2)
 
 def genCBMiscPlot(fig,ax,fname):
-    errMult = 7.
     #errMultSmall = 5.
 
-    if "cbMiscErrMult" in pp.paramsEnv:
-        errMult = float(pp.paramsEnv["cbMiscErrMult"])
+    errMult = pp.cbMiscErrMult
 
     misc = np.loadtxt(fname)
     rates = misc[:,0]
@@ -269,9 +353,7 @@ def genCBMiscPlot(fig,ax,fname):
     mux =float(pp.paramsEnv["cbLRateUpdSpdMax"])  
     cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
 
-    ylmax =  cbUpdDst/0.01 #1.8*mx
-    if "cbMiscGraph_y_axis_max" in pp.paramsEnv:
-        ylmax = float(pp.paramsEnv["cbMiscGraph_y_axis_max"] )
+    ylmax = pp.cbMiscGraph_y_axis_max
     ylmin = -mux
     ax.set_ylim(ylmin,ylmax)
     ax.set_yticks(np.arange(ylmin,ylmax,1.))

@@ -1,16 +1,22 @@
-mkdir -p output_galea
-calc_dir=$HOME/tmp_out_calc 
-mkdir -p $calc_dir
-rm -f output_galea/*.dat
-rm -f $calc_dir/*.dat
-if [ $# -eq 4 ]; then
-    ./galea --nsessions=$1 --learn_cb=$2 --cb_learn_rate=$3 --seed=$4
-elif [ $# -eq 3 ]; then
-    ./galea --nsessions=$1 --learn_cb=$2 --cb_learn_rate=$3
-elif [ $# -eq 2 ];  then
-    ./galea --nsessions=$1 --learn_cb=$2
-elif [ $# -eq 1 ];  then
-    ./galea --nsessions=$1
+runfile="./izshad_prl"
+plotfile="universal.plot.py"
+pdfdir=output_for_paper
+experimentName=galea
+ini="$experimentName.ini"
+#plotfileArgs="--ini=$ini"
+
+bg_on_cb_on=1
+bg_off_cb_on=1
+bg_on_cb_off=1
+
+seed=0     #makes <more or less> random seed
+
+if [ $# -eq 2 ] & [ $2 -eq 0 ]; then
+  make izshad_prl
 fi
-#gnuplot galea.plot
-python galea.plot.py
+
+. ./run_dif_perturb.sh    # . means to source a script, so that it can use variables from the current script
+
+if [ $# -ne 0 ]; then
+  perturbAllConfig $1 "--ini=$ini $addOptions" 
+fi

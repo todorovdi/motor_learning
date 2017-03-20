@@ -61,6 +61,7 @@ void runExperiment(parmap & params)
     }
 }
 
+
 // should output everything to files
 void perturbationExperimentEnv::runSession()
 {
@@ -69,18 +70,20 @@ void perturbationExperimentEnv::runSession()
 //    if(prelearnEachTime)
     //     Maybe we have to do longer prelarn
     { 
-        float addInfoTemp[numTrialsPrelearn]; //to be used in prelearn
-
+        float * addInfoTemp = new float[numTrialsPrelearn];
         prelearn(numTrialsPrelearn, addInfoTemp);
+        delete[] addInfoTemp;
     }
 
         string prefix = params["datPrefix"] + string("_numSess_")+std::to_string(num_sess);
-        exporter.exportInit(prefix,"","");
-
-        exporter.exportParams(params);
-
         params["dat_basename"] = prefix;
 
+        //cout<<"1"<<endl;
+
+        exporter.exportInit(prefix,"","");
+        exporter.exportParams(params);
+
+        //cout<<"2"<<endl;
 
         // disabled:
         // rotateErr, xreverseErr, randomCBStateInit, trainWithForceField
@@ -98,29 +101,37 @@ void perturbationExperimentEnv::runSession()
         float x0,y0,angle;
         int offset = 0;
 
+        //cout<<"3"<<endl;
+
         for(int pc = 0; pc<numPhases; pc++)
         {
           experimentPhase = pc;
-          ml.setBGlearning(phaseParams[pc].learn_bg && learn_bg);
-          ml.setCBlearning(phaseParams[pc].learn_cb && learn_cb);
-          if(phaseParams[pc].learn_cb && learn_cb)
+          expPhaseParams & p = phaseParams[pc];
+          ml.setBGlearning(bool(p.learn_bg) && learn_bg);
+          ml.setCBlearning(bool(p.learn_cb) && learn_cb);
+          if(p.learn_cb && learn_cb)
           {
-            if(phaseParams[pc].cbLRateReset)
+            if(p.cbLRateReset)
             { 
               ml.resetCBerr();
-              ml.resetCBLRate();
+              ml.resetCBLRate(p.cbLRate);
             }
+            //cout<<"4"<<endl;
 
             cue = turnOnCues(0,cues);
             getCurTgt(cues,x0,y0,angle);
             initCBdir(x0,y0,cue2prelearnParam[cue].patPMC,
-                pc==0?true:false); 
+                p.resetCBState); 
           }
-          ml.setErrorClamp(phaseParams[pc].error_clamp);
+          if(p.resetCBState)
+          { 
+            ml.setRandomCBState(0.);
+          }
+          ml.setErrorClamp(p.error_clamp);
 
-          cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phaseParams[experimentPhase].name<<endl;
-          ml.makeTrials(phaseParams[pc].numTrials,0,false,offset);
-          offset += phaseParams[pc].numTrials;
+          cout<<"session num = "<<num_sess<<"  experimentPhase is "<<p.name<<endl;
+          ml.makeTrials(p.numTrials,0,false,offset);
+          offset += p.numTrials;
         }
 
           //if(randomCBStateInit)
@@ -156,7 +167,7 @@ void perturbationExperimentEnv::prelearn(int n, float * addInfo)
         wmmax0 = p.wmmax;
         // or deg2action
       }
-        cout<<"Fake prelearn max weight is "<<wmmax0<<endl;
+      cout<<"Fake prelearn max weight is "<<wmmax0<<endl;
     }
     else
     { 
@@ -576,6 +587,26 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
       { 
         float val = stoi(iter->second);
         p.cbLRateReset = val;
+      }
+
+      key = string("resetCBState") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stoi(iter->second);
+        p.resetCBState = val;
+      }
+
+      key = string("cbLRate") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stof(iter->second);
+        p.cbLRate = val;
+      }
+      else
+      {
+        p.cbLRate = stof(params["cbLRate"]);
       }
     }
 

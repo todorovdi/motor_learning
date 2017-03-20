@@ -21,6 +21,44 @@ Note that parameters given in the command line are supposed to
 override the ones from the *.ini files. Although it is up to the
 experiment designer whether to do it or not
 
+------------- ini file usage
+
+------  ini file phase allowed flags
+  flagname should be followed by phase number (like numTrials0)
+
+  phase general params
+numTrials          -- int, (mandatory)
+name               -- string
+cue                -- int, cue active during this phase
+error_clamp        -- int
+resetCBState       -- int
+cbLRateReset       -- int
+learn_cb           -- int
+learn_bg           -- int
+
+defTgt             -- float
+cbLRate            -- float
+
+  phase perturbations params
+action_rotation    -- float, degrees
+endpoint_rotation  -- float, degrees
+target_rotation    -- float, degrees
+target_xreverse    -- int
+endpoint_xreverse  -- int
+force_field        -- float
+endpt_xshift       -- float
+endpt_yshift       -- float
+tgt_xshift         -- float
+tgt_yshift         -- float
+
+  composite flags
+percept_rot        -- float, = endpoint_rotation + actcue_rot
+percept_xrev       -- int,   = endpoint_xreverse + actcue_rot
+percept_xshift     -- float, = endpt_xshift + tgt_xshift +
+actcue_rot=45 (supposed to be mod by true prelarn stratgy)
+percept_yshift     -- float, analogous
+actcue_rot         -- float,  action_rotation + cue=1
+
 ------  compilation
 
 you should have openmp and libboost installed for the program to work
@@ -132,15 +170,6 @@ it always zero and thus has no effect
     MotorLearning (motor_learning.h and cpp)
 Everything that is necessary to run makeTrials method (which interacts
 with the environment, BG and cerebellum).
-
-
-modified file learn.cc provides the most important function makeTrials(..)
-You call this function when you want to actully do simulation. It is possible
-to choose whether you set wm weights to 0 in the beginning or use something
-computed earlier. 
-In general you are not supposed to use other functions from learn.cc (except
-maybe backupWeights and restoreWeights). And you are not supposed to modify
-learn.cc as well (at least before discussing it with other people).
 
 exportWeights(..) -- called every trial before bg_learn 
 exportDynData(..) -- called every trial before doing iterations

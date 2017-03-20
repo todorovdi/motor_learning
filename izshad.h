@@ -14,7 +14,7 @@ class expPhaseParams{
   int cue;
   // I would have to compute new target locations in bash script. Or I can set target to be default and just perform listed pertubrbations
 
-  bool action_rotation;
+  bool action_rotation;          // has not effect, action set by prelearning
   float endpoint_rotation;
   bool endpoint_xreverse;
   float force_field;
@@ -24,6 +24,8 @@ class expPhaseParams{
   bool  learn_bg;
   bool  learn_cb;
   bool cbLRateReset;
+  bool resetCBState;
+  float cbLRate;
 
   float target_rotation;
   bool target_xreverse;
@@ -50,13 +52,25 @@ class expPhaseParams{
     tgt_yshift = 0;
     error_clamp = 0;
 
+    cbLRate = -100; // if passed to reset method, changes to init cbLRate
+
     learn_bg=1;
     learn_cb=1;
 
     cue = 0;
     cbLRateReset = 1;
+    resetCBState = 0;
 
     errClampDirDeg = 1000;
+  }
+
+  void print()
+  {
+    cout<<"phase "<<name<<" params are"<<endl;
+    cout<<numTrials<<endl;
+    cout<<defTgt<<endl;
+    cout<<action_rotation<<endl;
+    cout<<endpoint_rotation<<endl;
   }
 };
 

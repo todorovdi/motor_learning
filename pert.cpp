@@ -75,11 +75,10 @@ void perturbationExperimentEnv::runSession()
     }
 
         string prefix = params["datPrefix"] + string("_numSess_")+std::to_string(num_sess);
-        exporter.exportInit(prefix,"","");
-
-        exporter.exportParams(params);
-
         params["dat_basename"] = prefix;
+
+        exporter.exportInit(prefix,"","");
+        exporter.exportParams(params);
 
         float rotateErr=stof(params["rotateErr"]); ;
         bool xreverseErr=stoi(params["xreverseErr"]); ;

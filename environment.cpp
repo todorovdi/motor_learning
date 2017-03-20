@@ -14,7 +14,7 @@ void Environment::prelearn(int nTrials, float * addInfo)
 Environment::Environment(const parmap & params_, int num_sess_)
 {
     params = params_;
-    exporter.init(params["prefix"],params["suffix"],params["output_dir"]);
+    exporter.init("","",params["output_dir"]);
     exporter.setCounts(stoi(params["na"]),stoi(params["nc"]));
     ml.init(this,&exporter,params);
 

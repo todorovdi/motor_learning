@@ -1,16 +1,17 @@
-runfile="./pert_prl"
-#runfile="./pert"
-plotfile= "pert.plot.py"
-
 perturb()
 {
-  pdfSuffix="${1}_bg${2}_cb${3}"
-  echo $pdfSuffix
+  pdfSuffix="${experimentName}_${1}_bg${2}_cb${3}"
+  echo ".sh pdfSuffix ="$pdfSuffix
   if [ $useOldData == "0" ]; then
     $runfile --nsessions=$4 --learn_bg=$2 --learn_cb=$3 --pdfSuffix="$pdfSuffix" $1 --seed=$seed
   fi
   python "$plotfile" "$pdfSuffix"
-  #rm -f $calc_dir/*.dat
+
+  if [ $useOldData == "0" ]; then
+    tt="${calc_dir}/${pdfSuffix}*.dat"
+    echo ".sh deleting "$tt
+    rm -f $tt
+  fi
 }
 
 perturbAllConfig()
@@ -21,27 +22,30 @@ perturbAllConfig()
   args_mult3=""
   if [ $bg_on_cb_on -eq 1 ]; then
     perturb "$args" 1 1 $1
-    args_mult1="${args}_bg1_cb1"
+    #args_mult1="${experimentName}_${args}_bg1_cb1"
+    args_mult1="$pdfSuffix"
   fi
   if [ $bg_off_cb_on -eq 1 ]; then
     perturb "$args" 0 1 $1
     #perturb "$args" 0 1 1
     args_mult2="${args}_bg0_cb1"
+    args_mult2="$pdfSuffix"
   fi
   if [ $bg_on_cb_off -eq 1 ]; then
     perturb "$args" 1 0 $1
     args_mult3="${args}_bg1_cb0"
+    args_mult3="$pdfSuffix"
   fi
 
-  python pert.plot.py "$args_mult1" "$args_mult2" "$args_mult3"
+  python "$plotfile" "$args_mult1" "$args_mult2" "$args_mult3"
 }
 
 if [ $# -eq 0 ]; then
   echo "Please supply number of sessions"
 else
 
-  mkdir -p output_pert
-  mkdir -p output_pert/single_sess
+  mkdir -p $pdfdir
+  mkdir -p $pdfdir/single_sess
   calc_dir=$HOME/tmp_out_calc 
   mkdir -p $calc_dir
 
@@ -50,18 +54,10 @@ else
     useOldData=$2
   fi
 
-  if [ $useOldData == "0" ]; then
-    rm -f output_pert/*.dat
-    rm -f $calc_dir/*.dat
-  else
+  if [ $useOldData != "0" ]; then
     echo "Plotting without recalc"
   fi
 
-  bg_on_cb_on=0
-  bg_off_cb_on=1
-  bg_on_cb_off=0
-
-  seed=0     #makes <more or less> random seed
 
   #perturbAllConfig $1 "--endpoint_rotation1=1 --cbLRate=4 --trainCBEveryTrial=0 --retrainCB_useCurW=0 --dirShift=90" 
   #perturbAllConfig $1 "--endpoint_rotation1=1 --cbLRate=4 --dirShift=90" 
@@ -86,6 +82,7 @@ else
   #perturbAllConfig $1 "--percept_rot1=1 --dirShift=90" 
   
   #p="--cbLRate=2 --cbRateDepr=0.03 --cbLRateUpdSpdUp=0.8 --cbLRateUpdSpdDown=1  --cbLRateUpdSpdMax=3 --Q=0.05" 
+  
   p="--Q=0.05" 
   ud="--updateCBStateDist=0.12"
 
@@ -99,9 +96,9 @@ else
   #perturbAllConfig $1 "--percept_xrev1=1 $p              $ud" 
   #perturbAllConfig $1 "--force_field1=-3.0 --targetPre1=90 $p" 
 
-  bg_on_cb_on=1
-  bg_off_cb_on=1
-  bg_on_cb_off=1
+  #bg_on_cb_on=1
+  #bg_off_cb_on=1
+  #bg_on_cb_off=1
 
   #ud="--updateCBStateDist=0.06"
 
@@ -129,7 +126,7 @@ else
   #perturbAllConfig $1 "--percept_rot=1 $p --dirShift=30 $ud --rewardDist=0.03" 
 
   #perturbAllConfig $1 "--actcue_change1=1 $p --dirShift=30 $ud --rewardDist=0.03" 
-  perturbAllConfig $1 "--actcue_change1=1 $p --dirShift=30 $ud --sector_reward=1" 
+  #perturbAllConfig $1 "--actcue_change1=1 $p --dirShift=30 $ud --sector_reward=1" 
 
   #perturbAllConfig $1 "--endpoint_rotation1=1 --cue_change1=1 --action_change1=1 --dirShift=30 --target_rotation1=1" 
   ###############

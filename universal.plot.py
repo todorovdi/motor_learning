@@ -37,107 +37,45 @@ from stdplots import *
 from matplotlib.backends.backend_pdf import PdfPages
 import re
 
-#def paramFileRead(fname):
-#    ini_str = '[root]\n' + open(fname, 'r').read()
-#    ini_fp = StringIO.StringIO(ini_str)
-#    params = ConfigParser.RawConfigParser(allow_no_value=True)
-#    params.readfp(ini_fp)
-#    return params
-
-def getReachAngles(armData,xerr=False):
-    nums = armData[:,0]
-    #xs = armData[:,1]
-    #ys = armData[:,2]
-    x_actual = armData[:,8]
-    y_actual = armData[:,9]
-    #xs_target = armData[:,3]
-    #ys_target = armData[:,4]
-    n = len(x_actual)
-
-    angs = np.zeros(n)
-    for (x,y,j) in zip(x_actual,y_actual,nums):
-        xc = 0
-        yc = 0.4
-        angleDeg = ( math.atan( (y-yc) / (x-xc) )  ) / (2*math.pi) * 360.
-    #print int(j),x,y,xt,yt, d
-        angs[int(j)] = angleDeg
-    return angs
-
-def getErrs(armData,xerr=False):
-    nums = armData[:,0]
-    xs = armData[:,1]
-    ys = armData[:,2]
-    xs_target = armData[:,3]
-    ys_target = armData[:,4]
-    n = len(xs)
-
-    errs = np.zeros(n)
-    for (x,y,xt,yt,j) in zip(xs,ys,xs_target,ys_target,nums):
-        if(int(pp.paramsEnv["sector_reward"]) == 0):
-            if(xerr):
-                d =  -(x-xt)
-            else:
-                d = math.sqrt( (x-xt)**2 + (y-yt)**2 )
-        else:
-            xc = 0
-            yc = 0.4
-            xd = x-xc;
-            yd = y-xc;
-            tgtAngleDeg = ( math.atan( (xt-xc) / (yt-yc) )  ) / (2*math.pi) * 360.
-            angleCur0 = math.atan(yd/xd) / (2*math.pi) * 360.
-            if(xd<0):
-                s = 0
-                if(yd>0):
-                    s = 90
-                else:
-                    s = -90
-                angleCur0 = math.atan(-xd/yd)/ (2*math.pi) * 360  + s 
-            angleCur = angleCur0
-            if(angleCur0 < 0):
-                angleCur = angleCur0 + 360
-            dif = angleCur - tgtAngleDeg;
-            dif1 = dif
-            if(dif > 180.):
-                dif1 = dif-360.
-            d = dif1
-        #print int(j),x,y,xt,yt, d
-        errs[int(j)] = d
-    return errs
-
-def doStats(fnames,n,xerr):
-    nsess = len(fnames)
-    errs = np.zeros(shape=(nsess,n))
-    for i,fname in enumerate(fnames):
-        armData = np.loadtxt(fnames[i])
-        errs[i,:] = getReachAngles(armData,xerr)
-    #print math.isnan(t)
-    means = np.zeros(n)
-    SEMs = np.zeros(n)
-    for i in range(n):
-        means[i] = np.mean(errs[:,i])
-    #tt = errs[:,-1]
-    #print tt
-    #print sum(tt)
-
-    if nsess>1:
-        for i in range(n):
-            SEMs[i] = stats.sem(errs[:,i])
-        
-    #print max(SEMs)
-    return means,SEMs
-
-############################
-
 def annotateGraph(ax):
-    n = pp.phaseEnds[-1]
-    ax.set_xticks(range(n)[::xtickSkip] )
+    n = pp.phaseBegins[-1]
+    ax.set_xticks(range(n)[::pp.xtickSkip] )
+    ax.set_xlim([0,n])
     ax_ = ax.twiny()
-    #ax_.set_xlim([0, n])
-    ax_.set_xticks(pp.phaseEnds[:-1])
+    ax_.set_xlim([0, n])
+    ax_.set_xticks(pp.phaseBegins[1:-1])
     ax_.set_xticklabels(pp.phaseNames)
     ax_.xaxis.grid(True,color='w')
 
 ###############################
+
+def genMainPlot(ax,fnames,nums):
+    n = pp.phaseBegins[-1] 
+    angs,SEMs = doStats(fnames,n,False)
+
+    if(len(fnames) == 1):
+        ax.plot(nums, angs)
+    else:
+        ax.errorbar(nums, angs, yerr=SEMs)
+    annotateGraph(ax)
+    ax.yaxis.grid(True)
+
+    if (pp.plotReachAngles  != 0 ) :
+        ax.set_title('Endpoint angles averaged and SEMs',y=1.04)
+    else:
+        ax.set_title('Errors averaged and SEMs',y=1.04)
+    ymin = 0.
+    ymax = pp.y_axis_max 
+    if(pp.y_axis_signed): 
+        ymin = -ymax
+    step = (ymax-ymin) / 10.
+    if "y_axis_step" in pp.paramsEnv:
+        step = (float(pp.paramsEnv["y_axis_step"]) ) 
+    ax.set_ylim([ymin,ymax])
+    ax.set_yticks(np.arange(ymin,ymax,step))
+
+    ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
+    ax.xaxis.grid(True, which='minor')
 
 def genFigurePert(fnames,outname):
     fileToPlot = fnames[0]
@@ -174,31 +112,7 @@ def genFigurePert(fnames,outname):
 
     ax = axs[1,1]
 
-    angs,SEMs = doStats(fnames,n,False)
-
-    if(len(fnames) == 1):
-        ax.plot(nums, angs)
-    else:
-        ax.errorbar(nums, angs, yerr=SEMs)
-    annotateGraph(ax)
-    ax.yaxis.grid(True)
-
-    ax.set_title('Endpoint angles averaged and SEMs',y=1.04)
-    ymax = 0.8
-    ymin = 0.
-    if "y_axis_max" in pp.paramsEnv:
-        ymax = float(pp.paramsEnv["y_axis_max"] )
-    if "y_axis_signed" in pp.paramsEnv:
-        if(int(pp.paramsEnv["y_axis_signed"]) ): 
-            ymin = -ymax
-    step = (ymax-ymin) / 10.
-    if "y_axis_step" in pp.paramsEnv:
-        step = (int(pp.paramsEnv["y_axis_step"]) ) 
-    ax.set_ylim([ymin,ymax])
-    ax.set_yticks(np.arange(ymin,ymax,step))
-
-    ax.set_xticks(pp.phaseEnds[:-1],minor=True)
-    ax.xaxis.grid(True, which='minor')
+    genMainPlot(ax,fnames,nums)
 
     pos1 = axs[0,0].get_position()
     pos2 = axs[1,0].get_position()
@@ -211,6 +125,8 @@ def genFigurePert(fnames,outname):
         pdfname = pp.out_dir_pdf_single+outname+".pdf"
     else:
         pdfname = pp.out_dir_pdf+outname+"_stats_n="+str(len(fnames))+".pdf"
+
+    print 'pdfname', pdfname
 
     with PdfPages(pdfname) as pdf:
         pdf.savefig()
@@ -238,7 +154,7 @@ def genFigurePert(fnames,outname):
         genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
         annotateGraph(ax)
 
-        ax.set_xticks(pp.phaseEnds[:-1],minor=True)
+        ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
         ax.xaxis.grid(True, which='minor')
 
         #x_target = armData[:,3]
@@ -246,12 +162,25 @@ def genFigurePert(fnames,outname):
         x_cbtgt = armData[:,10]
         y_cbtgt = armData[:,11]
 
-        rangePre1 = range(0,pp.phaseEnds[0])
-        rangeAdapt1 = range(pp.phaseEnds[0],pp.phaseEnds[-2])
-        rangePost1 = range(pp.phaseEnds[-2],pp.phaseEnds[-1])
+        rangePre1 = range(0,pp.phaseBegins[1])
+        figName = "Adapt1"
+        if "emphPhase" in pp.paramsEnv:
+            ep = pp.emphPhase
+            rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
+            figName = pp.paramsEnv["name"+str(ep)]
+        else:
+            rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
+        rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
         #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
         ax=axs[1,1]
-        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+
+        pdf.savefig()
+        plt.close()
+
+        #ax = plt.gca
+        fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(30, 20))
+        genMainPlot(ax,fnames,nums)
 
         pdf.savefig()
         plt.close()
@@ -264,11 +193,18 @@ def genFigurePert(fnames,outname):
     #return armData,dirShift,targetPre1,errs
 
 def genFigurePertMulti(dat_basenames):
-    fig, axs = plt.subplots(ncols=len(dat_basenames), nrows=2, figsize=(30, 20), sharex=False, sharey=False)
-
+    dat_basenames_nonempty = []
     for ind,dat_basename in enumerate(dat_basenames):
         if dat_basename=="":
             continue
+        else:
+            dat_basenames_nonempty.append(dat_basename)
+
+    l =  len(dat_basenames_nonempty)
+    fig, axs = plt.subplots(ncols=l, nrows=2, figsize=(10*l, 20), sharex=False, sharey=False)
+
+    for ind,dat_basename in enumerate(dat_basenames_nonempty):
+    
         fnames = []
         matchStr = '*' + dat_basename + '*_arm*.dat'
         print 'matching string for *.dat files:', matchStr
@@ -303,33 +239,22 @@ def genFigurePertMulti(dat_basenames):
 
         ax = axs[0,ind]
 
-        angs,SEMs = doStats(fnames,n,False)
+        genMainPlot(ax,fnames,nums)
+        #ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
+        ax.set_title(pp.paramsEnv["pdfSuffix"],y=1.04)
 
-        if(len(fnames) == 1):
-            ax.plot(nums, angs)
+        rangePre1 = range(0,pp.phaseBegins[1])
+        figName = "Adapt1"
+        if "emphPhase" in pp.paramsEnv:
+            ep = pp.emphPhase
+            rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
+            figName = pp.paramsEnv["name"+str(ep)]
         else:
-            ax.errorbar(nums, angs, yerr=SEMs)
-        annotateGraph(ax)
-        ax.yaxis.grid(True)
-
-        ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
-        if(int(pp.paramsEnv["sector_reward"]) == 0):
-            ax.set_ylim([-0.0,0.8])
-            ax.set_yticks(np.arange(-0.9,0.9,0.1))
-        else:
-            degLim = 180
-            ax.set_ylim([-degLim,degLim])
-            ax.set_yticks(np.arange(-degLim,degLim,10))
-
-        ax.set_xticks(pp.phaseEnds,minor=True)
-        ax.xaxis.grid(True, which='minor')
-
-        rangePre1 = range(0,pp.phaseEnds[0])
-        rangeAdapt1 = range(pp.phaseEnds[0],pp.phaseEnds[-2])
-        rangePost1 = range(pp.phaseEnds[-2],pp.phaseEnds[-1])
+            rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
+        rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
         #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
-        ax=axs[1,1]
-        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+        ax=axs[1,ind]
+        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
 
     pos1 = axs[0,0].get_position()
     pos2 = axs[1,0].get_position()
@@ -338,7 +263,7 @@ def genFigurePertMulti(dat_basenames):
     posLeftMargin = [0,0,xLeft-0.00,1]             # from left, from down, width, height 
     printParams(fig,posLeftMargin)
 
-    bb = 'shmuelof_'+pp.paramsEnv["pdfSuffix"]
+    bb = pp.paramsEnv["pdfSuffix"]
     bb = re.sub('bg._cb.', '', bb)
     
     if(len(fnames) == 1):
@@ -376,17 +301,23 @@ def genReachingByPhase(fname):
 
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
 
-    rangePre1 = range(0,pp.phaseEnds[0])
-    rangeAdapt1 = range(pp.phaseEnds[0],pp.phaseEnds[-2])
-    rangePost1 = range(pp.phaseEnds[-2],pp.phaseEnds[-1])
+    rangePre1 = range(0,pp.phaseBegins[1])
+    figName = "Adapt1"
+    if "emphPhase" in pp.paramsEnv:
+        ep = pp.emphPhase
+        rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
+        figName = pp.paramsEnv["name"+str(ep)]
+    else:
+        rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
+    rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
 
     if(len(rangePre1)>0):
         genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1")
-    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target[rangeAdapt1],y_target[rangeAdapt1]),cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,tgt=zip(x_target[rangeAdapt1],y_target[rangeAdapt1]),cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
     if(len(rangePost1)>0):
         genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
 
-    genReachPlot(fig,axs[1,1],x_actual[rangeAdapt1],y_actual[rangeAdapt1],nums[rangeAdapt1],"Adapt actual pos")
+    genReachPlot(fig,axs[1,1],x_actual[rangeAdapt1],y_actual[rangeAdapt1],nums[rangeAdapt1],figName+" actual pos")
 
 def printParams(fig,pos):
     axlm= fig.add_axes(pos,frameon=False); 
@@ -394,10 +325,10 @@ def printParams(fig,pos):
     fsz = 15
 
     paramsToPlot = []
-    paramsToPlot.append("targetPre1")
-    paramsToPlot.append("dirShift")
     paramsToPlot.append("learn_bg")
     paramsToPlot.append("learn_cb")
+
+    paramsToPlot.append("")
     paramsToPlot.append("cbLRate")
     paramsToPlot.append("randomCBStateInit")
     paramsToPlot.append("randomCBStateInitAmpl")
@@ -408,28 +339,31 @@ def printParams(fig,pos):
     paramsToPlot.append("cbLRateUpdSpdUp")
     paramsToPlot.append("cbLRateUpdSpdDown")
     paramsToPlot.append("cbLRateUpdSpdMax")
+
     paramsToPlot.append("")
     paramsToPlot.append("fake_prelearn")
     paramsToPlot.append("wmmax_fake_prelearn")
     paramsToPlot.append("numTrialsPrelearn")
-    if "fake_prelearn_tempWAmpl" in pp.paramsEnv:
-        paramsToPlot.append("fake_prelearn_tempWAmpl")
+    paramsToPlot.append("fake_prelearn_tempWAmpl")
     paramsToPlot.append("A_exp")
     paramsToPlot.append("Q")
     paramsToPlot.append("finalNoiseAmpl")
+
     paramsToPlot.append("")
+    paramsToPlot.append("cue1")
     paramsToPlot.append("target_rotation1")
     paramsToPlot.append("target_xreverse1")
-    paramsToPlot.append("cue_change1")
-    paramsToPlot.append("action_change1")
     paramsToPlot.append("endpoint_rotation1")
     paramsToPlot.append("endpoint_xreverse1")
     paramsToPlot.append("force_field1")
-    paramsToPlot.append("rotateErr")
-    paramsToPlot.append("xreverseErr")
+    paramsToPlot.append("actPrelearn1")
+
     paramsToPlot.append("")
-    if "sess_seed" in pp.paramsEnv:
-        paramsToPlot.append("sess_seed")
+    paramsToPlot.append("learn_cb2")
+    paramsToPlot.append("resetCBState2")
+
+    paramsToPlot.append("")
+    paramsToPlot.append("sess_seed")
     paramsToPlot.append("seed")
     paramsToPlot.append("nsessions")
 
@@ -454,58 +388,59 @@ def printParams(fig,pos):
 #####################################
 #####################################
 
-pp.paramsInit('shmuelof.ini') 
-
-maxNumXtics = 21
-xtickSkip = float(pp.phaseEnds[-1]) / float(maxNumXtics)
-xtickSkip = int(xtickSkip)
-print pp.phaseEnds
-print pp.phaseNames
-
-if "xtickSkip" in pp.paramsEnv:
-    xtickSkip = int(pp.paramsEnv["xtickSkip"])
-
 print 'Python plotting number of arguments: ', len(sys.argv)
-#for ind,arg in enumerate(sys.argv):
-#    print 'Plotting argument ',ind,' is ',arg
-do_multi = 0
-if(len(sys.argv)==2):
-    dat_basename = sys.argv[1]
-elif(len(sys.argv)<=1):
-    dat_basename = "" #pp.paramsEnv["dat_basename"]
-else:
-    do_multi=1
-#print 'Argument List:', str(sys.argv)
 
-if(do_multi == 1):
-    genFigurePertMulti(sys.argv[1:len(sys.argv)])
-elif(do_multi == 0):
+for ind,arg in enumerate(sys.argv):
+    print 'Plotting argument ',ind,' is ',arg
+
+val = ""
+iniParamFound = 0
+for farg in sys.argv:
+    ree = '.*--ini=(.*\.ini).*'
+    #ree = '(.*).dat'
+    s = re.match(ree,farg)  #re.search(ree,fnames[0])
+    if s!= None:
+        val = s.group(1)
+
+if val == "":
+    paramFileName = 'shmuelof.ini'
+else:
+    paramFileName = val
+
+paramsInit(paramFileName)
+exportVarsInit(pp.paramsEnv)
+
+dat_basenames = sys.argv[1:]
+
+if(len(dat_basenames) >  1):
+    print "Plot single session"
+    genFigurePertMulti(dat_basenames)
+elif(len(dat_basenames) == 1):
     fnames = []
-    matchStr = '*' + dat_basename + '*_arm*.dat'
+    matchStr = '*' + dat_basenames[0] + '*_arm*.dat'
     print 'matching string for *.dat files:', matchStr
     for filename in os.listdir(pp.out_dir):
         if fnmatch.fnmatch(filename, matchStr):
             fnames.append(pp.out_dir+filename)
-
-    pdfForEachSession = int(pp.paramsEnv["pdfForEachSession"])  #it is important to init it here and not later
 
     if(len(fnames) == 0):
         print "No .dat files found"
     else:
         filename = fnames[0]
 
-        ree = '(.*)_\w+\.dat'
-        #ree = '(.*).dat'
+        #ree = '(.*)_\w+\.dat'
+        ree = '(.*).dat'
         basename = os.path.basename(filename)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-        pp.paramsInit(filename.replace("_arm","_modParams"),False)
+        pfname = filename.replace("_arm","_modParams")
+        pp.paramsInit(pfname,False)
 
         #if( abs(float(pp.paramsEnv["dirShiftInc"]) )>0.00001 ):
         #    genCritAnglePics(fnames)
         #else:
-        genFigurePert(fnames,'shmuelof_'+pp.paramsEnv["pdfSuffix"])
+        genFigurePert(fnames,pp.paramsEnv["pdfSuffix"])
 
-    if pdfForEachSession:
+    if pp.pdfForEachSession:
         print "Generate pictures for each seed"
         for i,filename in enumerate(fnames):
             ree = '(.*)_\w+\.dat'
@@ -515,22 +450,5 @@ elif(do_multi == 0):
             modParamsFileName = filename.replace("_arm","_modParams")
             print "making graph # "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
             pp.paramsInit(modParamsFileName,False)
-            genFigurePert([filename],name);
-
-#print fnames
-
-#ax.plot(nums, means)
-
-
-#xs = xs + addxs
-#ys = ys + addys
-#labels = labels + addlabel
-#nums = nums + addnum
-
-#xs = np.concatenate((xs,addxs),0)
-#ys =  np.concatenate((ys,addys),0)
-#nums = np.concatenate((nums,addnum),0)
-
-#plt.plot(xs,ys,color="red",linestyle="",label="#1")
-
+            genFigurePert([filename],pp.paramsEnv["pdfSuffix"] + name);
 

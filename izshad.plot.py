@@ -129,11 +129,12 @@ def doStats(fnames,n,xerr):
 ############################
 
 def annotateGraph(ax):
-    n = pp.phaseEnds[-1]
+    n = pp.phaseBegins[-1]
     ax.set_xticks(range(n)[::xtickSkip] )
+    ax.set_xlim([0,n])
     ax_ = ax.twiny()
-    ax_.set_xlim(0, n)
-    ax_.set_xticks(pp.phaseEnds[:-1])
+    ax_.set_xlim([0, n])
+    ax_.set_xticks(pp.phaseBegins[:-1])
     ax_.set_xticklabels(pp.phaseNames)
     ax_.xaxis.grid(True,color='w')
 
@@ -196,7 +197,7 @@ def genFigurePert(fnames,outname):
     ax.set_ylim([ymin,ymax])
     ax.set_yticks(np.arange(ymin,ymax,step))
 
-    ax.set_xticks(pp.phaseEnds[:-1],minor=True)
+    ax.set_xticks(pp.phaseBegins[:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
 
     pos1 = axs[0,0].get_position()
@@ -236,7 +237,7 @@ def genFigurePert(fnames,outname):
         genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
         annotateGraph(ax)
 
-        ax.set_xticks(pp.phaseEnds[:-1],minor=True)
+        ax.set_xticks(pp.phaseBegins[:-1],minor=True)
         ax.xaxis.grid(True, which='minor')
 
         #x_target = armData[:,3]
@@ -244,9 +245,9 @@ def genFigurePert(fnames,outname):
         x_cbtgt = armData[:,10]
         y_cbtgt = armData[:,11]
 
-        rangePre1 = range(0,pp.phaseEnds[0])
-        rangeAdapt1 = range(pp.phaseEnds[0],pp.phaseEnds[-2])
-        rangePost1 = range(pp.phaseEnds[-2],pp.phaseEnds[-1])
+        rangePre1 = range(0,pp.phaseBegins[0])
+        rangeAdapt1 = range(pp.phaseBegins[0],pp.phaseBegins[-2])
+        rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
         #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
         ax=axs[1,1]
         genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
@@ -283,7 +284,7 @@ def genFigurePertMulti(dat_basenames):
         ree = '(.*)_\w+\.dat'
         basename = os.path.basename(filename)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-        pp.paramsInit(filename.replace("_arm","_modParams"),False)
+        pp.paramsInit(filename.replace("_arm","_modParams"))
 
         fileToPlot = fnames[0]
         armData = armFileRead(fileToPlot)
@@ -319,12 +320,12 @@ def genFigurePertMulti(dat_basenames):
             ax.set_ylim([-degLim,degLim])
             ax.set_yticks(np.arange(-degLim,degLim,10))
 
-        ax.set_xticks(pp.phaseEnds,minor=True)
+        ax.set_xticks(pp.phaseBegins,minor=True)
         ax.xaxis.grid(True, which='minor')
 
-        rangePre1 = range(0,pp.phaseEnds[0])
-        rangeAdapt1 = range(pp.phaseEnds[0],pp.phaseEnds[-2])
-        rangePost1 = range(pp.phaseEnds[-2],pp.phaseEnds[-1])
+        rangePre1 = range(0,pp.phaseBegins[0])
+        rangeAdapt1 = range(pp.phaseBegins[0],pp.phaseBegins[-2])
+        rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
         #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
         ax=axs[1,1]
         genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
@@ -374,9 +375,9 @@ def genReachingByPhase(fname):
 
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
 
-    rangePre1 = range(0,pp.phaseEnds[0])
-    rangeAdapt1 = range(pp.phaseEnds[0],pp.phaseEnds[-2])
-    rangePost1 = range(pp.phaseEnds[-2],pp.phaseEnds[-1])
+    rangePre1 = range(0,pp.phaseBegins[0])
+    rangeAdapt1 = range(pp.phaseBegins[0],pp.phaseBegins[-2])
+    rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
 
     if(len(rangePre1)>0):
         genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1")
@@ -458,9 +459,9 @@ def printParams(fig,pos):
 pp.paramsInit('izshad.ini') 
 
 maxNumXtics = 21
-xtickSkip = float(pp.phaseEnds[-1]) / float(maxNumXtics)
+xtickSkip = float(pp.phaseBegins[-1]) / float(maxNumXtics)
 xtickSkip = int(xtickSkip)
-print pp.phaseEnds
+print pp.phaseBegins
 print pp.phaseNames
 
 if "xtickSkip" in pp.paramsEnv:
@@ -499,7 +500,7 @@ elif(do_multi == 0):
         #ree = '(.*).dat'
         basename = os.path.basename(filename)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-        pp.paramsInit(filename.replace("_arm","_modParams"),False)
+        pp.paramsInit(filename.replace("_arm","_modParams"))
 
         #if( abs(float(pp.paramsEnv["dirShiftInc"]) )>0.00001 ):
         #    genCritAnglePics(fnames)
@@ -515,7 +516,7 @@ elif(do_multi == 0):
             name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
             modParamsFileName = filename.replace("_arm","_modParams")
             print "making graph # "+str(i) + " out of " + str(len(fnames))+"  "+modParamsFileName;
-            pp.paramsInit(modParamsFileName,False)
+            pp.paramsInit(modParamsFileName)
             genFigurePert([filename],name);
 
 #print fnames
