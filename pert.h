@@ -4,16 +4,98 @@
 #include "exporter.h"
 #include "environment.h"
 
+class expPhaseParams{
+  public:
+
+  string name;
+  int numTrials;
+  float defTgt;  
+
+  int cue;
+  // I would have to compute new target locations in bash script. Or I can set target to be default and just perform listed pertubrbations
+
+  bool action_rotation;          // has not effect, action set by prelearning
+  float endpoint_rotation;
+  bool endpoint_xreverse;
+  float force_field;
+  float endpt_xshift;
+  float endpt_yshift;
+  bool error_clamp;
+  bool  learn_bg;
+  bool  learn_cb;
+  bool cbLRateReset;
+  bool resetCBState;
+  float cbLRate;
+
+  float target_rotation;
+  bool target_xreverse;
+  float tgt_xshift;
+  float tgt_yshift;
+
+  float errClampDirDeg;
+
+  expPhaseParams()
+  {
+    name = "";
+    numTrials = 0;
+    defTgt = 0;
+    action_rotation = 0;
+    endpoint_rotation = 0;
+    endpoint_xreverse = 0;
+    force_field = 0.;
+    endpt_xshift = 0;
+    endpt_yshift = 0;
+
+    target_rotation = 0;
+    target_xreverse = 0;
+    tgt_xshift = 0;
+    tgt_yshift = 0;
+    error_clamp = 0;
+
+    cbLRate = -100; // if passed to reset method, changes to init cbLRate
+
+    learn_bg=1;
+    learn_cb=1;
+
+    cue = 0;
+    cbLRateReset = 1;
+    resetCBState = 0;
+
+    errClampDirDeg = 1000;
+  }
+
+  void print()
+  {
+    cout<<"phase "<<name<<" params are"<<endl;
+    cout<<numTrials<<endl;
+    cout<<defTgt<<endl;
+    cout<<action_rotation<<endl;
+    cout<<endpoint_rotation<<endl;
+  }
+};
+
+class phaseParamPrelearn
+{
+  public:
+  int action;
+  float wmmax;
+  float tempWAmpl;
+  vector<float> patPMC;
+  float tgt_x;
+  float tgt_y;
+
+  phaseParamPrelearn()
+  {
+    action = -1000;
+    wmmax = 0.0;
+    tempWAmpl = 0.;
+    tgt_x = 1000;
+    tgt_y = 1000;
+  }
+};
+
 class perturbationExperimentEnv: public Environment
 {
-    float targetPre1; // in degrees
-    float targetPre2;  // in degrees
-    float dirShift;  // = in degrees
-
-    int numTrialsPre;
-    int numTrialsAdapt;
-    int numTrialsAdapt2;
-    int numTrialsPost;
     //unsigned int numTrialsPrelearn = 1200;
     int numTrialsPrelearn;
 
@@ -28,22 +110,7 @@ class perturbationExperimentEnv: public Environment
     bool fake_prelearn;
     bool sector_reward;
 
-    bool action_change1;
-    bool endpoint_rotation1;
-    bool target_rotation1;
-    bool target_xreverse1;
-    float endpt_xshift1;
-    float endpt_yshift1;
-    float tgt_xshift1;
-    float tgt_yshift1;
-    bool endpoint_xreverse1;
-    float force_field1;
-
-    bool action_change2;
-    bool endpoint_rotation2;
-    bool target_rotation2;
-    bool cue_change1;
-    bool cue_change2;
+    vector<expPhaseParams> phaseParams;
 
     int learn_cb;                
     int learn_bg;
@@ -51,11 +118,13 @@ class perturbationExperimentEnv: public Environment
     int randomCBStateInit;
     float randomCBStateInitAmpl;
 
-    int dirShiftIncSess;
+    float actRotAngleIncSess;
+    float endptRotAngleIncSess;
+    float rewardSize;
+
     unsigned int sess_seed;
 
-    vector<float> prelearn_PMC_0;
-    vector<float> prelearn_PMC_1;
+    vector<phaseParamPrelearn> cue2prelearnParam;
 
     public:
     int turnOnCues(int trialNum, float * cues);
@@ -77,5 +146,3 @@ class perturbationExperimentEnv: public Environment
 };
 
 void runExperiment(parmap & params);
-
-enum experimentPhases {PRE1=0, PRE2=1, ADAPT1=2, POST1=3,  ADAPT2=4, POST2=5, PRELEARN_0=6, PRELEARN_1=7};

@@ -1,4 +1,4 @@
-runfile="./izshad_prl"
+runfile="./pert_prl"
 plotfile="universal.plot.py"
 pdfdir=output_for_paper
 experimentName=gutierrez
@@ -12,7 +12,7 @@ bg_on_cb_off=1
 seed=0     #makes <more or less> random seed
 
 if [ $# -eq 2 ] & [ $2 -eq 0 ]; then
-  make izshad_prl
+  make pert_prl
 fi
 
 . ./run_dif_perturb.sh    # . means to source a script, so that it can use variables from the current script

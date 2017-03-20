@@ -6,9 +6,9 @@ else
 
   addOptions=""
 
-  #./run_galea.sh $1 $2
-  #./run_gutierrez.sh  $1 $2
+  ./run_galea.sh $1 $2
+  ./run_gutierrez.sh  $1 $2
   ./run_shmuelof.sh   $1 $2
-  #./run_izshad.sh     $1 $2
-  #./run_force_field.sh     $1 $2
+  ./run_izshad.sh     $1 $2
+  ./run_force_field.sh     $1 $2
 fi

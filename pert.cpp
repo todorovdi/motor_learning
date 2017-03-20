@@ -61,6 +61,7 @@ void runExperiment(parmap & params)
     }
 }
 
+
 // should output everything to files
 void perturbationExperimentEnv::runSession()
 {
@@ -69,19 +70,24 @@ void perturbationExperimentEnv::runSession()
 //    if(prelearnEachTime)
     //     Maybe we have to do longer prelarn
     { 
-        float addInfoTemp[numTrialsPrelearn]; //to be used in prelearn
-
+        float * addInfoTemp = new float[numTrialsPrelearn];
         prelearn(numTrialsPrelearn, addInfoTemp);
+        delete[] addInfoTemp;
     }
 
         string prefix = params["datPrefix"] + string("_numSess_")+std::to_string(num_sess);
         params["dat_basename"] = prefix;
 
+        //cout<<"1"<<endl;
+
         exporter.exportInit(prefix,"","");
         exporter.exportParams(params);
 
-        float rotateErr=stof(params["rotateErr"]); ;
-        bool xreverseErr=stoi(params["xreverseErr"]); ;
+        //cout<<"2"<<endl;
+
+        // disabled:
+        // rotateErr, xreverseErr, randomCBStateInit, trainWithForceField
+        //
 
         // if we did prelearn above
         ml.restoreWeights(true);  // false == not restoring w1,w2
@@ -91,112 +97,53 @@ void perturbationExperimentEnv::runSession()
         ml.setRpreMax();   // if we use only CB not need this
 
         float cues[nc];
+        int cue;
         float x0,y0,angle;
         int offset = 0;
-        if(numTrialsPre > 0)
-        { 
-          experimentPhase = PRE1;
-          if(learn_cb)
-          { 
-            ml.resetCBerr();
-            ml.resetCBLRate();
-            
-            turnOnCues(0,cues);
+
+        //cout<<"3"<<endl;
+
+        for(int pc = 0; pc<numPhases; pc++)
+        {
+          experimentPhase = pc;
+          expPhaseParams & p = phaseParams[pc];
+          ml.setBGlearning(bool(p.learn_bg) && learn_bg);
+          ml.setCBlearning(bool(p.learn_cb) && learn_cb);
+          if(p.learn_cb && learn_cb)
+          {
+            if(p.cbLRateReset)
+            { 
+              ml.resetCBerr();
+              ml.resetCBLRate(p.cbLRate);
+            }
+            //cout<<"4"<<endl;
+
+            cue = turnOnCues(0,cues);
             getCurTgt(cues,x0,y0,angle);
-            initCBdir(x0,y0,prelearn_PMC_0,true); 
+            initCBdir(x0,y0,cue2prelearnParam[cue].patPMC,
+                p.resetCBState); 
           }
-          cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-          ml.makeTrials(numTrialsPre,0,false,0);
-          offset = numTrialsPre;
+          if(p.resetCBState)
+          { 
+            ml.setRandomCBState(0.);
+          }
+          ml.setErrorClamp(p.error_clamp);
+
+          cout<<"session num = "<<num_sess<<"  experimentPhase is "<<p.name<<endl;
+          ml.makeTrials(p.numTrials,0,false,offset);
+          offset += p.numTrials;
         }
 
-
-        experimentPhase = ADAPT1;
-        if(learn_cb)
-        { 
-          ml.resetCBerr();
-          ml.resetCBLRate();
-
-          turnOnCues(0,cues);
-          getCurTgt(cues,x0,y0,angle);
-          initCBdir(x0,y0,prelearn_PMC_1,false); 
-          //if(target_rotation1)
-          //{ 
-          //  initCBdir(angDegAdd(targetPre1,dirShift),prelearn_PMC_0,false);
-          //} 
-          //else if(target_xreverse1)
+          //if(randomCBStateInit)
           //{
-          //  initCBdir(180-targetPre1,prelearn_PMC_0,false);
+          //  //ml.setRandomCBState(randomCBStateInitAmpl);
           //}
-          if(randomCBStateInit)
-          {
-            ml.setRandomCBState(randomCBStateInitAmpl);
-          }
-        } 
 
-        if(stoi(params["trainWith_force_field1"]))
-          ml.setFfield(stof(params["force_field1"]));
-        if(fabs(rotateErr) > EPS || xreverseErr)
-          ml.setModError(true);
-        cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-        ml.makeTrials(numTrialsAdapt,0,false,offset);
-        offset += numTrialsAdapt;
-
-        if(numTrialsPost > 0)
-        { 
-          experimentPhase = POST1;
-          if(stoi(params["trainWith_force_field1"]))
-            ml.setFfield(0.);
-          if(learn_cb)
-          { 
-            ml.resetCBerr();
-            ml.resetCBLRate();
-            turnOnCues(0,cues);
-            getCurTgt(cues,x0,y0,angle);
-            initCBdir(x0,y0,prelearn_PMC_0,false); 
-          }
-          ml.setModError(false);
-          cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-          ml.makeTrials(numTrialsPost,0,false,offset);
-          offset += numTrialsPost;
-        } 
-
-//#ifdef TWO_PARTS
-        if(numPhases > 3)
-        { 
-            experimentPhase = PRE2;
-            if(learn_cb)
-            { 
-              turnOnCues(0,cues);
-              getCurTgt(cues,x0,y0,angle);
-              initCBdir(x0,y0,prelearn_PMC_0,true); 
-            }
-            cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-            ml.makeTrials(numTrialsPre,0,false,offset);
-            offset+= numTrialsPre;
-
-            experimentPhase = ADAPT2;
-            if(learn_cb)
-            { 
-              turnOnCues(0,cues);
-              getCurTgt(cues,x0,y0,angle);
-              initCBdir(x0,y0,prelearn_PMC_1,false); 
-            }
-            cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-            ml.makeTrials(numTrialsAdapt,0,false,offset);
-            offset += numTrialsAdapt;
-            
-            experimentPhase = POST2;
-            if(learn_cb)
-            { 
-              turnOnCues(0,cues);
-              getCurTgt(cues,x0,y0,angle);
-              initCBdir(x0,y0,prelearn_PMC_0,false); 
-            }
-            cout<<"session num = "<<num_sess<<"  experimentPhase is "<<phasesNames[experimentPhase]<<endl;
-            ml.makeTrials(numTrialsPost,0,false,offset);
-        } 
-//#endif
+        //if(stoi(params["trainWith_force_field1"]))
+        //  ml.setFfield(stof(params["force_field1"]));
+        //if(fabs(rotateErr) > EPS || xreverseErr)
+        //  ml.setModError(true);
+        //
 
         exporter.exportClose();
 }
@@ -204,48 +151,28 @@ void perturbationExperimentEnv::runSession()
 void perturbationExperimentEnv::prelearn(int n, float * addInfo)
 {
     ml.flushWeights(true);
-    experimentPhase = PRELEARN_0;
+    experimentPhase = -1;
     float wmmax0=0,wmmax1=0;
     int wmmax_ind0=-1,wmmax_ind1 = -1;
     if(fake_prelearn)
     { 
-        wmmax0 = wmmax_fake_prelearn;
-        wmmax1 = wmmax_fake_prelearn;
-        int dirIndPre1 = deg2action(targetPre1);
-        int dirIndAdapt1 = deg2action(angDegAdd(targetPre1,dirShift));
-        int dirIndPre2 = deg2action(targetPre2);
-        int dirIndAdapt2 = deg2action(angDegAdd(targetPre2,dirShift));
+      for(int i =0; i<nc; i++)
+      {
+        phaseParamPrelearn & p = cue2prelearnParam[i];
+        ml.fakePrelearnReaching(i,p.action,p.wmmax,p.tempWAmpl);
+        fill(p.patPMC.begin(),p.patPMC.end(), 0.);
+        p.patPMC[p.action] = p.wmmax;
+        //cout<<"prlearn action  "<<p.action<<endl;
 
-
-        float tempWAmpl = fake_prelearn_tempWAmpl;
-
-        ml.fakePrelearnReaching(0,dirIndPre1,wmmax0,tempWAmpl);
-        ml.fakePrelearnReaching(2,dirIndPre2,wmmax0,tempWAmpl);
-
-        if(action_change1)
-            ml.fakePrelearnReaching(1,dirIndAdapt1,wmmax0,tempWAmpl);
-        else
-            ml.fakePrelearnReaching(1,dirIndPre1,wmmax0,tempWAmpl);
-
-        if(action_change2)
-            ml.fakePrelearnReaching(3,dirIndAdapt2,wmmax0,tempWAmpl);
-        else
-            ml.fakePrelearnReaching(3,dirIndPre2,wmmax0,tempWAmpl);
-
-        xcur = 0.2;
-        ycur = 0.4;
-        cout<<"Fake prelearn max weight is "<<wmmax0<<endl;
-    
-        wmmax_ind0 = dirIndPre1;
-        wmmax_ind1 = dirIndAdapt1;
-
-        prelearn_PMC_0[wmmax_ind0] = wmmax0;
-        prelearn_PMC_1[wmmax_ind1] = wmmax1;
+        wmmax0 = p.wmmax;
+        // or deg2action
+      }
+      cout<<"Fake prelearn max weight is "<<wmmax0<<endl;
     }
     else
     { 
         cout<<"num prelearn trials "<<numTrialsPrelearn<<endl;
-        cout<<"experimentPhase is "<<phasesNames[experimentPhase]<<endl;
+        cout<<"experimentPhase is "<<phaseParams[experimentPhase].name<<endl;
 
         // TODO: careful here!
         ml.setBGlearning(true);
@@ -255,13 +182,13 @@ void perturbationExperimentEnv::prelearn(int n, float * addInfo)
 
         exporter.exportInit(prefix,"","",true);
         ml.makeTrials(n/2,addInfo,true,0,false);  // last arg is whether we do export, or not (except final weights -- we export them anyway)
-        ml.getLasty(&prelearn_PMC_0[0]);
+       // ml.getLasty(&prelearn_PMC[0][0]);
 
-        experimentPhase = PRELEARN_1;
-        cout<<"experimentPhase is "<<phasesNames[experimentPhase]<<endl;
+        experimentPhase = -2;
+        cout<<"experimentPhase is "<<phaseParams[experimentPhase].name<<endl;
 
         ml.makeTrials(n/2,addInfo,false,0,false);  // last arg is whether we do export, or not (except final weights -- we export them anyway)
-        ml.getLasty(&prelearn_PMC_1[0]);
+      //  ml.getLasty(&prelearn_PMC[1][0]);
         exporter.exportClose();
 
         ml.initParams(params);  // restore bg and cb learning params from ini file
@@ -290,11 +217,6 @@ void perturbationExperimentEnv::prelearn(int n, float * addInfo)
         cout<<"True prelearn max weight is (cue 0) "<<wmmax0<<" for action "<<wmmax_ind0<<endl;
         cout<<"True prelearn max weight is (cue 1) "<<wmmax1<<" for action "<<wmmax_ind1<<endl;
     }
-    params["wmmax0"] = to_string(wmmax0);
-    params["wmmax_action0"] = to_string(wmmax_ind0);
-    params["wmmax1"] = to_string(wmmax1);
-    params["wmmax_action1"] = to_string(wmmax_ind1);
-
     ml.backupWeights();
 }
 
@@ -323,40 +245,7 @@ int perturbationExperimentEnv::turnOnCues(int k, float * cues)
     for(int i=0; i<nc; i++)
         cues[i] = 0.;
 
-    if(experimentPhase == PRE1 || experimentPhase == POST1) 
-        cueInd = 0;
-    else if(experimentPhase == ADAPT1) 
-    { 
-        if(cue_change1)
-            cueInd = 1;
-        else
-            cueInd = 0;
-    }
-    else if (experimentPhase == PRE2 || experimentPhase == POST2) 
-        cueInd = 2;
-    else if (experimentPhase == ADAPT2) 
-    { 
-        if(cue_change1)
-            cueInd = 3;
-        else
-            cueInd = 2;
-    } 
-    else if (experimentPhase == PRELEARN_0)
-    {
-      cueInd = 0;
-      if(numPhases == 6)  // then we use two cues
-      {
-        cueInd = 2*(k < numTrialsPrelearn/2 ? 0 : 1);
-      }
-    }
-    else if (experimentPhase == PRELEARN_1)
-    {
-      cueInd = 1;
-      if(numPhases == 6)  // then we use two cues
-      {
-        cueInd = 1 + 2*(k < numTrialsPrelearn/2 ? 0 : 1);
-      }
-    }
+    cueInd = phaseParams[experimentPhase].cue;
 
     cues[cueInd] = 1.;
     return cueInd;
@@ -364,60 +253,13 @@ int perturbationExperimentEnv::turnOnCues(int k, float * cues)
 
 void perturbationExperimentEnv::getCurTgt(float * x, float & x0, float & y0, float & tgtAngleDeg)
 {
-  float target = 0;
-  float tgt_xshift = 0;
-  float tgt_yshift = 0;
-  switch (experimentPhase)
-  { 
-        case PRE1:
-            target = targetPre1;
-            break;
-        case PRE2:
-            // Do something to mimic this simuations, occurin at random
-            target = targetPre2; 
-            break;
-        case ADAPT1:
-            // Do something to mimic this simuations, occurin at random
-            if(target_rotation1)
-                target = angDegAdd(targetPre1,dirShift);
-            else if(target_xreverse1)   // here we suppose tragetPre1 < 180
-                target = angDegAdd(180,-targetPre1);
-            else
-                target = targetPre1; 
-            tgt_xshift = tgt_xshift1;
-            tgt_yshift = tgt_yshift1;
-            break;
-        case POST1:
-            target = targetPre1;
-            break;
-        case ADAPT2:
-            if(target_rotation2)
-                target = angDegAdd(targetPre2,dirShift);
-            else
-                target = targetPre2; 
-            break;
-        case POST2:
-            target = targetPre2;
-            break;
-        case PRELEARN_0:
-            target = targetPre1;
-            break;
-        case PRELEARN_1:
-            target = targetPre1;
-            if(nc>1 && x[1] > EPS && action_change1)
-            { 
-              if(target_rotation1)
-                  target = angDegAdd(targetPre1,dirShift);
-              else if(target_xreverse1)   // here we suppose tragetPre1 < 180
-                  target = angDegAdd(180,-targetPre1);
-              else
-                  target = targetPre1; 
+  expPhaseParams & p = phaseParams[experimentPhase];
+  float target = p.defTgt + p.target_rotation;
+  if(p.target_xreverse)
+    target = 180. - target;
 
-              tgt_xshift = tgt_xshift1;
-              tgt_yshift = tgt_yshift1;
-            }
-            break;
-    }
+  float tgt_xshift = p.tgt_xshift;
+  float tgt_yshift = p.tgt_yshift;
 
   float xc,yc;
     ml.getReachCenterPos(xc,yc);
@@ -438,28 +280,18 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
     float endpt_xshift = 0;
     float endpt_yshift = 0;
 
+    expPhaseParams & p = phaseParams[experimentPhase];
+    rot = p.endpoint_rotation;
+    sign = p.endpoint_xreverse ? -1. : 1.;
+    ffield = p.force_field;
+    endpt_xshift = p.endpt_xshift;
+    endpt_yshift = p.endpt_yshift;
+
     bool doExport = true;
-    switch(experimentPhase)
-    {
-        case ADAPT1:
-            // Do something to mimic this simuations, occurin at random
-            if(endpoint_rotation1)
-                rot = dirShift;
-            endpt_xshift = endpt_xshift1;
-            endpt_yshift = endpt_yshift1;
-            if(endpoint_xreverse1)
-              sign = -1;
-            ffield = force_field1;
-            break;
-        case ADAPT2:
-            if(endpoint_rotation1)
-                rot = dirShift;
-            break;
-        case PRELEARN_0:
-        case PRELEARN_1:
-            doExport = false;
-            break;
-    }
+//        case PRELEARN_0:
+//        case PRELEARN_1:
+//            doExport = false;
+//            break;
 
     float xc,yc;
     ml.getReachCenterPos(xc,yc);
@@ -480,13 +312,11 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
     xcur = xcur_real;
     ycur = ycur_real;
 
-    if( endpoint_rotation1 || endpoint_rotation2)
-    { 
-        float xtmp = xcur_real - xc, ytmp = ycur_real -yc;
-        float angle = 2.*M_PI/360.*rot;
-        xcur = xtmp*cos(angle) - ytmp*sin(angle) + xc;
-        ycur = xtmp*sin(angle) + ytmp*cos(angle) + yc;
-    } 
+    float xtmp = xcur_real - xc, ytmp = ycur_real -yc;
+    float angle = 2.*M_PI/360.*rot;
+    xcur = xtmp*cos(angle) - ytmp*sin(angle) + xc;
+    ycur = xtmp*sin(angle) + ytmp*cos(angle) + yc;
+
     xcur = sign*xcur;
     xcur += endpt_xshift;
     ycur += endpt_yshift;
@@ -538,14 +368,14 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
     { 
         if( fabs(sc) < rewardDist) 
         {
-            R = 3;
+            R = rewardSize;
         }
     }
     else
     {
         if( fabs(sc) < sector_width/2) 
         {
-            R = 3;
+            R = rewardSize;
         }
     } 
 
@@ -558,92 +388,237 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
     sess_seed = sess_seed_;
     params["sess_seed"] = to_string(sess_seed);
 
-    numTrialsPre      = stoi(params["numTrialsPre"]);
-    numTrialsAdapt    = stoi(params["numTrialsAdapt"]);
-    numTrialsPost     = stoi(params["numTrialsPost"]);
-    numTrialsPrelearn = stoi(params["numTrialsPrelearn"]);
     numPhases         = stoi(params["numPhases"]);
-
     fake_prelearn     = stoi(params["fake_prelearn"]);
 
-    int percept_rot1=stoi(params["percept_rot1"]);
-    if(percept_rot1)
-    { 
-      params["actcue_change1"] = "1";
-      params["target_rotation1"] = "1";
-      params["endpoint_rotation1"] = "1";
-    }
-    int percept_xrev1=stoi(params["percept_xrev1"]);
-    if(percept_xrev1)
-    { 
-      params["actcue_change1"] = "1";
-      params["target_xreverse1"] = "1";
-      params["dirShift"] = "180";
-      params["endpoint_xreverse1"] = "1";
-    }
-
-    float percept_xshift1=stof(params["percept_xshift1"]);
-    if(fabs(percept_xshift1) > EPS)
-    { 
-      params["actcue_change1"] = "1";
-      params["endpt_xshift1"] = to_string(percept_xshift1);
-      params["tgt_xshift1"] = to_string(percept_xshift1);
-    }
-
-    float percept_yshift1=stof(params["percept_yshift1"]);
-    if(fabs(percept_yshift1) > EPS)
-    { 
-      params["actcue_change1"] = "1";
-      params["endpt_yshift1"] = to_string(percept_yshift1);
-      params["tgt_yshift1"] = to_string(percept_yshift1);
-    }
-
-    int actcue_change1=stoi(params["actcue_change1"]);
-    if(actcue_change1)
-    { 
-      params["cue_change1"] = "1";
-      params["action_change1"] = "1";
-    }
-
-    action_change1 = stoi(params["action_change1"]);
-    action_change2 = stoi(params["action_change2"]);
-    endpoint_rotation1 = stoi(params["endpoint_rotation1"]);
-    endpoint_rotation2 = stoi(params["endpoint_rotation2"]);
-    target_rotation2 = stoi(params["target_rotation2"]);
-    target_rotation1 = stoi(params["target_rotation1"]);
-    target_xreverse1 = stoi(params["target_xreverse1"]);
-
     sector_reward = stoi(params["sector_reward"]);
-    cue_change1 = stoi(params["cue_change1"]);
-    cue_change2 = stoi(params["cue_change2"]);
-    endpoint_xreverse1 = stoi(params["endpoint_xreverse1"]);
-    force_field1 = stof(params["force_field1"]);
-    endpt_xshift1 = stof(params["endpt_xshift1"]);
-    endpt_yshift1 = stof(params["endpt_yshift1"]);
-    tgt_xshift1 = stof(params["tgt_xshift1"]);
-    tgt_yshift1 = stof(params["tgt_yshift1"]);
-
-    dirShift          = stof(params["dirShift"]);
-    dirShiftIncSess       = stof(params["dirShiftIncSess"]);
-
-    dirShift += num_sess * dirShiftIncSess;
-
-    // Note that we than save all the params with modifications, to the output
-    params["dirShift"] = to_string(dirShift);
-
-    targetPre1        = stof(params["targetPre1"]);
-    targetPre2        = stof(params["targetPre2"]);
 
     learn_cb = stoi(params["learn_cb"]); // it may look stupid to do so right after prev. line but note that the same parameters object are passed to MotorLearning
     learn_bg = stoi(params["learn_bg"]); 
-    cbLRate = stof(params["cbLRate"]);
-
         
     ml.init(this,&exporter,params);  // we did it once in the Environemnt constructor but we might have changed learn_cb so do it again
 
-    numTrials = numTrialsPre+numTrialsAdapt+numTrialsPost;
-    if(numPhases == 6)
-      numTrials = numTrialsPre*2+numTrialsAdapt*2+numTrialsPost*2;
+    string key;
+    parmap::iterator iter;
+
+    key = string("actRotAngleIncSess");
+    iter = params.find(key);
+    if(iter!=params.end())
+    {
+      actRotAngleIncSess = stof(iter->second);   
+    }
+    key = string("endptRotAngleIncSess");
+    iter = params.find(key);
+    if(iter!=params.end())
+    {
+      endptRotAngleIncSess = stof(iter->second);   
+    }
+
+    numTrials = 0;
+    phaseParams.resize(numPhases);
+    for(int i=0;i<numPhases;i++)
+    {
+      expPhaseParams & p = phaseParams[i];
+      p.numTrials = stoi(params[string("numTrials") + to_string(i)] );
+      numTrials += p.numTrials;
+
+        
+      key = string("name") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end())
+        p.name = params[key];
+
+      key = string("percept_rot") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() && fabs(stof(iter->second) ) > EPS )
+      { 
+        string val = ((iter->second) );
+        params["actcue_rot"+to_string(i)] = val;
+        params["target_rotation"+to_string(i)] = val;
+        params["endpoint_rotation"+to_string(i)] = val;
+      }
+
+      key = string("percept_xrev") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() && stoi(iter->second) )
+      { 
+        params["actcue_rot"+to_string(i)] = "180";
+        params["target_xreverse"+to_string(i)] = "1";
+        params["endpoint_xreverse"+to_string(i)] = "1";
+      }
+
+      key = string("percept_xshift") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() && fabs(stof(iter->second)) > EPS)
+      { 
+        string val = ((iter->second) );
+        params["actcue_rot"+to_string(i)] = "45";  // we use real prelearn
+        // anyway
+        params["endpt_xshift"+to_string(i)] = val;
+        params["tgt_xshift"+to_string(i)] =   val;
+      }
+
+      key = string("percept_yshift") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() && fabs(stof(iter->second)) > EPS)
+      { 
+        string val = (iter->second) ;
+        params["actcue_rot"+to_string(i)] = "45";
+        params["endpt_yshift"+to_string(i)] = val;
+        params["tgt_yshift"+to_string(i)]   = val;
+      }
+
+      key = string("actcue_rot") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() && fabs(stof(iter->second)) > EPS)
+      { 
+        params["cue"+to_string(i)] = "1";
+        params["action_rotation"+to_string(i)] = iter->second;
+      }
+
+      key = string("action_rotation") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.action_rotation = stof(iter->second);
+      }
+
+      key = string("endpoint_rotation") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.endpoint_rotation = stof(iter->second);
+      }
+
+      key = string("target_rotation") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.target_rotation = stof(iter->second);
+      }
+
+      key = string("endpoint_xreverse") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.endpoint_xreverse = stoi(iter->second);
+      }
+
+      key = string("cue") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.cue = stoi(iter->second);
+      }
+
+      key = string("target_xreverse") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.target_xreverse = stoi(iter->second);
+      }
+
+      key = string("force_field") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.force_field = stof(iter->second);
+      }
+
+      key = string("endpt_xshift") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.endpt_xshift = stof(iter->second);
+      }
+
+      key = string("endpt_yshift") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.endpt_yshift = stof(iter->second);
+      }
+
+      key = string("tgt_xshift") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.tgt_xshift = stof(iter->second);
+      }
+
+      key = string("tgt_yshift") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.tgt_yshift = stof(iter->second);
+      }
+
+      key = string("defTgt") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.defTgt = stof(iter->second);
+      }
+
+      key = string("error_clamp") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.error_clamp = stoi(iter->second);
+      }
+
+      key = string("learn_bg") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.learn_bg = stoi(iter->second);
+      }
+
+      key = string("learn_cb") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        p.learn_cb = stoi(iter->second);
+      }
+
+      key = string("cbLRateReset") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stoi(iter->second);
+        p.cbLRateReset = val;
+      }
+
+      key = string("resetCBState") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stoi(iter->second);
+        p.resetCBState = val;
+      }
+
+      key = string("cbLRate") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stof(iter->second);
+        p.cbLRate = val;
+      }
+      else
+      {
+        p.cbLRate = stof(params["cbLRate"]);
+      }
+    }
+
+    if(fabs(actRotAngleIncSess) > EPS)
+    {
+      phaseParams[1].action_rotation += actRotAngleIncSess * num_sess;
+    }
+    
+    if(fabs(endptRotAngleIncSess) > EPS)
+    {
+      phaseParams[1].endpoint_rotation += endptRotAngleIncSess * num_sess;
+    }
 
     // experiment phase params -- one of the pert (or several), name of the phase, numTrials
 
@@ -655,18 +630,37 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
 
     randomCBStateInit = stoi(params["randomCBStateInit"]);
     randomCBStateInitAmpl = stof(params["randomCBStateInitAmpl"]);
+    rewardSize = stof(params["rewardSize"]);
 
-    prelearn_PMC_0.resize(na);
-    prelearn_PMC_1.resize(na);
+    cue2prelearnParam.resize(nc);
+    for(int i=0; i<nc; i++)
+    {
+      key = string("actPrelearn") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        int action = stoi(iter->second);
+        cue2prelearnParam[i].action = action;
+      }
+      key = string("tgt_xPrelearn") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stof(iter->second);
+        cue2prelearnParam[i].tgt_x = val;
+      }
+      key = string("tgt_yPrelearn") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stof(iter->second);
+        cue2prelearnParam[i].tgt_y = val;
+      }
 
-    phasesNames.push_back("PRE1");
-    phasesNames.push_back("PRE2");
-    phasesNames.push_back("ADAPT1");
-    phasesNames.push_back("POST1");
-    phasesNames.push_back("ADAPT2");
-    phasesNames.push_back("POST2");
-    phasesNames.push_back("PRELEARN_0");
-    phasesNames.push_back("PRELEARN_1");
+      cue2prelearnParam[i].patPMC.resize(na);
+      cue2prelearnParam[i].wmmax = wmmax_fake_prelearn;
+      cue2prelearnParam[i].tempWAmpl = fake_prelearn_tempWAmpl;
+    }
 }
 
 perturbationExperimentEnv::~perturbationExperimentEnv()
