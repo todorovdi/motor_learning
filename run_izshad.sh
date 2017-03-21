@@ -8,7 +8,7 @@ bg_on_cb_on=1
 bg_off_cb_on=1
 bg_on_cb_off=1
 
-seed=2     #makes <more or less> random seed
+seed=0     #makes <more or less> random seed
 
 if [ $# -eq 2 ] & [ $2 -eq 0 ]; then
   make pert_prl

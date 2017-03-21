@@ -88,6 +88,8 @@ def genFigurePert(fnames,outname):
     n = len(xs)
     lastNum = nums[-1]
 
+    print "plotting from ",len(fnames)," sessions"
+
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
 
     ax = axs[0,0]
@@ -181,6 +183,7 @@ def genFigurePert(fnames,outname):
         #ax = plt.gca
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(30, 20))
         genMainPlot(ax,fnames,nums)
+        ax.set_title(pp.paramsEnv["pdfSuffix"])
 
         pdf.savefig()
         plt.close()

@@ -15,6 +15,11 @@ void MotorLearning::activateBG()
     //BGactive = true;
 }
 
+void MotorLearning::setSingleRPre(int cue, float rpeval)
+{
+    Rpre[cue] = rpeval;    
+}
+
 void MotorLearning::setRpre(float * rpre)
 {
     for(int i=0;i<nc;i++)

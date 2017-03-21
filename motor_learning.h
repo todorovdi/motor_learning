@@ -96,6 +96,7 @@ class MotorLearning
     // without real prelearning trials), for example)
     void setRpre(float * rpre);
     void setRpreMax();
+    void setSingleRPre(int cue, float rpeval);
     void flushRpre();
 
     void setCBtarget(float x, float y);

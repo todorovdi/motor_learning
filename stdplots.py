@@ -134,7 +134,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
 
     lastx=0
     lasty=0
-    if len(xs)<=30:
+    if len(xs)<=30 or pp.showPointNumbers:
         for i, x, y in zip(nums, xs, ys):
             if (math.sqrt( (lastx-x)**2 + (lasty-y)**2 ) > 0.03):
                 ax.annotate(int(i), (x,y))

@@ -25,6 +25,7 @@ class expPhaseParams{
   bool  learn_cb;
   bool cbLRateReset;
   bool resetCBState;
+  bool resetRPre;
   float cbLRate;
 
   float target_rotation;
@@ -60,6 +61,7 @@ class expPhaseParams{
     cue = 0;
     cbLRateReset = 1;
     resetCBState = 0;
+    resetRPre = 0;
 
     errClampDirDeg = 1000;
   }
@@ -121,6 +123,7 @@ class perturbationExperimentEnv: public Environment
     float actRotAngleIncSess;
     float endptRotAngleIncSess;
     float rewardSize;
+
 
     unsigned int sess_seed;
 

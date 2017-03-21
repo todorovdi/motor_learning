@@ -1,17 +1,19 @@
 perturb()
 {
   pdfSuffix="${experimentName}_${1}_bg${2}_cb${3}"
-  echo ".sh pdfSuffix ="$pdfSuffix
+
   if [ $useOldData == "0" ]; then
+    tt="${calc_dir}/*.dat"
+    echo ".sh deleting $tt"
+    #rm "$tt"
+    rm $tt
+  fi
+
+  echo ".sh pdfSuffix ="$pdfSuffix
+  if [ $useOldData == "0" ] || [ $useOldData == '2' ]; then
     $runfile --nsessions=$4 --learn_bg=$2 --learn_cb=$3 --pdfSuffix="$pdfSuffix" $1 --seed=$seed
   fi
   python "$plotfile" "$pdfSuffix"
-
-  if [ $useOldData == "0" ]; then
-    tt="${calc_dir}/${pdfSuffix}*.dat"
-    echo ".sh deleting "$tt
-    rm -f $tt
-  fi
 }
 
 perturbAllConfig()
@@ -54,10 +56,17 @@ else
     useOldData=$2
   fi
 
-  if [ $useOldData != "0" ]; then
+  if [ $useOldData == "1" ]; then
     echo "Plotting without recalc"
   fi
 
+  if [ $useOldData == "2" ]; then
+    echo "Adding sessions to plot"
+  fi
+
+  if [ $useOldData != "1" ]; then
+    make pert_prl
+  fi
 
   #perturbAllConfig $1 "--endpoint_rotation1=1 --cbLRate=4 --trainCBEveryTrial=0 --retrainCB_useCurW=0 --dirShift=90" 
   #perturbAllConfig $1 "--endpoint_rotation1=1 --cbLRate=4 --dirShift=90" 

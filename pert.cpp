@@ -75,7 +75,7 @@ void perturbationExperimentEnv::runSession()
         delete[] addInfoTemp;
     }
 
-        string prefix = params["datPrefix"] + string("_numSess_")+std::to_string(num_sess);
+        string prefix = params["datPrefix"] + string("_seed_") + to_string(sess_seed);
         params["dat_basename"] = prefix;
 
         //cout<<"1"<<endl;
@@ -129,7 +129,13 @@ void perturbationExperimentEnv::runSession()
           }
           ml.setErrorClamp(p.error_clamp);
 
+          if(p.resetRPre)
+          {
+            ml.setSingleRPre(p.cue,0.);
+          }
+
           cout<<"session num = "<<num_sess<<"  experimentPhase is "<<p.name<<endl;
+          cout<<"session num = "<<num_sess<<"  experimentPhase is "<<p.name<<" "<<p.endpoint_rotation<<endl;
           ml.makeTrials(p.numTrials,0,false,offset);
           offset += p.numTrials;
         }
@@ -178,7 +184,8 @@ void perturbationExperimentEnv::prelearn(int n, float * addInfo)
         ml.setBGlearning(true);
         ml.setCBlearning(false);
 
-        string prefix = string("prelearn_") + params["datPrefix"] + string("_numSess_")+std::to_string(num_sess);
+        string prefix = string("prelearn_") + params["datPrefix"] + string("_seed_") + to_string(sess_seed);
+        //  + string("_numSess_")+std::to_string(num_sess);
 
         exporter.exportInit(prefix,"","",true);
         ml.makeTrials(n/2,addInfo,true,0,false);  // last arg is whether we do export, or not (except final weights -- we export them anyway)
@@ -595,6 +602,14 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
       { 
         float val = stoi(iter->second);
         p.resetCBState = val;
+      }
+
+      key = string("resetRPre") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stoi(iter->second);
+        p.resetRPre = val;
       }
 
       key = string("cbLRate") + to_string(i);
