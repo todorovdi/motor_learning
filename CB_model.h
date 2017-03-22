@@ -54,6 +54,7 @@ class CB_model
         void setCBtarget(float x, float y);  
 
         void setRandomState(float amplitudeOfRand); // fill W with random values from [0,amplitudeOfRand]
+        void stateDegradeStep();
         void CBExport(int k);
         void init(parmap & params,Exporter *exporter,Arm * arm_);
         CB_model();

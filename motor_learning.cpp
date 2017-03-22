@@ -215,6 +215,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       {
         exporter->exportCBMisc(0,0,0,0);
       }
+      cb.stateDegradeStep();    // should happen even with cb turned off!
 
     updateRpre(cueActive,R,0);   
     //std::copy(y, y+na, prevy.begin());

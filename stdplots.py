@@ -142,7 +142,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
     if len(xs)<=30 or pp.showPointNumbers:
         for i, x, y in zip(nums, xs, ys):
             if (math.sqrt( (lastx-x)**2 + (lasty-y)**2 ) > 0.03):
-                ax.annotate(int(i), (x,y))
+                ax.annotate(int(i), (x,y), fontsize=7)
             lastx = x
             lasty = y
 
@@ -169,8 +169,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
             xy=(x, y), xytext=(0, -270),
             textcoords='offset points', ha='right', va='bottom',
             bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-            arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'),
-            fontsize=4)
+            arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
 
     xc = 0
     yc = 0.4

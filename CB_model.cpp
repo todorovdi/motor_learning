@@ -82,16 +82,26 @@ void CB_model::trainCurPt(float * yy, float ffield, bool flushW, bool useCurW)
     train(x_cb_target,y_cb_target,yy,flushW, useCurW, ffield);
 }
 
+void CB_model::stateDegradeStep()
+{
+	for(int i=0;i<6;i++) 
+  {
+    for(int j=0;j<6;j++) 
+    { 
+        wcb[i][j]-=cbRateDepr * wcb[i][j];
+    } 
+  }
+}
+
 void CB_model::cblearn(float dx,float dy)
 {
   //float norm = matrixNorm(wcb);
 	for(int i=0;i<6;i++) 
   {
-        for(int j=0;j<6;j++) 
-        { 
-            wcb[i][j]-=cbLRate*(dx*dfwx[i][j]+dy*dfwy[i][j]); 
-            wcb[i][j]-=cbRateDepr * wcb[i][j];
-        } 
+    for(int j=0;j<6;j++) 
+    { 
+        wcb[i][j]-=cbLRate*(dx*dfwx[i][j]+dy*dfwy[i][j]); 
+    } 
   }
 }
  

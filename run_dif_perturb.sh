@@ -14,6 +14,8 @@ perturb()
     $runfile --nsessions=$4 --learn_bg=$2 --learn_cb=$3 --pdfSuffix="$pdfSuffix" $1 --seed=$seed
   fi
   python "$plotfile" "$pdfSuffix"
+  
+  ./beep.sh
 }
 
 perturbAllConfig()

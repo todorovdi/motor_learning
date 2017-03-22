@@ -75,6 +75,10 @@ def genMainPlot(ax,fnames,nums):
 
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
+  
+    if "plotPubFile" in pp.paramsEnv:
+        nicener = importlib.import_module(pp.paramsEnv["plotPubFile"])
+        nicener.makeNicer(ax)
 
 def removeWrongDataLen(fnames,n):   # check if all have the same data length
     fngood = []
@@ -262,10 +266,11 @@ def genFigurePertMulti(dat_basenames):
         else:
             ax = axs
             
+        from textwrap import wrap
 
         genMainPlot(ax,fnames,nums)
         #ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
-        ax.set_title(pp.paramsEnv["pdfSuffix"],y=1.04)
+        ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.08)
 
         rangePre1 = range(0,pp.phaseBegins[1])
         figName = "Adapt1"
@@ -359,6 +364,7 @@ def printParams(fig,pos):
     paramsToPlot.append("learn_bg")
     paramsToPlot.append("learn_cb")
     paramsToPlot.append("learn_cb2")
+    paramsToPlot.append("resetRPre0")
     paramsToPlot.append("resetRPre1")
     paramsToPlot.append("resetRPre3")
 

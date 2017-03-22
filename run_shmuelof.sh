@@ -24,51 +24,71 @@ if [ $# -ne 0 ]; then
   addTrials="--numTrials4=100"
 
 #  onlyBE="--learn_cb2=0 --resetCBState2=1"
-#  addOptions="--wmmax_fake_prelearn=0.1 --rewardDist=0.05 --cbRateDepr=0.03 "$addOptions
+#  addOptionsLoc="--wmmax_fake_prelearn=0.1 --rewardDist=0.05 --cbRateDepr=0.03 "$addOptions
 
 #  #$useOldData="1"
-#  perturb "--ini=$ini $addOptions " 1 1 $1 
+#  perturb "--ini=$ini $addOptionsLoc " 1 1 $1 
 #  argsNoRpre=$pdfSuffix
 #
 #  #$useOldData=$2
 #  
-#  perturb "--ini=$ini $onlyBE  $addOptions" 1 1 $1 
+#  perturb "--ini=$ini $onlyBE  $addOptionsLoc" 1 1 $1 
 #  argsRpre=$pdfSuffix
 #
 #  python "$plotfile" "$argsNoRpre" "$argsRpre"
 #
 #  #$useOldData="1"
-#  perturb "--ini=shmuelof_ext.ini $addOptions" 1 1 $1 
+#  perturb "--ini=shmuelof_ext.ini $addOptionsLoc" 1 1 $1 
 #  argsNoRpreLong=$pdfSuffix
 #
 #  #$useOldData=$2
-#  perturb "--ini=shmuelof_ext.ini $onlyBE  $addOptions" 1 1 $1 
+#  perturb "--ini=shmuelof_ext.ini $onlyBE  $addOptionsLoc" 1 1 $1 
 #  argsRpreLong=$pdfSuffix
 #
 #  python "$plotfile" "$argsNoRpreLong" "$argsRpreLong"
 
-  #addOptions="--fake_prelearn_tempWAmpl=1."
+  #addOptionsLoc="--fake_prelearn_tempWAmpl=1."
+
+  delay="3.0s"
+  if [ $useOldData == '0' ]; then
+    echo "!!! ----- Really delete corresponding *.dat files?" 
+    echo "!!! ----- You have $delay to stop the script"
+    sleep $delay
 
   onlyBE="--learn_cb2=0"
-  addOptions="--wmmax_fake_prelearn=0.3 --rewardDist=0.06 --cbRateDepr=0.03 "
-  perturb "--ini=shmuelof.ini $onlyBE $addOptions" 1 1 $1 
+
+  addOptions=" --wmmax_fake_prelearn=0.1 --cbRateDepr=0.03 " 
+  addOptionsLoc=""$addOptions
+
+#  #$useOldData="1"
+  perturb "--ini=$ini $addOptionsLoc" 1 1 $1 
+  argsCBon=$pdfSuffix
+
+  addOptionsLoc="--rewardDist=0.06"$addOptions
+  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
   args1=$pdfSuffix
 
-  addOptions="--rewardDist=0.06 --cbRateDepr=0.03 "$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptions" 1 1 $1 
+  addOptionsLoc="--resetRPre0=0"$addOptions
+  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
   args2=$pdfSuffix
 
-  addOptions="--rewardDist=0.07 --cbRateDepr=0.03 "$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptions" 1 1 $1 
+  addOptionsLoc="--fake_prelearn_tempWAmpl=0"$addOptions
+  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
   args3=$pdfSuffix
 
-  addOptions="--rewardDist=0.06 --cbRateDepr=0.01 "$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptions" 1 1 $1 
+  addOptionsLoc="--fake_prelearn_tempWAmpl=1."$addOptions
+  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
   args4=$pdfSuffix
 
-  addOptions="--rewardDist=0.06 --cbRateDepr=0.03 --updateCBStateDist=0.6 "$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptions" 1 1 $1 
+  addOptionsLoc="--rewardDist=0.08"$addOptions
+  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
   args5=$pdfSuffix
 
-  python "$plotfile" "$args1" "$args2" "$args3" "$args4" "$args5"
+  python "$plotfile" "$argsCBon" "$args1" "$args2" "$args3" "$args4" "$args5"
+
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
 fi

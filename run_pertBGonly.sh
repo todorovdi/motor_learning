@@ -18,5 +18,5 @@ fi
 . ./run_dif_perturb.sh    # . means to source a script, so that it can use variables from the current script
 
 if [ $# -ne 0 ]; then
-  perturb "--ini=$ini" 1 1 $1
+  perturb "--ini=$ini" 1 0 $1
 fi
