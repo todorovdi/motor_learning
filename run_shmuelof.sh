@@ -20,13 +20,25 @@ if [ $# -ne 0 ]; then
   args3=""
   args4=""
   args5=""
+   
+  addTrials="--numTrials4=100"
 
-#  perturb "--ini=$ini $addOptions" 1 1 $1 
-  args1=$pdfSuffix
+  #$useOldData="1"
+  perturb "--ini=$ini $addOptions --wmmax_fake_prelearn=0.1" 1 1 $1 
+  argsNoRpre=$pdfSuffix
 
-  onlyBE="--learn_cb2=0 --resetCBState2=1 --wmmax_fake_prelearn=0.1"
+  perturb "--ini=$ini $addOptions --wmmax_fake_prelearn=0.1 $addTrials" 1 1 $1 
+  argsNoRpreLong=$pdfSuffix
+
+  $useOldData=$2
+  onlyBE="--learn_cb2=0 --wmmax_fake_prelearn=0.1"
   perturb "--ini=$ini $onlyBE  $addOptions" 1 1 $1 
-  args2=$pdfSuffix
+  argsRpre=$pdfSuffix
+
+  onlyBE="--learn_cb2=0 --wmmax_fake_prelearn=0.1 $addTrials"
+  perturb "--ini=$ini $onlyBE  $addOptions" 1 1 $1 
+  argsRpreLong=$pdfSuffix
+
 
   #testing variations of parameters
 #  perturb "--ini=$ini $onlyBE --rewardDist=0.05  $addOptions" 1 1 $1 
@@ -38,7 +50,9 @@ if [ $# -ne 0 ]; then
 #  perturb "--ini=$ini $onlyBE --lam2=0.17 $addOptions" 1 1 $1 
 #  args5=$pdfSuffix
 
-#  python "$plotfile" "$args1" "$args2" "$args3" "$args4" "$args5"
+  python "$plotfile" "$argsNoRpre" "$argsRpre"
+  python "$plotfile" "$argsNoRpreLong" "$argsRpreLong"
+  #python "$plotfile" "$args1" "$args2" "$args3" "$args4" "$args5"
 fi
 
 #$runfile --nsessions=2 --ini=shmuelof.ini --learn_cb2=0 --resetCBState2=1 --seed=2 --pdfSuffix="shmuelof_--ini=shmuelof.ini --learn_cb2=0 --resetCBState2=1_bg1_cb1" --learn_cb=1 --learn_bg=1

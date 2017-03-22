@@ -294,6 +294,9 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
     endpt_xshift = p.endpt_xshift;
     endpt_yshift = p.endpt_yshift;
 
+    if(fabs(rot) > 1000.)
+      cout<<"-------------- too large rotation ------------ getSuccess"<<endl;
+
     bool doExport = true;
 //        case PRELEARN_0:
 //        case PRELEARN_1:
@@ -414,11 +417,19 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
     {
       actRotAngleIncSess = stof(iter->second);   
     }
+    else
+    {
+      actRotAngleIncSess = 0.;
+    }
     key = string("endptRotAngleIncSess");
     iter = params.find(key);
     if(iter!=params.end())
     {
       endptRotAngleIncSess = stof(iter->second);   
+    }
+    else
+    {
+      endptRotAngleIncSess = 0.;
     }
 
     numTrials = 0;
@@ -495,6 +506,8 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
       if(iter != params.end() )
       {
         p.endpoint_rotation = stof(iter->second);
+        if(fabs(p.endpoint_rotation) > 1000.) 
+          cout<<"-------------- too large rotation ------------ init"<<endl;
       }
 
       key = string("target_rotation") + to_string(i);

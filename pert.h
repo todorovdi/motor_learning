@@ -69,9 +69,9 @@ class expPhaseParams{
   void print()
   {
     cout<<"phase "<<name<<" params are"<<endl;
-    cout<<numTrials<<endl;
-    cout<<defTgt<<endl;
-    cout<<action_rotation<<endl;
+    //cout<<numTrials<<endl;
+    //cout<<defTgt<<endl;
+    //cout<<action_rotation<<endl;
     cout<<endpoint_rotation<<endl;
   }
 };

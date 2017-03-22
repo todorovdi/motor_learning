@@ -14,8 +14,8 @@ class Exporter
     string suffix_for_cont;
     
     ofstream foutPerTrial;
-    ofstream foutVarDyn;
-    ofstream foutWeights;
+    //ofstream foutVarDyn;
+    //ofstream foutWeights;
 
     ofstream foutVarDyn2;
     ofstream foutWeights2;
@@ -57,8 +57,8 @@ public:
     void exportArm(unsigned int trialNum,float xcur,float ycur, float x0, float y0, float xc, float yc, float * addInfo);
     void exportContState(float t,float *y,float *d1,float *d2,float * gpe,float *gpi);
     // methods mostly for compatibility, old stuff
-    void exportDynDataStd(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi,float t,float reward, float sr);
-    void exportWeightsStd(unsigned int trialNum,float ** w1,float ** w2,float **wm);
+    //void exportDynDataStd(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi,float t,float reward, float sr);
+    //void exportWeightsStd(unsigned int trialNum,float ** w1,float ** w2,float **wm);
     void exportCuesState(unsigned int trialNum, float * cues);
     void trialEndExport(float * sumM1freq, unsigned int seed);
     void CBExport(int k, float wcb[][6], float dfwx[][6], float dfwy[][6]);

@@ -77,15 +77,20 @@ def getErrs(armData,xerr=False):
         errs[int(j)] = d
     return errs
 
-def doStats(fnames,n,xerr):
+def doStats(fnames,xerr):
+    n = pp.phaseBegins[-1] 
     nsess = len(fnames)
     errs = np.zeros(shape=(nsess,n))
     for i,fname in enumerate(fnames):
         armData = np.loadtxt(fnames[i])
         if pp.plotReachAngles != 0 :
-            errs[i,:] = getReachAngles(armData,xerr)
+            dat = getReachAngles(armData,xerr)
         else:
-            errs[i,:] = getErrs(armData,xerr) 
+            dat = getErrs(armData,xerr) 
+        if len(dat) != n:
+            print "------- doStats Warning: wrong length of data file table, maybe calc was terminated too early"
+        else:
+            errs[i,:] = dat
     #print math.isnan(t)
     means = np.zeros(n)
     SEMs = np.zeros(n)

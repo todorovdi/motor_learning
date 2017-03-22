@@ -38,9 +38,9 @@ void Exporter::exportInit(string prefix,string suffix,string begPut,bool minimum
   if(!minimumExport)
   { 
     foutPerTrial.open( dir+prefix+string("_output")+suffix+string(".dat")) ;
-    foutVarDyn.open  ( dir+prefix+string("_var_dyn")+suffix+string(".dat") );
+    //foutVarDyn.open  ( dir+prefix+string("_var_dyn")+suffix+string(".dat") );
     foutVarDyn2.open  ( dir+prefix+string("_var_dyn2")+suffix+string(".dat") );
-    foutWeights.open  ( dir+prefix+string("_weights")+suffix+string(".dat") );
+    //foutWeights.open  ( dir+prefix+string("_weights")+suffix+string(".dat") );
     foutWeights2.open  ( dir+prefix+string("_weights2")+suffix+string(".dat") );
     foutArm.open  ( dir+prefix+string("_arm")+suffix+string(".dat") );
     foutModParams.open  ( dir+prefix+string("_modParams")+suffix+string(".dat") );
@@ -85,9 +85,9 @@ void Exporter::exportParams(parmap & params)
 void Exporter::exportClose()
 {
     foutPerTrial.close();
-    foutVarDyn.close();
+    //foutVarDyn.close();
     foutVarDyn2.close();
-    foutWeights.close();
+    //foutWeights.close();
     foutWeights2.close();
     foutWeightsOnce.close();
     foutArm.close();
@@ -101,45 +101,45 @@ void Exporter::exportContClose()
 
 }
 
-void Exporter::exportDynDataStd(unsigned int k, float *y,float *d1,float *d2,float * gpe,float *gpi,float t,float R, float sr)
-{
-    foutVarDyn<<k<<'\t';
-    for(int i=0;i<na;i++) foutVarDyn<<y[i]<<'\t';
-    for(int i=0;i<na;i++) foutVarDyn<<d1[i]<<'\t';
-    for(int i=0;i<na;i++) foutVarDyn<<d2[i]<<'\t';
-    for(int i=0;i<na;i++) foutVarDyn<<gpe[i]<<'\t';
-    for(int i=0;i<na;i++) foutVarDyn<<gpi[i]<<'\t';
-    foutVarDyn<<endl;
-}
+//void Exporter::exportDynDataStd(unsigned int k, float *y,float *d1,float *d2,float * gpe,float *gpi,float t,float R, float sr)
+//{
+//    foutVarDyn<<k<<'\t';
+//    for(int i=0;i<na;i++) foutVarDyn<<y[i]<<'\t';
+//    for(int i=0;i<na;i++) foutVarDyn<<d1[i]<<'\t';
+//    for(int i=0;i<na;i++) foutVarDyn<<d2[i]<<'\t';
+//    for(int i=0;i<na;i++) foutVarDyn<<gpe[i]<<'\t';
+//    for(int i=0;i<na;i++) foutVarDyn<<gpi[i]<<'\t';
+//    foutVarDyn<<endl;
+//}
 
 
-void Exporter::exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **wm)
-{
-    for(int i=0;i<na;i++) 
-    {  
-        for(int j=0;j<nc;j++) 
-            foutWeights<<w1[j][i]<<'\t';
-        foutWeights<<endl;
-    }	
-
-    foutWeights<<endl<<endl;	
-
-    for(int i=0;i<na;i++)
-    { 
-        for(int j=0;j<nc;j++) 
-            foutWeights<<w2[j][i]<<'\t';
-        foutWeights<<endl;	
-    }
-    foutWeights<<endl<<endl;	
-    
-    for(int i=0;i<na;i++)
-    { 
-        for(int j=0;j<nc;j++) 
-            foutWeights<<wm[j][i]<<'\t';
-        foutWeights<<endl;	
-    }
-    foutWeights<<endl<<endl;	
-}
+//void Exporter::exportWeightsStd(unsigned int k, float ** w1,float ** w2,float **wm)
+//{
+//    for(int i=0;i<na;i++) 
+//    {  
+//        for(int j=0;j<nc;j++) 
+//            foutWeights<<w1[j][i]<<'\t';
+//        foutWeights<<endl;
+//    }	
+//
+//    foutWeights<<endl<<endl;	
+//
+//    for(int i=0;i<na;i++)
+//    { 
+//        for(int j=0;j<nc;j++) 
+//            foutWeights<<w2[j][i]<<'\t';
+//        foutWeights<<endl;	
+//    }
+//    foutWeights<<endl<<endl;	
+//    
+//    for(int i=0;i<na;i++)
+//    { 
+//        for(int j=0;j<nc;j++) 
+//            foutWeights<<wm[j][i]<<'\t';
+//        foutWeights<<endl;	
+//    }
+//    foutWeights<<endl<<endl;	
+//}
 
 void Exporter::exportCuesState(unsigned int k, float * x)
 {

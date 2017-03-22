@@ -3,10 +3,10 @@ perturb()
   pdfSuffix="${experimentName}_${1}_bg${2}_cb${3}"
 
   if [ $useOldData == "0" ]; then
-    tt="${calc_dir}/*.dat"
+    tt="${calc_dir}/${pdfSuffix}_seed_"
     echo ".sh deleting $tt"
     #rm "$tt"
-    rm $tt
+    rm "$tt"*.dat
   fi
 
   echo ".sh pdfSuffix ="$pdfSuffix

@@ -50,8 +50,7 @@ def annotateGraph(ax):
 ###############################
 
 def genMainPlot(ax,fnames,nums):
-    n = pp.phaseBegins[-1] 
-    angs,SEMs = doStats(fnames,n,False)
+    angs,SEMs = doStats(fnames,False)
 
     if(len(fnames) == 1):
         ax.plot(nums, angs)
@@ -76,6 +75,17 @@ def genMainPlot(ax,fnames,nums):
 
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
+
+def removeWrongDataLen(fnames,n):   # check if all have the same data length
+    fngood = []
+    for fname in fnames:
+        armData = armFileRead(fname)
+        nrows,ncols = np.shape(armData) 
+        if nrows != n:
+            print "------- Warning: wrong length of data file table, maybe calc was terminated too early -> ",fname
+        else:
+            fngood.append(fname)
+    return fngood
 
 def genFigurePert(fnames,outname):
     fileToPlot = fnames[0]
@@ -117,7 +127,6 @@ def genFigurePert(fnames,outname):
     genMainPlot(ax,fnames,nums)
 
     pos1 = axs[0,0].get_position()
-    pos2 = axs[1,0].get_position()
     xLeft = pos1.x0
     yTop = pos1.y0+pos1.height
     posLeftMargin = [0,0,xLeft-0.00,1]             # from left, from down, width, height 
@@ -204,7 +213,13 @@ def genFigurePertMulti(dat_basenames):
             dat_basenames_nonempty.append(dat_basename)
 
     l =  len(dat_basenames_nonempty)
-    fig, axs = plt.subplots(ncols=l, nrows=2, figsize=(10*l, 20), sharex=False, sharey=False)
+    if pp.multiSameGraph == 1:
+        nr = 1
+        nc = 1
+    else:
+        nr = 2
+        nl = 2
+    fig, axs = plt.subplots(ncols=nc, nrows=nr, figsize=(10*l, 20), sharex=False, sharey=False)
 
     for ind,dat_basename in enumerate(dat_basenames_nonempty):
     
@@ -214,6 +229,8 @@ def genFigurePertMulti(dat_basenames):
         for filename in os.listdir(pp.out_dir):
             if fnmatch.fnmatch(filename, matchStr):
                 fnames.append(pp.out_dir+filename)
+        
+        fnames = removeWrongDataLen(fnames,pp.phaseBegins[-1])
 
         if(len(fnames) == 0):
             print "No .dat files found"
@@ -240,7 +257,11 @@ def genFigurePertMulti(dat_basenames):
         n = len(xs)
         lastNum = nums[-1]
 
-        ax = axs[0,ind]
+        if pp.multiSameGraph == 0:
+            ax = axs[0,ind]
+        else:
+            ax = axs
+            
 
         genMainPlot(ax,fnames,nums)
         #ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
@@ -256,11 +277,18 @@ def genFigurePertMulti(dat_basenames):
             rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
         rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
         #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
-        ax=axs[1,ind]
-        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
 
-    pos1 = axs[0,0].get_position()
-    pos2 = axs[1,0].get_position()
+        if pp.multiSameGraph == 0:
+            ax = axs[1,ind]
+
+            genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+
+    if pp.multiSameGraph == 0:
+        ax = axs[1,ind]
+    else: 
+        ax = axs
+    
+    pos1 = ax.get_position()
     xLeft = pos1.x0
     yTop = pos1.y0+pos1.height
     posLeftMargin = [0,0,xLeft-0.00,1]             # from left, from down, width, height 
@@ -330,6 +358,7 @@ def printParams(fig,pos):
     paramsToPlot = []
     paramsToPlot.append("learn_bg")
     paramsToPlot.append("learn_cb")
+    paramsToPlot.append("learn_cb2")
 
     paramsToPlot.append("")
     paramsToPlot.append("cbLRate")
@@ -425,6 +454,8 @@ elif(len(dat_basenames) == 1):
     for filename in os.listdir(pp.out_dir):
         if fnmatch.fnmatch(filename, matchStr):
             fnames.append(pp.out_dir+filename)
+
+    fnames = removeWrongDataLen(fnames,pp.phaseBegins[-1])
 
     if(len(fnames) == 0):
         print "No .dat files found"
