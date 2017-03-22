@@ -54,6 +54,7 @@ if [ $# -ne 0 ]; then
     echo "!!! ----- Really delete corresponding *.dat files?" 
     echo "!!! ----- You have $delay to stop the script"
     sleep $delay
+  fi
 
   onlyBE="--learn_cb2=0"
 

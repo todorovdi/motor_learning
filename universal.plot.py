@@ -77,7 +77,8 @@ def genMainPlot(ax,fnames,nums):
     ax.xaxis.grid(True, which='minor')
   
     if "plotPubFile" in pp.paramsEnv:
-        nicener = importlib.import_module(pp.paramsEnv["plotPubFile"])
+        import imp
+        nicener = imp.load_source(pp.paramsEnv["plotPubFile"],pp.paramsEnv["plotPubFile"])
         nicener.makeNicer(ax)
 
 def removeWrongDataLen(fnames,n):   # check if all have the same data length
@@ -301,6 +302,11 @@ def genFigurePertMulti(dat_basenames):
 
     bb = pp.paramsEnv["pdfSuffix"]
     bb = re.sub('bg._cb.', '', bb)
+
+    if "plotPubFile" in pp.paramsEnv:
+        import imp
+        nicener = imp.load_source(pp.paramsEnv["plotPubFile"],pp.paramsEnv["plotPubFile"])
+        nicener.makeNicerMulti(ax)
     
     if(len(fnames) == 1):
         pdfname = pp.out_dir_pdf+bb+"_multi.pdf"
