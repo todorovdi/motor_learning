@@ -218,7 +218,7 @@ def genFigurePertMulti(dat_basenames):
         nc = 1
     else:
         nr = 2
-        nl = 2
+        nc = l
     fig, axs = plt.subplots(ncols=nc, nrows=nr, figsize=(10*l, 20), sharex=False, sharey=False)
 
     for ind,dat_basename in enumerate(dat_basenames_nonempty):
@@ -359,6 +359,8 @@ def printParams(fig,pos):
     paramsToPlot.append("learn_bg")
     paramsToPlot.append("learn_cb")
     paramsToPlot.append("learn_cb2")
+    paramsToPlot.append("resetRPre1")
+    paramsToPlot.append("resetRPre3")
 
     paramsToPlot.append("")
     paramsToPlot.append("cbLRate")
@@ -454,6 +456,17 @@ elif(len(dat_basenames) == 1):
     for filename in os.listdir(pp.out_dir):
         if fnmatch.fnmatch(filename, matchStr):
             fnames.append(pp.out_dir+filename)
+
+    if(len(fnames) == 0):
+        print "No .dat files found"
+    else:
+        ree = '(.*).dat'
+        filename = fnames[0]
+        basename = os.path.basename(filename)
+        name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
+        pfname = filename.replace("_arm","_modParams")
+        print 'pfname',pfname
+        pp.paramsInit(pfname,False)
 
     fnames = removeWrongDataLen(fnames,pp.phaseBegins[-1])
 

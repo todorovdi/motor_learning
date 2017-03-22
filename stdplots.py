@@ -169,7 +169,8 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
             xy=(x, y), xytext=(0, -270),
             textcoords='offset points', ha='right', va='bottom',
             bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-            arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
+            arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'),
+            fontsize=4)
 
     xc = 0
     yc = 0.4

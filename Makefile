@@ -30,11 +30,11 @@ addc2 = learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp exporter.
 
 
 pert: $(addc) $(addh)
-	g++ -std=c++11 -D BUILD_PERT  -O2 $(addc2) pert.cpp -o   $@        -lboost_system -lboost_program_options
-	g++ -std=c++11 -D BUILD_PERT  -g $(addc2) pert.cpp -o   $@_dbg     -lboost_system   -lboost_program_options
+	g++ -std=c++11 -D BUILD_PERT  -O2 $(addc2) pert.cpp -o   $@        -lboost_system 
+	g++ -std=c++11 -D BUILD_PERT  -g $(addc2) pert.cpp -o   $@_dbg     -lboost_system   
 
 pert_prl: $(addc) $(addh)
-	g++ -std=c++11 -D BUILD_PERT -D PARALLEL -fopenmp -O2 $(addc2) pert.cpp -o   $@        -lboost_system -lboost_program_options
+	g++ -std=c++11 -D BUILD_PERT -D PARALLEL -fopenmp -O2 $(addc2) pert.cpp -o   $@  -lboost_system 
 #	g++ -std=c++11 -D BUILD_GALEA -fopenmp -g $(addc2)  -o   $@_dbg     -lboost_system   -lboost_program_options
 
 

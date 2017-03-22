@@ -663,31 +663,33 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
     cue2prelearnParam.resize(nc);
     for(int i=0; i<nc; i++)
     {
+      phaseParamPrelearn & c2p = cue2prelearnParam[i];
       key = string("actPrelearn") + to_string(i);
       iter = params.find(key);
       if(iter != params.end() )
       { 
         int action = stoi(iter->second);
-        cue2prelearnParam[i].action = action;
+        c2p.action = action;
       }
       key = string("tgt_xPrelearn") + to_string(i);
       iter = params.find(key);
       if(iter != params.end() )
       { 
         float val = stof(iter->second);
-        cue2prelearnParam[i].tgt_x = val;
+        c2p.tgt_x = val;
       }
       key = string("tgt_yPrelearn") + to_string(i);
       iter = params.find(key);
       if(iter != params.end() )
       { 
         float val = stof(iter->second);
-        cue2prelearnParam[i].tgt_y = val;
+        c2p.tgt_y = val;
       }
 
-      cue2prelearnParam[i].patPMC.resize(na);
-      cue2prelearnParam[i].wmmax = wmmax_fake_prelearn;
-      cue2prelearnParam[i].tempWAmpl = fake_prelearn_tempWAmpl;
+      c2p.patPMC.resize(na);
+      fill(c2p.patPMC.begin(),c2p.patPMC.end(),0.);
+      c2p.wmmax = wmmax_fake_prelearn;
+      c2p.tempWAmpl = fake_prelearn_tempWAmpl;
     }
 }
 
