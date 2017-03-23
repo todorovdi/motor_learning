@@ -76,9 +76,9 @@ def genMainPlot(ax,fnames,nums):
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
   
-    if "plotPubFile" in pp.paramsEnv:
+    if pp.plotPubFile != "":
         import imp
-        nicener = imp.load_source(pp.paramsEnv["plotPubFile"],pp.paramsEnv["plotPubFile"])
+        nicener = imp.load_source(pp.plotPubFile,pp.plotPubFile)
         nicener.makeNicer(ax)
 
 def removeWrongDataLen(fnames,n):   # check if all have the same data length
@@ -226,6 +226,7 @@ def genFigurePertMulti(dat_basenames):
         nc = l
     fig, axs = plt.subplots(ncols=nc, nrows=nr, figsize=(10*l, 20), sharex=False, sharey=False)
 
+    fnames2d = []
     for ind,dat_basename in enumerate(dat_basenames_nonempty):
     
         fnames = []
@@ -240,6 +241,8 @@ def genFigurePertMulti(dat_basenames):
         if(len(fnames) == 0):
             print "No .dat files found"
             return 0
+        
+        fnames2d.append(fnames)
 
         filename = fnames[0]
 
@@ -273,18 +276,18 @@ def genFigurePertMulti(dat_basenames):
         #ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
         ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.08)
 
-        rangePre1 = range(0,pp.phaseBegins[1])
-        figName = "Adapt1"
-        if pp.emphPhase != -1:
-            ep = pp.emphPhase
-            rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
-            figName = pp.paramsEnv["name"+str(ep)]
-        else:
-            rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
-        rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
-        #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
-
         if pp.multiSameGraph == 0:
+            rangePre1 = range(0,pp.phaseBegins[1])
+            figName = "Adapt1"
+            if pp.emphPhase != -1:
+                ep = pp.emphPhase
+                rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
+                figName = pp.paramsEnv["name"+str(ep)]
+            else:
+                rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
+            rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
+            #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
+
             ax = axs[1,ind]
 
             genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
@@ -302,11 +305,6 @@ def genFigurePertMulti(dat_basenames):
 
     bb = pp.paramsEnv["pdfSuffix"]
     bb = re.sub('bg._cb.', '', bb)
-
-    if "plotPubFile" in pp.paramsEnv:
-        import imp
-        nicener = imp.load_source(pp.paramsEnv["plotPubFile"],pp.paramsEnv["plotPubFile"])
-        nicener.makeNicerMulti(ax)
     
     if(len(fnames) == 1):
         pdfname = pp.out_dir_pdf+bb+"_multi.pdf"
@@ -318,12 +316,17 @@ def genFigurePertMulti(dat_basenames):
         pdf.savefig()
         plt.close()
 
+        if pp.plotPubFile != "":
+            import imp
+            nicener = imp.load_source(pp.plotPubFile,pp.plotPubFile)
+            #nicener.makeNicerMulti(fig,ax)
+            nicener.makePubPlot(fnames2d)
+
+            pdf.savefig()
+            plt.close()
+
     #plt.savefig(pp.out_dir_pdf+outname+".pdf")
     plt.close(fig)
-
-    #plt.clf()
-    #plt.cla()
-    #return armData,dirShift,targetPre1,errs
 
 def genReachingByPhase(fname):
     fileToPlot = fname

@@ -32,6 +32,7 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global emphPhase
     global showPointNumbers
     global multiSameGraph
+    global plotPubFile
 
     armFileSkiprows = int(params_["armFileSkiprows"])
     pdfForEachSession = int(params_["pdfForEachSession"])
@@ -58,7 +59,6 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
         plotReachAngles = int(params_["plotReachAngles"])
     except KeyError as e:
         plotReachAngles = 0
-        #print "no emphPhase in params"
         print str(e)
     y_axis_max = float(params_["y_axis_max"])
     y_axis_signed = int(params_["y_axis_signed"])
@@ -69,6 +69,13 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
         emphPhase = -1
         #print "no emphPhase in params"
         print str(e)
+
+    try:
+        plotPubFile = params_["plotPubFile"]
+    except KeyError as e:
+        plotPubFile = ""
+        print str(e)
+        
 
 def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one before calc, or not. The one after calc contains changes from command line
     global paramsEnv

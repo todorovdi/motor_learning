@@ -61,31 +61,38 @@ if [ $# -ne 0 ]; then
   addOptions=" --wmmax_fake_prelearn=0.1 --cbRateDepr=0.03 " 
   addOptionsLoc=""$addOptions
 
-#  #$useOldData="1"
-  perturb "--ini=$ini $addOptionsLoc" 1 1 $1 
+  #useOldData="1"
+  useOldData=$2
+  perturb "--ini=$ini $addOptionsLoc" 1 1 $1 $useOldData
+  #genPdfSuffix "--ini=$ini $addOptionsLoc" 1 1 $1
   argsCBon=$pdfSuffix
+
+  #useOldData=$2
 
   addOptionsLoc="--rewardDist=0.06"$addOptions
   perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
+  #genPdfSuffix "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
   args1=$pdfSuffix
 
-  addOptionsLoc="--resetRPre0=0"$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-  args2=$pdfSuffix
+#  addOptionsLoc="--resetRPre0=0"$addOptions
+#  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
+#  args2=$pdfSuffix
+#
+#  addOptionsLoc="--fake_prelearn_tempWAmpl=0"$addOptions
+#  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
+#  args3=$pdfSuffix
+#
+#  addOptionsLoc="--fake_prelearn_tempWAmpl=1."$addOptions
+#  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
+#  args4=$pdfSuffix
+#
+#  addOptionsLoc="--rewardDist=0.08"$addOptions
+#  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
+#  args5=$pdfSuffix
 
-  addOptionsLoc="--fake_prelearn_tempWAmpl=0"$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-  args3=$pdfSuffix
-
-  addOptionsLoc="--fake_prelearn_tempWAmpl=1."$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-  args4=$pdfSuffix
-
-  addOptionsLoc="--rewardDist=0.08"$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-  args5=$pdfSuffix
-
-  python "$plotfile" "$argsCBon" "$args1" "$args2" "$args3" "$args4" "$args5"
+#  python "$plotfile" "$argsCBon" "$args1" "$args2" "$args3" "$args4" "$args5"
+  python "$plotfile" "$argsCBon" "$args1" 
+#  python "$plotfile" "$argsCBon" "$args5" 
 
   ./beep.sh
   sleep 0.1s

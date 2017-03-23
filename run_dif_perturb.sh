@@ -1,18 +1,69 @@
-perturb()
+# $1 -additional args, $2 bg state, $3 cb state
+genPdfSuffix()
 {
   pdfSuffix="${experimentName}_${1}_bg${2}_cb${3}"
+}
+            
+#when both systems are one
+genPdfSuffixSimple()    
+{
+  pdfSuffix="${experimentName}_${1}"
+}
 
-  if [ $useOldData == "0" ]; then
+runSimulation()
+{
+  if [ $5 == "0" ] || [ $5 == "2" ]; then
+    $runfile --nsessions=$4 --learn_bg=$2 --learn_cb=$3 --pdfSuffix="$pdfSuffix" $1 --seed=$seed
+  fi
+}
+
+runSimulationSimple()
+{
+  if [ $3 == "0" ] || [ $3 == "2" ]; then
+    $runfile --nsessions=$2 --pdfSuffix="$pdfSuffix" $1 --seed=$seed
+  fi
+}
+
+rmOldData()
+{
+  if [ $1 == "0" ]; then
     tt="${calc_dir}/${pdfSuffix}_seed_"
     echo ".sh deleting $tt"
     #rm "$tt"
     rm "$tt"*.dat
   fi
+}
+
+# $1 -additional args, $2 bg state, $3 cb state, $4 - nsessions 
+perturb()
+{
+  uod=$useOldData
+  if [ $# -eq 5 ]; then
+    uod=$5
+  fi
+
+  genPdfSuffix "$1" "$2" "$3"
+  rmOldData $uod
 
   echo ".sh pdfSuffix ="$pdfSuffix
-  if [ $useOldData == "0" ] || [ $useOldData == '2' ]; then
-    $runfile --nsessions=$4 --learn_bg=$2 --learn_cb=$3 --pdfSuffix="$pdfSuffix" $1 --seed=$seed
+  runSimulation  "$1" "$2" "$3" "$4" $uod
+  python "$plotfile" "$pdfSuffix"
+  
+  ./beep.sh
+}
+
+# $1 -additional args, $2 - nsession, $3 useOldData
+perturbSimple()
+{
+  uod=$useOldData
+  if [ $# -eq 3 ]; then
+    uod=$3
   fi
+  genPdfSuffixSimple "$1" 
+  rmOldData $uod
+
+  echo ".sh pdfSuffix ="$pdfSuffix
+  runSimulationSimple  "$1" "$2" $uod
   python "$plotfile" "$pdfSuffix"
   
   ./beep.sh
