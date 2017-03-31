@@ -69,7 +69,7 @@ class perturbationExperimentEnv: public Environment
     int deg2action(float degAngle);
     void getCurTgt(float * x, float & x0, float & y0, float & tgtAngleDeg);
 
-    perturbationExperimentEnv(const parmap & params, int num_sess, unsigned int sess_seed);
+    perturbationExperimentEnv(parmap & params, int num_sess, unsigned int sess_seed);
     ~perturbationExperimentEnv();
 
     // experiment-specific

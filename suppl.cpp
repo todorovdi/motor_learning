@@ -82,7 +82,7 @@ void readIni(std::string fname, parmap & configValues)
               parmap::iterator iter = configValues.find(key);
               if(iter!= configValues.end())
               { 
-                cout<<"readIni overwriting key "<<key<<" old val = "<<iter->second<<" new val = "<<value<<endl;
+//                cout<<"readIni overwriting key "<<key<<" old val = "<<iter->second<<" new val = "<<value<<endl;
               } 
               configValues[key] = value;
             }

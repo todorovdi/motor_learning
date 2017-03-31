@@ -13,13 +13,15 @@ typedef map<string,string> parmap;
 class CB_model
 {
     ////////// CB related
+  float cbLRate;   // learning rate for the CB 
+  float cbLRateMax;  
+  float cbLRate_init;  
 
-    float cbLRate;   // learning rate for the CB 
-    float cbLRate_init;  
+  float cb_init_shift_size; // stepsize used for computation of DF in cerebellum
+  float x_cb_target, y_cb_target;  // current CB target
+  float updateCBStateDist;
 
-    float cb_init_shift_size; // stepsize used for computation of DF in cerebellum
-    float x_cb_target, y_cb_target;  // current CB target
-    float updateCBStateDist;
+  float def_updateCBStateDist;
 
   float cbLRateUpdSpdUp;
   float cbLRateUpdSpdDown;
@@ -48,6 +50,8 @@ class CB_model
         void moveArm(float * y, float * out, float ffield);   // pretty sefl-descriptive
         void resetPrevErr(float pe = 100.);
         void resetLearnRate(float lr = -100);
+
+        void set_tCDS(float val);
     
         // sets the target directly. Rarely used, because usually you would like 
         // to retrain CB to reach this point -- so you would call train method instead 

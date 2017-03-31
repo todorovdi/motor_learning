@@ -1,5 +1,5 @@
 runfile="./pert_prl"
-plotfile="universal.plot.py"
+plotfile="universal_plot.py"
 pdfdir=output_for_paper
 experimentName=force_field
 ini="$experimentName.ini"

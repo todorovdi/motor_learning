@@ -1,6 +1,6 @@
 execname="pert_prl"
 runfile="./$execname"
-plotfile="universal.plot.py"
+plotfile="universal_plot.py"
 pdfdir=output_for_paper
 experimentName=shmuelof
 ini="$experimentName.ini"
@@ -49,30 +49,42 @@ if [ $# -ne 0 ]; then
 
   #addOptionsLoc="--fake_prelearn_tempWAmpl=1."
 
-  delay="3.0s"
+  delay="4.0s"
   if [ $useOldData == '0' ]; then
     echo "!!! ----- Really delete corresponding *.dat files?" 
     echo "!!! ----- You have $delay to stop the script"
     sleep $delay
   fi
+  echo "Starting experiment "$experimentName
 
   onlyBE="--learn_cb2=0"
 
   addOptions=" --wmmax_fake_prelearn=0.1 --cbRateDepr=0.03 " 
-  addOptionsLoc=""$addOptions
 
+  addOptionsLoc=""$addOptions
   #useOldData="1"
   useOldData=$2
   perturb "--ini=$ini $addOptionsLoc" 1 1 $1 $useOldData
   #genPdfSuffix "--ini=$ini $addOptionsLoc" 1 1 $1
   argsCBon=$pdfSuffix
 
-  #useOldData=$2
+  addOptionsLoc=$addTrials$addOptions
+  perturb "--ini=$ini $addOptionsLoc" 1 1 $1 $useOldData
+  #genPdfSuffix "--ini=$ini $addOptionsLoc" 1 1 $1
+  argsCBonLong=$pdfSuffix
+
+  useOldData=$2
 
   addOptionsLoc="--rewardDist=0.06"$addOptions
   perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
   #genPdfSuffix "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
   args1=$pdfSuffix
+
+  addOptionsLoc="--rewardDist=0.06 $addTrials"$addOptions
+  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
+  #genPdfSuffix "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
+  args1Long=$pdfSuffix
+
 
 #  addOptionsLoc="--resetRPre0=0"$addOptions
 #  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
@@ -91,7 +103,10 @@ if [ $# -ne 0 ]; then
 #  args5=$pdfSuffix
 
 #  python "$plotfile" "$argsCBon" "$args1" "$args2" "$args3" "$args4" "$args5"
+
+#  python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long" 
   python "$plotfile" "$argsCBon" "$args1" 
+  python "$plotfile" "$argsCBonLong" "$args1Long" 
 #  python "$plotfile" "$argsCBon" "$args5" 
 
   ./beep.sh

@@ -18,17 +18,34 @@ void Arm::init(parmap & p) //, bool oldverIni)
     
     na = stoi(p["na"]);
 
-    phi0[0] = stof(p["phi_0"]);
-    phi0[1] = stof(p["phi_1"]);
+    string key;
+    parmap::iterator it;
+
+    key = "phi_0";
+    it = p.find(key);
+    if(it != p.end())
+    {
+      phi0[0] = stof(p["phi_0"]);
+      phi0[1] = stof(p["phi_1"]);
+    }
+   
+    key = "armInitAng_fname";
+    it = p.find(key);
+    if(it != p.end())
+    { 
+      string fname = it->second;
+      ifstream(fname)>>phi0[0]>>phi0[1]; 
+    }
+
 	//float phi0[2]={ -0.832778,	1.16426};
     //if(oldverIni)
 	//    ifstream(iniFile)>>phi0[0]>>phi0[1];
     //else
-    {
-        phi0[0] = stof(p["phi_0"]);
-        phi0[1] = stof(p["phi_1"]);
-    }
-	xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
+    
+	  xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
+
+    p["x_center"]=to_string(xc);
+    p["y_center"]=to_string(yc);
 
     finalNoiseAmpl = stof(p["finalNoiseAmpl"]);
     neuron2armMult = stof(p["neuron2armMult"]);

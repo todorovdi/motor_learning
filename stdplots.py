@@ -17,7 +17,38 @@ from scipy import stats
 
 import plotparams as pp
 
-def getReachAngles(armData,xerr=False):
+def coord2AngleDeg(x,y):    # returns -180 to 180
+    xc = 0
+    yc = 0.4
+    baseAng = 0.  # relative to EAST direction
+
+    xd = x-xc
+    yd = y-yc
+
+    if(xd >= 0):
+        angleDeg = ( math.atan( yd / xd )  ) / (2*math.pi) * 360.
+#        if(yd>0):
+#            angleDeg = 360 - angleDeg
+    else:
+        angleDeg = ( math.atan( yd / (-xd) )   ) / (2*math.pi) * 360.
+        if yd >= 0:
+            angleDeg = math.pi/2 + (math.pi/2-angleDeg)
+        else:
+            angleDeg = -math.pi/2 - (math.pi/2+angleDeg)
+
+    return angleDeg - baseAng
+
+# returns a1-a2
+def angleDegDif(a1,a2):    # suppose 0 <= a1,a2 < 360
+    r = a1 - a2
+    if (fabs(r) > 180):
+        if a1 < 180:
+            r = a1 + (180*2 - a2)
+        else:
+            r = -angleDegDif(a2,a1)
+    return r
+
+def getReachAngles(armData):
     nums = armData[:,0]
     #xs = armData[:,1]
     #ys = armData[:,2]
@@ -29,14 +60,12 @@ def getReachAngles(armData,xerr=False):
 
     angs = np.zeros(n)
     for (x,y,j) in zip(x_actual,y_actual,nums):
-        xc = 0
-        yc = 0.4
-        angleDeg = ( math.atan( (y-yc) / (x-xc) )  ) / (2*math.pi) * 360.
+        angleDeg = coord2AngleDeg(x,y)
     #print int(j),x,y,xt,yt, d
         angs[int(j)] = angleDeg
     return angs
 
-def getErrs(armData,xerr=False):
+def getErrs(armData):
     nums = armData[:,0]
     xs = armData[:,1]
     ys = armData[:,2]
@@ -46,28 +75,14 @@ def getErrs(armData,xerr=False):
 
     errs = np.zeros(n)
     for (x,y,xt,yt,j) in zip(xs,ys,xs_target,ys_target,nums):
-        if(int(pp.paramsEnv["sector_reward"]) == 0):
-            if(xerr):
+        if(pp.plotAngleErrs == 0):
+            if(pp.signed_dist_err):
                 d =  -(x-xt)
             else:
                 d = math.sqrt( (x-xt)**2 + (y-yt)**2 )
         else:
-            xc = 0
-            yc = 0.4
-            xd = x-xc;
-            yd = y-xc;
-            tgtAngleDeg = ( math.atan( (xt-xc) / (yt-yc) )  ) / (2*math.pi) * 360.
-            angleCur0 = math.atan(yd/xd) / (2*math.pi) * 360.
-            if(xd<0):
-                s = 0
-                if(yd>0):
-                    s = 90
-                else:
-                    s = -90
-                angleCur0 = math.atan(-xd/yd)/ (2*math.pi) * 360  + s 
-            angleCur = angleCur0
-            if(angleCur0 < 0):
-                angleCur = angleCur0 + 360
+            tgtAngleDeg = coord2AngleDeg(xt,yt) 
+            tgtAngleDeg = coord2AngleDeg(x,y) 
             dif = angleCur - tgtAngleDeg;
             dif1 = dif
             if(dif > 180.):
@@ -77,20 +92,20 @@ def getErrs(armData,xerr=False):
         errs[int(j)] = d
     return errs
 
-def doStats(fnames,xerr):
+def doStats(fnames):
     n = pp.phaseBegins[-1] 
     nsess = len(fnames)
     errs = np.zeros(shape=(nsess,n))
     for i,fname in enumerate(fnames):
         armData = np.loadtxt(fnames[i])
         if pp.plotReachAngles != 0 :
-            dat = getReachAngles(armData,xerr)
+            dat = getReachAngles(armData)
         else:
-            dat = getErrs(armData,xerr) 
+            dat = getErrs(armData) 
         if len(dat) != n:
             print "------- doStats Warning: wrong length of data file table, maybe calc was terminated too early"
         else:
-            errs[i,:] = dat
+            errs[i,:] = dat * pp.datMult
     #print math.isnan(t)
     means = np.zeros(n)
     SEMs = np.zeros(n)
@@ -108,7 +123,7 @@ def doStats(fnames,xerr):
     return means,SEMs
 
 def armFileRead(fname):
-    armData = np.loadtxt(fname,skiprows=pp.armFileSkiprows)
+    armData = np.loadtxt(fname)#,skiprows=pp.armFileSkiprows)
     return armData
 
 def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_actual=[],cbtgt_actual=[]):

@@ -3,15 +3,9 @@
 
 //int MotorLearning::nc=1;
 
-void MotorLearning::inactivateBG()
+void MotorLearning::activateBG(int a)
 {
-    bg.inactivate(); 
-    //BGactive = false;
-}
-
-void MotorLearning::activateBG()
-{
-    bg.activate();
+    bg.activate(a);
     //BGactive = true;
 }
 
@@ -367,6 +361,11 @@ void MotorLearning::flushWeights(bool wmtoo)
 void MotorLearning::setFfield(float ff)
 {
   ffield = ff;
+}
+
+void MotorLearning::setCBtCDS(float val)
+{
+  cb.set_tCDS(val);
 }
 
 //void initWeightNormFactor(unsigned int memoryLen)  // should be called ONLY ONCE

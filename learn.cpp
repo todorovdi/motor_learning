@@ -114,6 +114,8 @@ int main(int argc, char** argv)
     i = params.find("iniAdd");
     if(i!= params.end())
         readIni(i->second,params);
+    
+    readIni(paramsEnvFile,params);   // again, to replace what was in ini* files. To modify common params in general
 
     parseCMDargs(argc,argv,params);  // to overwrite ini file options
 
@@ -123,8 +125,19 @@ int main(int argc, char** argv)
     //int nsessions = vm["n"].as<int>(); 
     //params["nsessions"] = to_string(nsessions); 
 
+    string key;
+    parmap::iterator iter;
 
-    runExperiment(params);
+    key = string("recalibrateArmCortControl");
+    iter = params.find(key);
+    if(iter!=params.end() && stoi(iter->second))
+    {
+      genCortcalData(params);
+    }
+    else
+    { 
+      runExperiment(params);
+    }
 
     clock_t end = clock();
     cout<<"Calc finished, clock time (in sec) passed is "<<(end-start)/CLOCKS_PER_SEC<<endl;

@@ -55,8 +55,7 @@ class MotorLearning
     float updateRpre(unsigned int trialInd, float reward, float * addInfo);  
 
     // turns off and on BG output (but computation is done anyways)
-    void inactivateBG();  
-    void activateBG();
+    void activateBG(int a);
 
     /////////////////////////////////////
     // control methods 
@@ -66,6 +65,7 @@ class MotorLearning
     void trainCB(float x0, float y0, float * yy, bool flushW=true) ; // CB_model method description
     void resetCBerr();
     void resetCBLRate(float lr=-100);
+    void setCBtCDS(float val);
     
     // turns off and on BG nd cerebellum learning, respectively
     void setBGlearning(bool bglearns);

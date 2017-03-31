@@ -27,6 +27,7 @@ class expPhaseParams{
   bool resetCBState;
   bool resetRPre;
   float cbLRate;
+  float CBtCDS;
 
   float target_rotation;
   bool target_xreverse;
@@ -64,6 +65,8 @@ class expPhaseParams{
     resetRPre = 0;
 
     errClampDirDeg = 1000;
+  
+    CBtCDS = 0.;
   }
 
   void print()
@@ -124,6 +127,8 @@ class perturbationExperimentEnv: public Environment
     float endptRotAngleIncSess;
     float rewardSize;
 
+    float minActionAngDeg;
+    float maxActionAngDeg;
 
     unsigned int sess_seed;
 
@@ -141,7 +146,7 @@ class perturbationExperimentEnv: public Environment
     int deg2action(float degAngle);
     void getCurTgt(float * x, float & x0, float & y0, float & tgtAngleDeg);
 
-    perturbationExperimentEnv(const parmap & params, int num_sess, unsigned int sess_seed);
+    perturbationExperimentEnv(parmap & params, int num_sess, unsigned int sess_seed);
     ~perturbationExperimentEnv();
 
     // experiment-specific

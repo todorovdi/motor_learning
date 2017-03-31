@@ -133,9 +133,10 @@ void perturbationExperimentEnv::runSession()
           {
             ml.setSingleRPre(p.cue,0.);
           }
+          
+          ml.setCBtCDS(p.CBtCDS); 
 
           cout<<"session num = "<<num_sess<<"  experimentPhase is "<<p.name<<endl;
-          cout<<"session num = "<<num_sess<<"  experimentPhase is "<<p.name<<" "<<p.endpoint_rotation<<endl;
           ml.makeTrials(p.numTrials,0,false,offset);
           offset += p.numTrials;
         }
@@ -243,7 +244,7 @@ void perturbationExperimentEnv::initCBdir(float x0,float y0, vector<float> patPM
 
 int perturbationExperimentEnv::deg2action(float degAngle)
 {
-    return int(float(degAngle) / 360. * 100.);
+    return int( (float(degAngle) - minActionAngDeg ) / (maxActionAngDeg - minActionAngDeg) * float(na) );
 }
 
 int perturbationExperimentEnv::turnOnCues(int k, float * cues)
@@ -393,7 +394,7 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
 }  
 
 //    string paramsEnvFile, int num_sess_,float tgt,int learn_cb_,float cbLRate_,unsigned int seed
-perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int num_sess_,unsigned int sess_seed_):Environment(params_,num_sess_)
+perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_sess_,unsigned int sess_seed_):Environment(params_,num_sess_)
 {
     sess_seed = sess_seed_;
     params["sess_seed"] = to_string(sess_seed);
@@ -410,6 +411,27 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
 
     string key;
     parmap::iterator iter;
+
+    key = string("minActionAngDeg");
+    iter = params.find(key);
+    if(iter!=params.end())
+    {
+      minActionAngDeg = stof(iter->second);   
+    }
+    else
+    {
+      minActionAngDeg = 0;
+    }
+    key = string("maxActionAngDeg");
+    iter = params.find(key);
+    if(iter!=params.end())
+    {
+      maxActionAngDeg = stof(iter->second);   
+    }
+    else
+    {
+      maxActionAngDeg = 360;
+    }
 
     key = string("actRotAngleIncSess");
     iter = params.find(key);
@@ -625,6 +647,14 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
         p.resetRPre = val;
       }
 
+      key = string("CBtCDS") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stoi(iter->second);
+        p.CBtCDS = val;
+      }
+
       key = string("cbLRate") + to_string(i);
       iter = params.find(key);
       if(iter != params.end() )
@@ -671,6 +701,15 @@ perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int 
         int action = stoi(iter->second);
         c2p.action = action;
       }
+      
+      key = string("actPrelearnAng") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float angDeg = stof(iter->second);
+        c2p.action = deg2action(angDeg);
+      }
+
       key = string("tgt_xPrelearn") + to_string(i);
       iter = params.find(key);
       if(iter != params.end() )

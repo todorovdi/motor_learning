@@ -1,5 +1,5 @@
 runfile="./pert_prl"
-plotfile="universal.plot.py"
+plotfile="universal_plot.py"
 pdfdir=output_for_paper
 experimentName=gutierrez
 ini="$experimentName.ini"
@@ -19,6 +19,61 @@ fi
 
 if [ $# -ne 0 ]; then
 
-  perturbAllConfig $1 "--ini=$ini $addOptions" 
-  perturbAllConfig $1 "--ini=$ini --percept_xrev1=0 --actPrelearn1=10 $addOptions" 
+  delay="3.0s"
+  if [ $useOldData == '0' ]; then
+    echo "!!! ----- Really delete corresponding *.dat files?" 
+    echo "!!! ----- You have $delay to stop the script"
+    sleep $delay
+  fi
+    
+
+  #./inv `cat tmp` -n 1000 -T 1.0 -N 100 -minAngDeg 10 -maxAngDeg 170
+
+  # default
+  #./inv `cat tmp` -n 1000 -T 1.0 -N 100 -minAngDeg 0 -maxAngDeg 360 
+
+  # n is timesteps
+  # T is time
+  # N is number of actions
+  # minAngDeg  is start of the sector
+  # maxAngDeg  is end of the sector
+
+  #make pert
+  #pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
+
+  echo "Starting experiment "$experimentName
+
+  addOptions=""
+  addOptionsLoc=" --updateCBStateDist=0.03 --rewardDist=0.04 --cbRateDepr=0.03"$addOptions
+  useOldData=$2   # 9 means don't plot
+
+
+#  perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
+#  args_nonEB_HD=$pdfSuffix
+
+  perturbSimple "--ini=$ini$addOptionsLoc" $1  $useOldData
+  args_nonEB_control=$pdfSuffix
+
+  perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
+  args_nonEB_HD=$pdfSuffix
+
+  perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1  $useOldData
+  args_nonEB_PD=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=0$addOptionsLoc" $1 $useOldData
+  args_EB_control=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=0 --HD=1$addOptionsLoc" $1 $useOldData
+  args_EB_HD=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=0 --PD=1$addOptionsLoc" $1 $useOldData
+  args_EB_PD=$pdfSuffix
+
+  python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" 
+
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
 fi

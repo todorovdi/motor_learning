@@ -127,7 +127,7 @@ void CB_model::learn(float dx,float dy)
     cbLRate = fmax(cbLRate , 0.001);  // to avoid negativity
 
     float m = errAbs/updateCBStateDist;
-    cbLRate = fmin( cbLRate, cbLRate_init/m);
+    cbLRate = fmin( cbLRate, cbLRateMax/m);
 
     //cbLRate *= mult;     // like that we kill the rate as we do it each trial
   }
@@ -208,6 +208,7 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
     //readIni(iniCBname,params);
 
     cbLRate = stof(params["cbLRate"]);
+    cbLRateMax = stof(params["cbLRateMax"]);
     cbLRate_init = cbLRate;
     cb_init_shift_size = stof(params["cb_init_shift_size"]);
     updateCBStateDist = stof(params["updateCBStateDist"]);
@@ -216,6 +217,8 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
     cbLRateUpdSpdMax = stof(params["cbLRateUpdSpdMax"]);
     cbRateDepr = stof(params["cbRateDepr"]);
 
+    def_updateCBStateDist = updateCBStateDist;
+
     arm = arm_;
     exporter = exporter_;
 }
@@ -223,4 +226,9 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
 void CB_model::CBExport(int k)
 {
   exporter->CBExport(k,wcb,dfwx,dfwy);
+}
+
+void CB_model::set_tCDS(float val)
+{
+  updateCBStateDist = def_updateCBStateDist + val;
 }

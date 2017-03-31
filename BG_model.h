@@ -81,9 +81,11 @@ class BG_model
     /////////// system vars
     float amplInitRand;
     float **wmBackup, **w2Backup, **w1Backup;
-    float old_A_exp;
-    float old_gpi_drive;
-    bool d2activity;
+    //float old_A_exp;
+    //float old_gpi_drive;
+    float def_A_exp;
+
+    float d2activity;
     bool BGactive; 
 
     unsigned int memoryLen;
@@ -91,6 +93,11 @@ class BG_model
 
     int na;
     int nc;
+
+    int PD;
+    int HD;
+    float HD_D2activity_reduction;
+    float PD_LTP_reduction;
 
     Exporter * exporter;
 ///////////////////////////////////////
@@ -102,13 +109,10 @@ class BG_model
         float do_step();         // calls bg_step
 
         // controls whether gpi output is nonzero
-        void inactivate();  
-        void activate();
+        void activate(int a);
 
-        void activate_disease_PD();
-        void activate_disease_HD();
-        void inactivate_disease_PD();
-        void inactivate_disease_HD();
+        void activate_disease_PD(int a);
+        void activate_disease_HD(int a);
 
         // set weights to default values. 
         // sometimes you have to do it explicitly depending on the protocol of the experiment

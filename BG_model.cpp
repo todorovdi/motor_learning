@@ -4,34 +4,38 @@
 
 #define STN_IN_INDIRECT
 
-void BG_model::activate_disease_PD()
+void BG_model::activate_disease_PD(int a)
 {
-    d1_ltp = 0.1;
-    d2_ltp = 0.1;
+  if(a)
+  { 
+    d1_ltp = 1. - PD_LTP_reduction;
+    d2_ltp = 1. - PD_LTP_reduction;
     //dm_ltp = 0.;
+  }
+  else
+  {
+    d1_ltp = 1.;
+    d2_ltp = 1.;
+  }
 }
 
-void BG_model::activate_disease_HD()
+void BG_model::activate_disease_HD(int a)
 {
-    old_A_exp = A_exp;
+  if(a)
+  { 
     A_exp = 0;
     //old_gpi_drive = gpi_drive;
     //gpi_drive -= 0.2;
-    d2activity = 0.1;
-}
-
-void BG_model::inactivate_disease_PD()
-{
-    d1_ltp = 1.;
-    d2_ltp = 1.;
-    //dm_ltp = 1.;
-}
-
-void BG_model::inactivate_disease_HD()
-{
-    A_exp = old_A_exp;
+    d2activity = 1. - HD_D2activity_reduction;
+    cout<<" d2activity "<<d2activity<<endl;
+  }
+  else
+  {
+    //A_exp = stof(params["A_exp"]);
+    A_exp = def_A_exp;
     //gpi_drive = old_gpi_drive;
     d2activity = 1.; 
+  }
 }
 
 float BG_model::bg_step(float **w1,float **w2,float **wm,float *x,float *y,float *expl)
@@ -53,9 +57,9 @@ float BG_model::bg_step(float **w1,float **w2,float **wm,float *x,float *y,float
 			D2[i]+=w2[j][i]*x[j];
 			Y[i]+=wm[j][i]*x[j];
 		}
-        //D2[i] = D2[i] * d2activity;
+        
+    //D2[i] = D2[i] * d2activity;
 
-#ifndef STN_IN_INDIRECT
 		D1[i]-=inh21*d2[i];
 		D2[i]-=inh12*d1[i];
 
@@ -64,37 +68,28 @@ float BG_model::bg_step(float **w1,float **w2,float **wm,float *x,float *y,float
 		D1[i]=s(D1[i]+y_d1*y[i]);
 		D2[i]=s(D2[i]+y_d2*y[i]);
 
+    D2[i] = D2[i] * d2activity;
+
 		gpe[i]=s(-d2_gpe*d2[i]+gpe_drive);
-		
+		//gpe[i]=s(-d2_gpe*d2activity*d2[i]+gpe_drive);
+#ifndef STN_IN_INDIRECT
 		//stn[i]=s(y_stn*y[i]-gpe_stn*gpe[i]);
 		
-        if(BGactive)
-		    gpi[i]=s(-d1_gpi*d1[i]-gpe_gpi*gpe[i]+gpi_drive+expl[i]); //  stn_gpi*stn[i]);
-        else
-            gpi[i]=0.;
+    if(BGactive)
+    gpi[i]=s(-d1_gpi*d1[i]-gpe_gpi*gpe[i]+gpi_drive+expl[i]); //  stn_gpi*stn[i]);
+    else
+        gpi[i]=0.;
 		//gpi[i]=s(-d1_gpi*d1[i]-gpe_gpi*gpe[i]+gpi_drive+expl[i]);
 		
 		Y[i]=s(Y[i]-gpi_y*gpi[i]);
 #else
-		//D1[i]-=inh21*d2[i];
-		//D2[i]-=inh12*d1[i];
-		D1[i]+=d1_drive;
-		D2[i]+=d2_drive;
-
-		Y[i]+=y_drive;
-
-		D1[i]=s(D1[i]+y_d1*y[i]);
-		D2[i]=s(D2[i]+y_d2*y[i]);
-
-		gpe[i]=s(-d2_gpe*d2[i]+gpe_drive);
-		
 		stn[i]=s(-gpe_stn*gpe[i] + stn_drive + expl[i]);
-		//gpi_drive=.2;  , otherwise 1.7
-        if(BGactive)
-		    gpi[i]=s(-d1_gpi*d1[i]+stn_gpi*stn[i]+gpi_drive);
-		    //gpi[i]=s(-d1_gpi*d1[i]+stn_gpi*stn[i]+gpi_drive+expl[i]);
-        else
-            gpi[i]=0;
+
+    if(BGactive)
+    gpi[i]=s(-d1_gpi*d1[i]+stn_gpi*stn[i]+gpi_drive);
+    //gpi[i]=s(-d1_gpi*d1[i]+stn_gpi*stn[i]+gpi_drive+expl[i]);
+    else
+        gpi[i]=0;
 		
 		Y[i]=s(Y[i]-gpi_y*gpi[i]);
 #endif
@@ -111,10 +106,9 @@ float BG_model::bg_step(float **w1,float **w2,float **wm,float *x,float *y,float
 	{
 		y[i]+=(Y[i]-y[i])*mu;
 		d1[i]+=(D1[i]-d1[i])*mu;
-		d2[i]+=(D2[i]-d2[i])*mu * d2activity;
-
-        d2[i] = d2[i];
-        //d2[i] = d2[i] * d2activity;
+		d2[i]+=(D2[i]-d2[i])*mu; // * d2activity;
+    
+    //d2[i] = d2[i] * d2activity;
 	}
 	return dt;
 }
@@ -295,8 +289,8 @@ BG_model::BG_model()
     normFactor = 1.;
     d2activity = 1.;
 
-    old_A_exp = 0;
-    old_gpi_drive = 0;
+    //old_A_exp = 0;
+    //old_gpi_drive = 0;
 
     memoryLen = 10;
 
@@ -351,9 +345,27 @@ void BG_model::init(parmap & params,Exporter *exporter_)
     na = stof(params["na"]);
     nc = stof(params["nc"]);
 
+    HD_D2activity_reduction = stof(params["HD_D2activity_reduction"])/100.;
+    PD_LTP_reduction        = stof(params["PD_LTP_reduction"])/100.;
+
+    def_A_exp = A_exp;
+
     allocMemory();
 
     exporter = exporter_;
+
+    HD = 0;
+    PD = 0;
+    parmap::iterator it = params.find("HD");
+    if(it != params.end())
+      HD = stoi(params["HD"]);
+
+    it = params.find("PD"); 
+    if(it != params.end())
+      PD = stoi(params["PD"]);
+
+    activate_disease_HD(HD);
+    activate_disease_PD(PD);
     //vim replace code 317,351s/\(\w*\)\W*=.*/\1 = stof(params["\1"]);/gc
 }
 
@@ -424,16 +436,10 @@ void BG_model::resetForTrialBegin()
     for(int i=0;i<na;i++) { y[i]=Q*rnd(); d1[i]=Q*rnd(); d2[i]=Q*rnd();  }
 }
 
-void BG_model::inactivate()
+void BG_model::activate(int active)
 {
-    BGactive = false;
+    BGactive = active;
 }
-
-void BG_model::activate()
-{
-    BGactive = true;
-}
-
 
 void BG_model::setwm(int cue, int action, float val)
 {

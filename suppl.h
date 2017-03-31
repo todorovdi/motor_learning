@@ -90,4 +90,6 @@ void parseCMDargs(int argc, char ** argv, parmap & params);
 //  return res;
 //}
 
+int genCortcalData(parmap & params);
+
 #endif

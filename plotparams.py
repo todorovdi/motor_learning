@@ -18,7 +18,7 @@ def paramFileRead(fname):
     return params_
 
 def exportVarsInit(params_):    # to avoid recalc if one just want to change export param (currently one takes all params from last initizlized param file, which is usually one from output data)
-    global armFileSkiprows
+    #global armFileSkiprows
     global pdfForEachSession
     global reachBoxXsz
     global reachBoxYsz
@@ -27,14 +27,18 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global xtickSkip
     global plotReachAngles
     global y_axis_max
+    global y_axis_min
     global y_axis_signed
     global y_axis_step
     global emphPhase
     global showPointNumbers
     global multiSameGraph
     global plotPubFile
+    global signed_dist_err
+    global plotAngleErrs
+    global datMult
 
-    armFileSkiprows = int(params_["armFileSkiprows"])
+    #armFileSkiprows = int(params_["armFileSkiprows"])
     pdfForEachSession = int(params_["pdfForEachSession"])
     reachBoxXsz = float(params_["reachBoxXsz"])
     reachBoxYsz = float(params_["reachBoxYsz"])
@@ -42,7 +46,28 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     cbMiscErrMult = float(params_["cbMiscErrMult"])
     xtickSkip = int(params_["xtickSkip"])
     y_axis_step = float(params_["y_axis_step"])
+
+    try:
+        plotAngleErrs = int(params_["plotAngleErrs"])
+    except KeyError as e:
+        plotAngleErrs = 0
+        #print "no showPointNumbers in params"
+        print str(e)
+
+    try:
+        datMult = int(params_["datMult"])
+    except KeyError as e:
+        datMult = 1
+        #print "no showPointNumbers in params"
+        print str(e)
     
+    try:
+        signed_dist_err = int(params_["signed_dist_err"])
+    except KeyError as e:
+        signed_dist_err = 0
+        #print "no showPointNumbers in params"
+        print str(e)
+
     try:
         multiSameGraph = int(params_["multiSameGraph"] )
     except KeyError as e:
@@ -61,8 +86,19 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
         plotReachAngles = 0
         print str(e)
     y_axis_max = float(params_["y_axis_max"])
-    y_axis_signed = int(params_["y_axis_signed"])
     y_axis_step = float(params_["y_axis_step"])
+    try:
+        y_axis_signed = int(params_["y_axis_signed"])
+    except KeyError as e:
+        y_axis_signed = 1
+        #print "no emphPhase in params"
+        print str(e)
+    try:
+        y_axis_min = float(params_["y_axis_min"])
+    except KeyError as e:
+        y_axis_min = y_axis_max * (1-2*y_axis_signed )
+        #print "no emphPhase in params"
+        print str(e)
     try:
         emphPhase = int(params_["emphPhase"])
     except KeyError as e:
@@ -158,4 +194,4 @@ def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one be
         trials1End = numTrialsPre+numTrialsAdapt+numTrialsPost
         trials1 = range(trials1End)
         trials2 = range(trials1End,trials1End*2)
-        print "fdsfd"
+        print "---- old version of ini file found"

@@ -553,7 +553,7 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
 }  
 
 //    string paramsEnvFile, int num_sess_,float tgt,int learn_cb_,float cbLRate_,unsigned int seed
-perturbationExperimentEnv::perturbationExperimentEnv(const parmap & params_,int num_sess_,unsigned int sess_seed_):Environment(params_,num_sess_)
+perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_sess_,unsigned int sess_seed_):Environment(params_,num_sess_)
 {
     sess_seed = sess_seed_;
     params["sess_seed"] = to_string(sess_seed);

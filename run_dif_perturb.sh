@@ -64,7 +64,9 @@ perturbSimple()
 
   echo ".sh pdfSuffix ="$pdfSuffix
   runSimulationSimple  "$1" "$2" $uod
-  python "$plotfile" "$pdfSuffix"
+  if [ $uod -ne 9 ]; then
+    python "$plotfile" "$pdfSuffix"
+  fi
   
   ./beep.sh
 }
@@ -97,6 +99,8 @@ perturbAllConfig()
 
 if [ $# -eq 0 ]; then
   echo "Please supply number of sessions"
+elif [ $# -eq 1 ]; then
+  echo "Please tell, to erase existing dat files (0), to plot existing data (1), or to add more sessions (2)"
 else
 
   mkdir -p $pdfdir

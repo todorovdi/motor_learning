@@ -43,7 +43,7 @@ class Environment
 
     public:
         Environment();
-        Environment(const parmap & params_, int num_sess);
+        Environment(parmap & params_, int num_sess);
 
 ///////////////////////////////////////
 //  Functions to implement in your experiment
