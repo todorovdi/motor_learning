@@ -141,11 +141,11 @@ void Exporter::exportContClose()
 //    foutWeights<<endl<<endl;	
 //}
 
-void Exporter::exportCuesState(unsigned int k, float * x)
+void Exporter::exportTrial(unsigned int k, float * x,float R, float Rpre)
 {
-    foutPerTrial<<"trial number k="<<k<<" cues are ";
+    foutPerTrial<<k<<"\t"<<R<<"\t"<<Rpre<<"\t";
     for(int i=0;i<nc;i++)
-        foutPerTrial<<x[i]<<"  ";
+        foutPerTrial<<x[i]<<"\t";
     foutPerTrial<<endl;
 }
 

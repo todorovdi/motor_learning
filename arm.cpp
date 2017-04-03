@@ -20,31 +20,6 @@ void Arm::init(parmap & p) //, bool oldverIni)
     string key;
     parmap::iterator it;
 
-    key = "phi_0";
-    it = p.find(key);
-    if(it != p.end())
-    {
-      phi0[0] = stof(p["phi_0"]);
-      phi0[1] = stof(p["phi_1"]);
-    }
-   
-    key = "armInitAng_fname";
-    it = p.find(key);
-    if(it != p.end())
-    { 
-      string fname = it->second;
-      ifstream(fname)>>phi0[0]>>phi0[1]; 
-    }
-
-	//float phi0[2]={ -0.832778,	1.16426};
-    //if(oldverIni)
-	//    ifstream(iniFile)>>phi0[0]>>phi0[1];
-    //else
-    
-	  xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
-
-    p["x_center"]=to_string(xc);
-    p["y_center"]=to_string(yc);
 
     finalNoiseAmpl = stof(p["finalNoiseAmpl"]);
     neuron2armMult = stof(p["neuron2armMult"]);
@@ -63,9 +38,12 @@ void Arm::init(parmap & p) //, bool oldverIni)
     if( ! cortData.good() )
     {
       cout<<" It looks like file with arm cortical controller data ("<<fname<<") does not exist"<<endl;
-      cout<<" before doing computation, please calibrate cortical controller by running "<<endl;
-      cout<<"make pert && pert --ini=<your ini> --recalibrateArmCortControl=1"<<endl;
-      throw string("no cortical data file!");
+      //cout<<" before doing computation, please calibrate cortical controller by running "<<endl;
+      //cout<<"make pert && pert --ini=<your ini> --recalibrateArmCortControl=1"<<endl;
+      //throw string("no cortical data file!");
+      
+      genCortcalData(p); 
+      cortData.open(fname);
     }
 
     float minAngDeg_,maxAngDeg_;
@@ -87,10 +65,41 @@ void Arm::init(parmap & p) //, bool oldverIni)
     { 
       cout<<"--------- Warning: Arm cortical data file was generated for different parameters"<<endl;
       cout<<"--------- Warning: "<<minAngDeg_<<" "<<maxAngDeg_<<" "<<na<<endl;
-      throw string("wrong cort data params");
+
+      cortData.close();
+      genCortcalData(p); 
+      cortData.open(fname);
+      cortData>>minAngDeg_;
+      cortData>>maxAngDeg_;
+      cortData>>na_;
+      //throw string("wrong cort data params");
     }
     
     reach_init(cortData);
+
+
+    key = "phi_0";
+    it = p.find(key);
+    if(it != p.end())
+    {
+      phi0[0] = stof(p["phi_0"]);
+      phi0[1] = stof(p["phi_1"]);
+    }
+   
+    key = "armInitAng_fname";
+    it = p.find(key);
+    if(it != p.end())
+    { 
+      string fname = it->second;
+      ifstream(fname)>>phi0[0]>>phi0[1]; 
+    }
+
+	//float phi0[2]={ -0.832778,	1.16426};
+    
+	  xc=(-L1*sin(phi0[0])+-L2*sin(phi0[1])),yc=(L1*cos(phi0[0])+L2*cos(phi0[1]));
+
+    p["x_center"]=to_string(xc);
+    p["y_center"]=to_string(yc);
 }
 
 void Arm::move(float * y, float* out, float wcb[][6], float ffield)   

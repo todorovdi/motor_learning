@@ -37,6 +37,7 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global signed_dist_err
     global plotAngleErrs
     global datMult
+    global cbStateMax
 
     #armFileSkiprows = int(params_["armFileSkiprows"])
     pdfForEachSession = int(params_["pdfForEachSession"])
@@ -48,37 +49,38 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     y_axis_step = float(params_["y_axis_step"])
 
     try:
+        cbStateMax = int(params_["cbStateMax"])
+    except KeyError as e:
+        cbStateMax = 0.3
+        print str(e)
+
+    try:
         plotAngleErrs = int(params_["plotAngleErrs"])
     except KeyError as e:
         plotAngleErrs = 0
-        #print "no showPointNumbers in params"
         print str(e)
 
     try:
         datMult = int(params_["datMult"])
     except KeyError as e:
         datMult = 1
-        #print "no showPointNumbers in params"
         print str(e)
     
     try:
         signed_dist_err = int(params_["signed_dist_err"])
     except KeyError as e:
         signed_dist_err = 0
-        #print "no showPointNumbers in params"
         print str(e)
 
     try:
         multiSameGraph = int(params_["multiSameGraph"] )
     except KeyError as e:
         multiSameGraph = 0
-        #print "no showPointNumbers in params"
         print str(e)
     try:
         showPointNumbers = int(params_["showPointNumbers"] )
     except KeyError as e:
         showPointNumbers = 0
-        #print "no showPointNumbers in params"
         print str(e)
     try:
         plotReachAngles = int(params_["plotReachAngles"])
@@ -91,19 +93,16 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
         y_axis_signed = int(params_["y_axis_signed"])
     except KeyError as e:
         y_axis_signed = 1
-        #print "no emphPhase in params"
         print str(e)
     try:
         y_axis_min = float(params_["y_axis_min"])
     except KeyError as e:
         y_axis_min = y_axis_max * (1-2*y_axis_signed )
-        #print "no emphPhase in params"
         print str(e)
     try:
         emphPhase = int(params_["emphPhase"])
     except KeyError as e:
         emphPhase = -1
-        #print "no emphPhase in params"
         print str(e)
 
     try:

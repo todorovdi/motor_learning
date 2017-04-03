@@ -105,7 +105,7 @@ void CB_model::cblearn(float dx,float dy)
   }
 }
 
-#define DEPR_DEP_ON_ERR
+//#define DEPR_DEP_ON_ERR
  
 void CB_model::learn(float dx,float dy)
 {      
@@ -150,9 +150,16 @@ void CB_model::learn(float dx,float dy)
 
   exporter->exportCBMisc(cbLRate,errAbs,ratio,prevErrAbs);
 
+  //lastErrRatio = fmin(cbLRateUpdSpdMax,prevErrAbs/errAbs);
+  lastErrRatio = errAbs;
   prevErrAbs = errAbs;
 
   //cout<<"errAbs "<<errAbs<<", learn_rate  "<<cbLRate<<",  W norm "<<matrixNorm(wcb)<<endl;
+}
+
+float CB_model::getErrRatio()
+{
+  return lastErrRatio;
 }
 
 void CB_model::resetPrevErr(float pe)

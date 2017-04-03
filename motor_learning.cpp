@@ -16,10 +16,10 @@ void MotorLearning::setSingleRPre(int cue, float rpeval)
 
 void MotorLearning::setRpre(float * rpre)
 {
-    for(int i=0;i<nc;i++)
-    {
-        Rpre[i] = rpre[i];
-    }
+  for(int i=0;i<nc;i++)
+  {
+    setSingleRPre(i,rpre[i]);
+  }
 }
 
 void MotorLearning::setRpreMax()
@@ -112,10 +112,6 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       if(learn_bg || !habit2PMCdirectly)
       {
 
-        if(doExport)
-        { 
-            bg.exportCuesState(k);
-        }
 
         int nsteps = 0;
         float dt = 0;
@@ -175,6 +171,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       { 
         bg.exportBGstate(k,0);
         cb.CBExport(k);
+        exporter->exportTrial(k,x,R,Rpre[cueActive]);
       } 
 
           //rnd();  // just to follow same seed as Slava's code
@@ -223,6 +220,11 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     //        trialEndExport(sumM1freq, 0);
 
     return 0;
+}
+
+float MotorLearning::getErrRatio()
+{
+  return cb.getErrRatio();
 }
 
 void MotorLearning::backupWeights()

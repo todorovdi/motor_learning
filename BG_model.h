@@ -127,7 +127,7 @@ class BG_model
 
         // export via exporter pointer
         void exportBGstate(int k, float* addInfo);
-        void exportCuesState(int k);
+        //void exportCuesState(int k);
         void exportWeightsOnce();
 	void exportContOpen(int k);
 	void exportContState(float t);

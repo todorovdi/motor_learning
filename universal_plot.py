@@ -163,20 +163,20 @@ def genFigurePert(fnames,outname):
 
         fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
         ax = axs[0,0]
-        genCBStatePlot(fig,ax,fileToPlot.replace('arm','CBState'))
+        #genCBStatePlot(fig,ax,fileToPlot.replace('arm','CBState'))
+        genRwdPlot(fig,ax,fileToPlot.replace('arm','output'))
         annotateGraph(ax)
 
         ax = axs[0,1]
         #genCBTuningPlot(fig,ax,fileToPlot.replace('arm','CBTuning'))
         genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'))
         annotateGraph(ax)
+        ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
         ax = axs[1,0]
         genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
         annotateGraph(ax)
-
         ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
-        ax.xaxis.grid(True, which='minor')
 
         #x_target = armData[:,3]
         #y_target = armData[:,4]

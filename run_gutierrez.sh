@@ -41,33 +41,31 @@ if [ $# -ne 0 ]; then
   echo "Starting experiment "$experimentName
 
   addOptions=""
-  addOptionsLoc=" --rewardDist=0.04"$addOptions
+  addOptionsLoc=""$addOptions
   useOldData=$2   # 9 means don't plot
 
+  #addOptions=" --actPrelearnAng0=110 --actPrelearnAng1=70"
 
-  perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
+#  addOptionsLoc=" --rewardDist=0.18"$addOptions 
+#  perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
+#  perturbSimple "--ini=$ini$addOptionsLoc --percept_xrev1=1" $1 $useOldData
+
+  perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
+  args_EB_control=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=1 --HD=1$addOptionsLoc" $1 $useOldData
   args_nonEB_HD=$pdfSuffix
-
-  perturbSimple "--ini=$ini --percept_xrev1=0$addOptionsLoc" $1 $useOldData
-  args_EB_control=$pdfSuffix
-
-
-  perturbSimple "--ini=$ini --percept_xrev1=0$addOptionsLoc" $1 $useOldData
-  args_EB_control=$pdfSuffix
-
-  perturbSimple "--ini=$ini --percept_xrev1=0 --HD=1$addOptionsLoc" $1 $useOldData
-  args_EB_HD=$pdfSuffix
-
-  perturbSimple "--ini=$ini --percept_xrev1=0 --PD=1$addOptionsLoc" $1 $useOldData
-  args_EB_PD=$pdfSuffix
-
-  perturbSimple "--ini=$ini$addOptionsLoc" $1  $useOldData
+  
+  perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
   args_nonEB_control=$pdfSuffix
 
   perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
-  args_nonEB_HD=$pdfSuffix
+  args_EB_HD=$pdfSuffix
 
-  perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1  $useOldData
+  perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1 $useOldData
+  args_EB_PD=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=1 --PD=1$addOptionsLoc" $1  $useOldData
   args_nonEB_PD=$pdfSuffix
 
   python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" 

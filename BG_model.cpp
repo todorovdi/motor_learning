@@ -386,10 +386,10 @@ void BG_model::exportWeightsOnce()
     exporter->exportWeightsOnce(w1,w2,wm);
 }
 
-void BG_model::exportCuesState(int k)
-{
-    exporter->exportCuesState(k,x);
-}
+//void BG_model::exportCuesState(int k)
+//{
+//    exporter->exportCuesState(k,x);
+//}
 
 void BG_model::exportContOpen(int k)
 {

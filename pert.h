@@ -132,6 +132,8 @@ class perturbationExperimentEnv: public Environment
 
     unsigned int sess_seed;
 
+    int ratioBasedReward;
+
     vector<phaseParamPrelearn> cue2prelearnParam;
 
     public:

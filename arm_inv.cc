@@ -116,6 +116,7 @@ int genCortcalData(parmap & params) //int argc,char** argv)
   }
 
   cout<<"------- recalibrating arm -- minAngDeg="<<minAngDeg<<" maxAngDeg="<<maxAngDeg<<" na="<<N<<endl;
+  cout<<"------- recalibrating may take up to several minutes, please wait"<<endl;
 
  for (int TD=0;TD<N;TD++)
  {
@@ -310,11 +311,10 @@ int genCortcalData(parmap & params) //int argc,char** argv)
 
 } // end of dir loop TD
 
-
+  AllD_CorticalData.close();
+  cout<<"------- recalibrating arm finished "<<endl;
  
   return 0;
-
-  cout<<"------- recalibrating arm finished "<<endl;
 
 }  // end of main
 

@@ -59,7 +59,7 @@ public:
     // methods mostly for compatibility, old stuff
     //void exportDynDataStd(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi,float t,float reward, float sr);
     //void exportWeightsStd(unsigned int trialNum,float ** w1,float ** w2,float **wm);
-    void exportCuesState(unsigned int trialNum, float * cues);
+    void exportTrial(unsigned int trialNum, float * cues, float R, float Rpre);
     void trialEndExport(float * sumM1freq, unsigned int seed);
     void CBExport(int k, float wcb[][6], float dfwx[][6], float dfwy[][6]);
 };

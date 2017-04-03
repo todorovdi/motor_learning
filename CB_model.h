@@ -33,6 +33,8 @@ class CB_model
 
   float prevErrAbs;
 
+  float lastErrRatio;
+
     float wcb[6][6];                 // current CB state
     float dfwx[6][6],dfwy[6][6];     // CB state corrections, corresponding to the current CB target
 
@@ -66,6 +68,8 @@ class CB_model
         void init(parmap & params,Exporter *exporter,Arm * arm_);
         CB_model();
         CB_model(Arm * arm_);
+
+        float getErrRatio();
 
     private:
         void cblearn(float xdif, float ydif);

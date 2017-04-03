@@ -137,6 +137,11 @@ void perturbationExperimentEnv::runSession()
           {
             ml.setSingleRPre(p.cue,0.);
           }
+
+          //if(p.setRPre > EPS)
+          //{
+          //  ml.setSingleRPre(p.cue,0.);
+          //}
           
           ml.setCBtCDS(p.CBtCDS); 
 
@@ -381,7 +386,12 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
 
     if(!sector_reward)
     { 
-        if( fabs(sc) < rewardDist) 
+        if(ratioBasedReward)
+        {
+          R =  rewardSize * (1. - ml.getErrRatio() * ml.getErrRatio() / (rewardDist * rewardDist) ) ;
+          // prev / cur
+        }
+        else if( fabs(sc) < rewardDist) 
         {
             R = rewardSize;
         }
@@ -392,7 +402,14 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
         {
             R = rewardSize;
         }
+        //else if(ratioBasedReward)
+        //{
+        //  R = ratio2rwdCoef * rewardSize * (ml.getErrRatio() - 1.) ;
+        //  // prev / cur
+        //}
     } 
+    R = fmax(0.,  R);
+    //R = fmin(rewardSize,  R);
 
     return R;
 }  
@@ -458,6 +475,10 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     {
       endptRotAngleIncSess = 0.;
     }
+
+    string s;
+    s = params["ratioBasedReward"];
+    ratioBasedReward = s!="" ? stoi(s) : 0;
 
     numTrials = 0;
     phaseParams.resize(numPhases);

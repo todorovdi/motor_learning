@@ -342,7 +342,7 @@ def genCBStateMaxPlot(fig,ax,fname):
     ax.set_title('CB state max',y=1.04)
     #ax.set_yticks(range(0,6*6*2,6))
     ax.set_ylabel('abs max',rotation=90)
-    #ax.set_ylim(-2,2)
+    ax.set_ylim(0,pp.cbStateMax)
 
 def genCBTuningPlot(fig,ax,fname):
     # 300 -- w1 + w2 + wm
@@ -382,3 +382,28 @@ def genCBMiscPlot(fig,ax,fname):
     ax.set_ylim(ylmin,ylmax)
     ax.set_yticks(np.arange(ylmin,ylmax,1.))
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
+    ax.set_title('CB misc plot',y=1.04)
+
+    ax.xaxis.grid(True, which='minor')
+
+def genRwdPlot(fig,ax,fname):
+    misc = np.loadtxt(fname)
+    rwd = misc[:,1]
+    rpre = misc[:,2]
+
+    ax.plot(rwd,label='rwd',color='blue')
+    ax.plot(rpre,label='Rpre',color='red')
+
+    ax.legend(loc='upper right')
+    
+    ax.set_title('Reward plot',y=1.04)
+    
+    mux =float(pp.paramsEnv["cbLRateUpdSpdMax"])  
+    rsz = float(pp.paramsEnv["rewardSize"])
+    ylmax = 4.
+    ylmin = 0
+    ax.set_ylim(ylmin,ylmax)
+    ax.set_yticks(np.arange(ylmin,ylmax,1.))
+    #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
+
+    ax.xaxis.grid(True)
