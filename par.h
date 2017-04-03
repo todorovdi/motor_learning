@@ -1,4 +1,4 @@
-
+#include <iostream>
 // % Specify parameters of 2-joints arm (masses and lengths)
 
 const float g = 9.81;                  // %m/sec^2, gravity constant
@@ -85,6 +85,5 @@ void WeightedInput(float  W[][6], float* X, float* SumWX);
 void sp_cord( float* fbIa,float* fbIb, float* DR,  float* MN);
 void Activationfunction( float* Y_cell, float* CellOutput, float resSum);
 
-void reach_init();
+void reach_init(std::ifstream & fin);
 void reach(float* x,float* y,float alpha, float wcb[][6]);
-

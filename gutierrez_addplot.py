@@ -62,6 +62,10 @@ def annotateCommon(ax):
 
 def makePubPlot(fnames2d):
     # shiny plotting code goes here
+    if(len(fnames2d) != 6):
+        print "---Error -- not enough data to plot, exiting! "
+        return
+
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=True, sharey=True)
 
     fnames_nonEB_HD = fnames2d[0]

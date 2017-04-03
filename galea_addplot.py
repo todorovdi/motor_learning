@@ -47,9 +47,9 @@ def annotateCommon(ax):
 
     ax.yaxis.grid(True)
 
-    ymin = -0.2
-    ymax = 0.3 
-    step = 0.1
+    ymin = -20
+    ymax = 20 
+    step = 1
     #ymin = -30
     #ymax = 50 
     #step = 10
@@ -61,52 +61,22 @@ def annotateCommon(ax):
 
 def makePubPlot(fnames2d):
     # shiny plotting code goes here
-    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=True, sharey=True)
+    fig, axs = plt.subplots(ncols=1, nrows=1, figsize=(30, 20), sharex=True, sharey=True)
 
-    print  "-----shiny plotting code is exectuded here"
-
-    fnames_nonEB_HD = fnames2d[0]
-    fnames_nonEB_PD = fnames2d[1]
-    fnames_nonEB_control = fnames2d[2]
-    fnames_EB_HD = fnames2d[3]
-    fnames_EB_PD = fnames2d[4]
-    fnames_EB_control = fnames2d[5]
-
-    for i,f in enumerate(fnames2d):
-        print i,len(f)
+    fnames_noStim = fnames2d[0]
+    fnames_tCDS = fnames2d[1]
 
     msz = 12
+    xlegendloc = 0.0
+    ylegendloc = 1.0
+    legendloc = 'upper left'
 
-    ax = axs[0,0]
-    prep(fnames_EB_control)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='o', color='blue',markersize=msz)
-    prep(fnames_EB_HD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='s', color='skyblue',markersize=msz)
+    ax = axs#[0,0]
+    prep(fnames_noStim)
+    ax.errorbar(nums, errs, yerr=SEMs, color='black',label='sham')
+
+    prep(fnames_tCDS)
+    ax.errorbar(nums, errs, yerr=SEMs, color='red',label='tCDS')
     annotateCommon(ax)
 
-    ax = axs[0,1]
-    prep(fnames_EB_control)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='d', color='blue',markersize=msz)
-    prep(fnames_EB_PD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='^', color='skyblue',markersize=msz)
-    annotateCommon(ax)
-
-    #######################################
-    lightcoral = [0.1, 0.0, 0.0]
-    fireblack = [0.6, 0.0, 0.0]
-    ax = axs[1,0]
-    prep(fnames_nonEB_control)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='o', color=fireblack,markersize=msz)
-    prep(fnames_nonEB_HD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='s', color=lightcoral,markersize=msz)
-    annotateCommon(ax)
-
-    ax = axs[1,1]
-    prep(fnames_nonEB_control)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='d', color=fireblack,markersize=msz)
-    prep(fnames_nonEB_PD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='^', color=lightcoral,markersize=msz)
-    annotateCommon(ax)
-
-    from textwrap import wrap
-    ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.08)
+    ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)

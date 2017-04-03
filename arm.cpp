@@ -8,7 +8,6 @@ Arm::Arm()
     neuron2armMult = 1;
 
     //init("");
-    reach_init();
 }
 
 void Arm::init(parmap & p) //, bool oldverIni)
@@ -49,6 +48,42 @@ void Arm::init(parmap & p) //, bool oldverIni)
 
     finalNoiseAmpl = stof(p["finalNoiseAmpl"]);
     neuron2armMult = stof(p["neuron2armMult"]);
+
+    string fname = "AllD_CorticalData";
+
+    key = string("armCortDataFile");
+    it = p.find(key);
+    if(it!=p.end())
+    {
+      fname = it->second;   
+    }
+
+    ifstream cortData(fname);
+
+    if( ! cortData.good() )
+    {
+      cout<<" It looks like file with arm cortical controller data ("<<fname<<") does not exist"<<endl;
+      cout<<" before doing computation, please calibrate cortical controller by running pert --ini=<your ini> --recalibrateArmCortControl=1"<<endl;
+      throw string("no cortical data file!");
+    }
+
+    float minAngDeg_,maxAngDeg_;
+    int na_;
+    cortData>>minAngDeg_;
+    cortData>>maxAngDeg_;
+    cortData>>na_;
+
+    bool b = fabs(minAngDeg_ - stof(p["minActionAngDeg"]) ) < EPS && 
+      fabs(maxAngDeg_ - stof(p["maxActionAngDeg"]) ) < EPS &&
+      na_ == stoi(p["na"]);
+    if(!b)
+    { 
+      cout<<"--------- Warning: Arm cortical data file was generated for different parameters"<<endl;
+      cout<<"--------- Warning: "<<minAngDeg_<<" "<<maxAngDeg_<<" "<<na<<endl;
+      throw string("wrong cort data params");
+    }
+    
+    reach_init(cortData);
 }
 
 void Arm::move(float * y, float* out, float wcb[][6], float ffield)   

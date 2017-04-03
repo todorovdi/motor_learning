@@ -8,7 +8,10 @@
 
 void runExperiment(parmap & params)
 {
-    int nsessions = stoi(params["nsessions"]); 
+  int nsessions = 1; 
+  string nsstr = params["nsessions"];
+  if(nsstr != "")
+    nsessions = stoi(nsstr); 
 
     unsigned int seed =   time(NULL);  
     bool presetSeed = false; 

@@ -109,17 +109,15 @@ const int na=100,n=1000;
 
 float DR_Al_Di[na][n][6]={};
 	
-void reach_init()
+void reach_init(ifstream & fin)
 {
-    ifstream AllD_CorticalData("AllD_CorticalData");
-
 	for (int d=0;d<na;d++)
 	{
 		for(int i=0;i<n;i++)
 		{
 			for(int j=0;j<6;j++) 
 			{ 
-                AllD_CorticalData >> DR_Al_Di[d][i][j]; 
+        fin >> DR_Al_Di[d][i][j]; 
 			}
 		}
 	}	

@@ -26,7 +26,10 @@ class CB_model
   float cbLRateUpdSpdUp;
   float cbLRateUpdSpdDown;
   float cbRateDepr;
+  float cbRateDepr_def;
   float cbLRateUpdSpdMax;
+ 
+  float cbLDeprUpdSpd;
 
   float prevErrAbs;
 

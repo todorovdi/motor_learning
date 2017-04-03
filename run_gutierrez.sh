@@ -11,13 +11,12 @@ bg_on_cb_off=1
 
 seed=0     #makes <more or less> random seed
 
-if [ $# -eq 2 ] & [ $2 -eq 0 ]; then
-  make pert_prl
-fi
-
 . ./run_dif_perturb.sh    # . means to source a script, so that it can use variables from the current script
 
 if [ $# -ne 0 ]; then
+
+  #make pert
+  #./pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
 
   delay="3.0s"
   if [ $useOldData == '0' ]; then
@@ -38,27 +37,20 @@ if [ $# -ne 0 ]; then
   # minAngDeg  is start of the sector
   # maxAngDeg  is end of the sector
 
-  #make pert
-  #pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
 
   echo "Starting experiment "$experimentName
 
   addOptions=""
-  addOptionsLoc=" --updateCBStateDist=0.03 --rewardDist=0.04 --cbRateDepr=0.03"$addOptions
+  addOptionsLoc=" --rewardDist=0.04"$addOptions
   useOldData=$2   # 9 means don't plot
 
-
-#  perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
-#  args_nonEB_HD=$pdfSuffix
-
-  perturbSimple "--ini=$ini$addOptionsLoc" $1  $useOldData
-  args_nonEB_control=$pdfSuffix
 
   perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
   args_nonEB_HD=$pdfSuffix
 
-  perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1  $useOldData
-  args_nonEB_PD=$pdfSuffix
+  perturbSimple "--ini=$ini --percept_xrev1=0$addOptionsLoc" $1 $useOldData
+  args_EB_control=$pdfSuffix
+
 
   perturbSimple "--ini=$ini --percept_xrev1=0$addOptionsLoc" $1 $useOldData
   args_EB_control=$pdfSuffix
@@ -68,6 +60,15 @@ if [ $# -ne 0 ]; then
 
   perturbSimple "--ini=$ini --percept_xrev1=0 --PD=1$addOptionsLoc" $1 $useOldData
   args_EB_PD=$pdfSuffix
+
+  perturbSimple "--ini=$ini$addOptionsLoc" $1  $useOldData
+  args_nonEB_control=$pdfSuffix
+
+  perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
+  args_nonEB_HD=$pdfSuffix
+
+  perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1  $useOldData
+  args_nonEB_PD=$pdfSuffix
 
   python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" 
 

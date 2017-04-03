@@ -18,8 +18,8 @@ from scipy import stats
 import plotparams as pp
 
 def coord2AngleDeg(x,y):    # returns -180 to 180
-    xc = 0
-    yc = 0.4
+    xc = float(pp.paramsEnv["x_center"])
+    yc = float(pp.paramsEnv["y_center"])
     baseAng = 0.  # relative to EAST direction
 
     xd = x-xc
@@ -82,8 +82,8 @@ def getErrs(armData):
                 d = math.sqrt( (x-xt)**2 + (y-yt)**2 )
         else:
             tgtAngleDeg = coord2AngleDeg(xt,yt) 
-            tgtAngleDeg = coord2AngleDeg(x,y) 
-            dif = angleCur - tgtAngleDeg;
+            angleCurDeg = coord2AngleDeg(x,y) 
+            dif = angleCurDeg - tgtAngleDeg;
             dif1 = dif
             if(dif > 180.):
                 dif1 = dif-360.
@@ -275,15 +275,11 @@ def addColorBar(fig,ax_,vals=0,tickSkip=10,dat=0,wd=0.01):
 
     ax1= fig.add_axes(pos2); # from left, from down, width, height
 
-    #im = imshow
-
     if dat==0:
         mult = max(1,int((vals[-1]+1)/tickSkip) )
         colorTicks = [i for i in vals if i%mult == 0]  
-        #colorTicks.append(vals[-1])
 
         norm = mpl.colors.Normalize(vmin=vals[0], vmax=vals[-1])
-    #cbar = fig.colorbar(cax=ax1,norm=norm,ticks=nums,orientation='vertical')
         cbar = mpl.colorbar.ColorbarBase(ax=ax1,norm=norm,ticks=colorTicks,orientation='vertical',cmap='inferno')
     else:
         cbar = fig.colorbar(dat,cax=ax1,orientation='vertical',cmap='inferno')
@@ -293,26 +289,15 @@ def genBGActivityPlot(fig,ax,fname,cols=range(0,300)):
     activity = activity[:,cols]
     (nrows, ncols) = activity.shape
 
-    #data = [go.Heatmap( z=activity.transpose(), x=range(nrows) )]
-    #py.iplot(data, filename='heatmap')
-
-    #ax.imshow(activity.transpose(), cmap='inferno', interpolation='nearest')
     pcol = ax.pcolor(activity.transpose(), cmap='inferno',lw=0,rasterized=True)
     pcol.set_edgecolor('face')
-    #ax.set_aspect('equal')
-    #ax.set_aspect(2)
-    #fig.savefig('equal.png')
     ax.set_aspect('auto')
     ax.grid(False)
     ax.set_title('BG populations activity plot',y=1.04)
-    #fig.savefig('auto.png')
-    #forceAspect(ax,aspect=1)
-    #fig.savefig('force.png')
     ax.yaxis.grid(True,color='w')
     ax.set_yticks(range(0,301,100))
     #ax.set_ylabel('y   d1   d2   gpe   gpi',rotation=90)
     ax.set_ylabel('y   d1   d2',rotation=90)
-
 
 #[8, 4, 2, 4, 2, 4] means
 #
@@ -339,6 +324,25 @@ def genCBStatePlot(fig,ax,fname):
     ax.set_yticks(range(0,36))
     ax.set_ylabel('wcb[0 1 2 3 4 5][*]',rotation=90)
     ax.set_ylim(0,36)
+
+def genCBStateMaxPlot(fig,ax,fname):
+    data = np.loadtxt(fname)
+    state = data[:,range(1,6*6+1)]
+    (nrows, ncols) = state.shape
+
+    maxs = []
+    for r in range(nrows):
+        s = state[r,:]
+        maxs.append(  math.fabs( max(s.min(), s.max(), key=abs) )   )
+
+    ax.plot(maxs)
+    
+    ax.xaxis.grid(True)
+
+    ax.set_title('CB state max',y=1.04)
+    #ax.set_yticks(range(0,6*6*2,6))
+    ax.set_ylabel('abs max',rotation=90)
+    #ax.set_ylim(-2,2)
 
 def genCBTuningPlot(fig,ax,fname):
     # 300 -- w1 + w2 + wm

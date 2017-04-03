@@ -91,8 +91,18 @@ int genCortcalData(parmap & params) //int argc,char** argv)
       //  float  DR_Al_Di[n][6];
 
    //ofstream CorticalData("CorticalData");
-   ofstream AllD_CorticalData("AllD_CorticalData");
+
+  string cortDataFname = "AllD_CorticalData";
+  key = string("armCortDataFile");
+  iter = params.find(key);
+  if(iter!=params.end())
+  {
+    cortDataFname = iter->second;   
+  }
+ 
+  ofstream AllD_CorticalData(cortDataFname);
   
+  AllD_CorticalData<<minAngDeg<<'\t'<<maxAngDeg<<'\t'<<N<<endl;
 
   float minAngRad = minAngDeg / 180 * M_PI;
   float maxAngRad = maxAngDeg / 180 * M_PI;

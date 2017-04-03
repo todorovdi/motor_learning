@@ -122,7 +122,7 @@ else
   fi
 
   if [ $useOldData != "1" ]; then
-    make pert_prl
+    make $runfile
   fi
 
   #perturbAllConfig $1 "--endpoint_rotation1=1 --cbLRate=4 --trainCBEveryTrial=0 --retrainCB_useCurW=0 --dirShift=90" 

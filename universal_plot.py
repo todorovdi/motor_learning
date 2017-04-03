@@ -74,6 +74,9 @@ def genMainPlot(ax,fnames,nums):
 
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
+
+    ax.axhline(y=pp.rewardDist,c="red",linewidth=0.5,zorder=0)
+    ax.axhline(y=-pp.rewardDist,c="red",linewidth=0.5,zorder=0)
   
 #    if pp.plotPubFile != "":
 #        import imp
@@ -164,7 +167,8 @@ def genFigurePert(fnames,outname):
         annotateGraph(ax)
 
         ax = axs[0,1]
-        genCBTuningPlot(fig,ax,fileToPlot.replace('arm','CBTuning'))
+        #genCBTuningPlot(fig,ax,fileToPlot.replace('arm','CBTuning'))
+        genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'))
         annotateGraph(ax)
 
         ax = axs[1,0]

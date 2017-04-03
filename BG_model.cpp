@@ -27,7 +27,6 @@ void BG_model::activate_disease_HD(int a)
     //old_gpi_drive = gpi_drive;
     //gpi_drive -= 0.2;
     d2activity = 1. - HD_D2activity_reduction;
-    cout<<" d2activity "<<d2activity<<endl;
   }
   else
   {
@@ -345,8 +344,15 @@ void BG_model::init(parmap & params,Exporter *exporter_)
     na = stof(params["na"]);
     nc = stof(params["nc"]);
 
-    HD_D2activity_reduction = stof(params["HD_D2activity_reduction"])/100.;
-    PD_LTP_reduction        = stof(params["PD_LTP_reduction"])/100.;
+    HD_D2activity_reduction = 50.;
+    PD_LTP_reduction = 80.;
+    string pstr = params["HD_D2activity_reduction"];
+    if(pstr != "")
+      HD_D2activity_reduction = stof(pstr)/100.;
+
+    pstr = params["PD_LTP_reduction"];
+    if(pstr != "")
+      PD_LTP_reduction        = stof(pstr)/100.;
 
     def_A_exp = A_exp;
 

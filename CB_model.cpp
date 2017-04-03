@@ -104,6 +104,8 @@ void CB_model::cblearn(float dx,float dy)
     } 
   }
 }
+
+#define DEPR_DEP_ON_ERR
  
 void CB_model::learn(float dx,float dy)
 {      
@@ -113,28 +115,39 @@ void CB_model::learn(float dx,float dy)
   {
     //float mult = ( 1./(1.+m)  );
 
-    if(errAbs < prevErrAbs)       // prevErrAbs < errAbs
+    if(errAbs < prevErrAbs)       // means succesful correction. Then correct more!
     { 
       ratio = fmin(cbLRateUpdSpdMax,prevErrAbs/errAbs);
       cbLRate += ratio* cbLRateUpdSpdUp;
+ 
+#ifdef  DEPR_DEP_ON_ERR
+      cbRateDepr = cbRateDepr_def;
+      //cbRateDepr = cbRateDepr_def;
+#endif
     }
     else
     { 
       ratio = -fmin(cbLRateUpdSpdMax,errAbs/prevErrAbs); 
       cbLRate += ratio* cbLRateUpdSpdDown;
+
+#ifdef  DEPR_DEP_ON_ERR
+      cbRateDepr = -ratio* cbLDeprUpdSpd;
+      //cout<<" current depr rate is "<<cbRateDepr<<endl;
+#endif
     } 
 
     cbLRate = fmax(cbLRate , 0.001);  // to avoid negativity
 
     float m = errAbs/updateCBStateDist;
-    cbLRate = fmin( cbLRate, cbLRateMax/m);
+    
+    if(cbLRate > 0)
+      cbLRate = fmin( cbLRate, cbLRateMax/m);
+    else                                    // can happen if we comment one of the lines abouve
+      cbLRate = max( cbLRate, -cbLRateMax/m);
 
-    //cbLRate *= mult;     // like that we kill the rate as we do it each trial
   }
-  //if( errAbs < updateCBStateDist )
-  { 
-    cblearn(dx, dy);
-  }                  
+  cblearn(dx, dy);
+
   exporter->exportCBMisc(cbLRate,errAbs,ratio,prevErrAbs);
 
   prevErrAbs = errAbs;
@@ -216,6 +229,12 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
     cbLRateUpdSpdDown = stof(params["cbLRateUpdSpdDown"]);
     cbLRateUpdSpdMax = stof(params["cbLRateUpdSpdMax"]);
     cbRateDepr = stof(params["cbRateDepr"]);
+    cbRateDepr = stof(params["cbRateDepr"]);
+
+   //////////////// WARNING!!!!
+    cbLDeprUpdSpd = stof(params["cbLDeprUpdSpd"]);
+    
+    cbRateDepr_def = cbRateDepr;
 
     def_updateCBStateDist = updateCBStateDist;
 
