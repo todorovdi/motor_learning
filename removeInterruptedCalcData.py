@@ -23,7 +23,7 @@ for filename in os.listdir(pp.out_dir):
         fnames.append(pp.out_dir+filename)
 
 if len(fnames) == 0:
-    print "no files found"
+    print("no files found")
 
 for fname in fnames:
     try:
@@ -36,7 +36,7 @@ for fname in fnames:
     armData = stdp.armFileRead(fname)
     nrows,ncols = np.shape(armData) 
     if nrows != n:
-        print "------- Warning: wrong length of data file table, maybe calc was terminated too early -> ",fname
+        print("------- Warning: wrong length of data file table, maybe calc was terminated too early -> ",fname)
         ree = '(.*).dat'
         basename = os.path.basename(fname)
         name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
@@ -47,6 +47,6 @@ for fname in fnames:
             if fnmatch.fnmatch(filename, fnamePatToRemove):
                 try:
                     os.remove(filename)
-                    print "------- deleting",filename
+                    print("------- deleting",filename)
                 except OSError as e:
-                    print str(e)
+                    print(str(e))

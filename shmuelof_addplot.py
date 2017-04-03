@@ -6,7 +6,7 @@ import re
 def makeNicer(ax):            
     return
 def makeNicerMulti(fig,ax):            
-    print "Making nicer!"
+    print("Making nicer!")
     #ax.set_color_cycle(['blue', 'red'])
     ax.set_prop_cycle(plt.cycler('color', ['b','r']))
 
@@ -24,7 +24,7 @@ def makePubPlot(fnames2d):
     fig = plt.gcf()
     ax = plt.gca()
 
-    print  "-----shiny plotting code is exectuded here"
+    print("-----shiny plotting code is exectuded here")
 
     for fnames in fnames2d:
         filename = fnames[0] 
@@ -42,7 +42,7 @@ def makePubPlot(fnames2d):
         nums = nums.astype(np.int)
 
         if(len(fnames) == 1):
-            print "Need more filenames"
+            print("Need more filenames")
             ax.plot(nums, angs)
         else:
             ax.errorbar(nums, angs, yerr=SEMs)

@@ -8,9 +8,11 @@ import matplotlib.pyplot as plt
 
 import fnmatch
 import os
-import ConfigParser
+try:
+    import ConfigParser
+except ModuleNotFoundError:
+    import configparser as ConfigParser
 import io
-import StringIO
 import math
 from matplotlib import cm
 from scipy import stats
@@ -103,7 +105,7 @@ def doStats(fnames):
         else:
             dat = getErrs(armData) 
         if len(dat) != n:
-            print "------- doStats Warning: wrong length of data file table, maybe calc was terminated too early"
+            print("------- doStats Warning: wrong length of data file table, maybe calc was terminated too early")
         else:
             errs[i,:] = dat * pp.datMult
     #print math.isnan(t)

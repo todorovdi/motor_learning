@@ -22,9 +22,11 @@ import matplotlib.pyplot as plt
 
 import fnmatch
 import os
-import ConfigParser
+try:
+    import ConfigParser
+except ModuleNotFoundError:
+    import configparser as ConfigParser
 import io
-import StringIO
 import math
 import sys
 
@@ -91,7 +93,7 @@ def removeWrongDataLen(fnames,n):   # check if all have the same data length
         armData = armFileRead(fname)
         nrows,ncols = np.shape(armData) 
         if nrows != n:
-            print "------- Warning: wrong length of data file table, maybe calc was terminated too early -> ",fname
+            print("------- Warning: wrong length of data file table, maybe calc was terminated too early -> ",fname)
         else:
             fngood.append(fname)
     return fngood
@@ -107,7 +109,7 @@ def genFigurePert(fnames,outname):
     n = len(xs)
     lastNum = nums[-1]
 
-    print "plotting from ",len(fnames)," sessions"
+    print("plotting from ",len(fnames)," sessions")
 
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
 
@@ -146,7 +148,7 @@ def genFigurePert(fnames,outname):
     else:
         pdfname = pp.out_dir_pdf+outname+"_stats_n="+str(len(fnames))+".pdf"
 
-    print 'pdfname', pdfname
+    print('pdfname', pdfname)
 
     with PdfPages(pdfname) as pdf:
         pdf.savefig()
@@ -216,7 +218,7 @@ def genFigurePert(fnames,outname):
 
 def basename2armDatList(basename):
     matchStr = basename.lstrip() + '_seed_*_arm*.dat'
-    print 'matching string for *.dat files:', matchStr
+    print('matching string for *.dat files:', matchStr)
     fnames = []
     for filename in os.listdir(pp.out_dir):
         if fnmatch.fnmatch(filename, matchStr):
@@ -246,7 +248,7 @@ def genFigurePertMulti(dat_basenames):
         #fnames = removeWrongDataLen(fnames,pp.phaseBegins[-1])
 
         if(len(fnames) == 0):
-            print "No .dat files found"
+            print("No .dat files found")
             return 0
         
         fnames2d.append(fnames)
@@ -313,7 +315,7 @@ def genFigurePertMulti(dat_basenames):
     else:
         pdfname = pp.out_dir_pdf+bb+"_stats_n_="+str(len(fnames))+"_multi.pdf"
 
-    print 'multi',pdfname
+    print('multi',pdfname)
     with PdfPages(pdfname) as pdf:
         pdf.savefig()
         plt.close()
@@ -388,10 +390,10 @@ def printParams(fig,pos):
     paramsToPlot.append("")
     paramsToPlot.append("cbLRate")
     paramsToPlot.append("cbLRateMax")
-    paramsToPlot.append("randomCBStateInit")
-    paramsToPlot.append("randomCBStateInitAmpl")
-    paramsToPlot.append("trainCBEveryTrial")
-    paramsToPlot.append("retrainCB_useCurW")
+    #paramsToPlot.append("randomCBStateInit")
+    #paramsToPlot.append("randomCBStateInitAmpl")
+    #paramsToPlot.append("trainCBEveryTrial")
+    #paramsToPlot.append("retrainCB_useCurW")
     paramsToPlot.append("updateCBStateDist")
     paramsToPlot.append("cbRateDepr")
     paramsToPlot.append("cbLRateUpdSpdUp")
@@ -454,10 +456,10 @@ def paramsInitFromArmFname(filename):
 #####################################
 
 if __name__ == '__main__':
-    print 'Python plotting number of arguments: ', len(sys.argv)
+    print('Python plotting number of arguments: ', len(sys.argv))
 
     for ind,arg in enumerate(sys.argv):
-        print 'Plotting argument ',ind,' is '+arg+'$'
+        print('Plotting argument ',ind,' is '+arg+'$')
 
     val = ""
     iniParamFound = 0
@@ -479,7 +481,7 @@ if __name__ == '__main__':
     dat_basenames = sys.argv[1:]
 
     if(len(dat_basenames) >  1):
-        print "Plot single session"
+        print("Plot single session")
         genFigurePertMulti(dat_basenames)
     elif(len(dat_basenames) == 1):
         fnames = basename2armDatList(dat_basenames[0]) 
@@ -490,14 +492,14 @@ if __name__ == '__main__':
         #        fnames.append(pp.out_dir+filename)
 
         if(len(fnames) == 0):
-            print "No .dat files found"
+            print("No .dat files found")
         else:
             paramsInitFromArmFname(fnames[0])
 
         #fnames = removeWrongDataLen(fnames,pp.phaseBegins[-1])
 
         if(len(fnames) == 0):
-            print "No .dat files found"
+            print("No .dat files found")
         else:
             paramsInitFromArmFname(fnames[0])
 
@@ -507,8 +509,8 @@ if __name__ == '__main__':
             genFigurePert(fnames,pp.paramsEnv["pdfSuffix"])
 
         if pp.pdfForEachSession:
-            print "Generate pictures for each seed"
+            print("Generate pictures for each seed")
             for i,filename in enumerate(fnames):
-                print "making graph # "+str(i) + " out of " + str(len(fnames));
+                print("making graph # "+str(i) + " out of " + str(len(fnames)))
                 paramsInitFromArmFname(filename)
                 genFigurePert([filename],pp.paramsEnv["pdfSuffix"] + name);

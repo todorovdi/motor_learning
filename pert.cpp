@@ -388,7 +388,7 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
     { 
         if(ratioBasedReward)
         {
-          R =  rewardSize * (1. - ml.getErrRatio() * ml.getErrRatio() / (rewardDist * rewardDist) ) ;
+          R =  rewardSize * (1. - ml.getLastErr() * ml.getLastErr() / (rewardDist * rewardDist) ) ;
           // prev / cur
         }
         else if( fabs(sc) < rewardDist) 

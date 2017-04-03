@@ -53,11 +53,11 @@ if [ $# -ne 0 ]; then
   perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
   args_EB_control=$pdfSuffix
 
-  perturbSimple "--ini=$ini --percept_xrev1=1 --HD=1$addOptionsLoc" $1 $useOldData
-  args_nonEB_HD=$pdfSuffix
-  
   perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
   args_nonEB_control=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=1 --HD=1$addOptionsLoc" $1 $useOldData
+  args_nonEB_HD=$pdfSuffix
 
   perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
   args_EB_HD=$pdfSuffix

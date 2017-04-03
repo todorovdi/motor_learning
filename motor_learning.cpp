@@ -222,9 +222,9 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     return 0;
 }
 
-float MotorLearning::getErrRatio()
+float MotorLearning::getLastErr()
 {
-  return cb.getErrRatio();
+  return cb.getLastErr();
 }
 
 void MotorLearning::backupWeights()

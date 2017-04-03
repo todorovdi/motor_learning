@@ -33,7 +33,8 @@ class CB_model
 
   float prevErrAbs;
 
-  float lastErrRatio;
+  //float lastErrRatio;
+  bool cbLRateUpd_errDiffBased;
 
     float wcb[6][6];                 // current CB state
     float dfwx[6][6],dfwy[6][6];     // CB state corrections, corresponding to the current CB target
@@ -69,7 +70,7 @@ class CB_model
         CB_model();
         CB_model(Arm * arm_);
 
-        float getErrRatio();
+        float getLastErr();
 
     private:
         void cblearn(float xdif, float ydif);

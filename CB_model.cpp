@@ -110,31 +110,39 @@ void CB_model::cblearn(float dx,float dy)
 void CB_model::learn(float dx,float dy)
 {      
   float errAbs = sqrt(dx*dx +dy*dy);
-  float ratio = 0.;
+  float cblr_upd = 0.;
   if(prevErrAbs < 10.)   // if not, it is set artificially
   {
     //float mult = ( 1./(1.+m)  );
 
-    if(errAbs < prevErrAbs)       // means succesful correction. Then correct more!
+    if(cbLRateUpd_errDiffBased)
     { 
-      ratio = fmin(cbLRateUpdSpdMax,prevErrAbs/errAbs);
-      cbLRate += ratio* cbLRateUpdSpdUp;
- 
-#ifdef  DEPR_DEP_ON_ERR
-      cbRateDepr = cbRateDepr_def;
-      //cbRateDepr = cbRateDepr_def;
-#endif
+      cblr_upd = prevErrAbs - errAbs;
+      cbLRate += cblr_upd > 0 ? cblr_upd * cbLRateUpdSpdUp : cblr_upd * cbLRateUpdSpdDown;
     }
     else
     { 
-      ratio = -fmin(cbLRateUpdSpdMax,errAbs/prevErrAbs); 
-      cbLRate += ratio* cbLRateUpdSpdDown;
+      if(errAbs < prevErrAbs)       // means succesful correction. Then correct more!
+      { 
+        cblr_upd = fmin(cbLRateUpdSpdMax,prevErrAbs/errAbs);
+        cbLRate += cblr_upd* cbLRateUpdSpdUp;
+   
+#ifdef  DEPR_DEP_ON_ERR
+        cbRateDepr = cbRateDepr_def;
+        //cbRateDepr = cbRateDepr_def;
+#endif
+      }
+      else
+      { 
+        cblr_upd = -fmin(cbLRateUpdSpdMax,errAbs/prevErrAbs); 
+        cbLRate += cblr_upd* cbLRateUpdSpdDown;
 
 #ifdef  DEPR_DEP_ON_ERR
-      cbRateDepr = -ratio* cbLDeprUpdSpd;
-      //cout<<" current depr rate is "<<cbRateDepr<<endl;
+        cbRateDepr = -cblr_upd* cbLDeprUpdSpd;
+        //cout<<" current depr rate is "<<cbRateDepr<<endl;
 #endif
-    } 
+      } 
+    }
 
     cbLRate = fmax(cbLRate , 0.001);  // to avoid negativity
 
@@ -148,18 +156,18 @@ void CB_model::learn(float dx,float dy)
   }
   cblearn(dx, dy);
 
-  exporter->exportCBMisc(cbLRate,errAbs,ratio,prevErrAbs);
+  exporter->exportCBMisc(cbLRate,errAbs,cblr_upd,prevErrAbs);
 
   //lastErrRatio = fmin(cbLRateUpdSpdMax,prevErrAbs/errAbs);
-  lastErrRatio = errAbs;
+  //lastErrRatio = errAbs;
   prevErrAbs = errAbs;
 
   //cout<<"errAbs "<<errAbs<<", learn_rate  "<<cbLRate<<",  W norm "<<matrixNorm(wcb)<<endl;
 }
 
-float CB_model::getErrRatio()
+float CB_model::getLastErr()
 {
-  return lastErrRatio;
+  return prevErrAbs;
 }
 
 void CB_model::resetPrevErr(float pe)
@@ -237,6 +245,9 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
     cbLRateUpdSpdMax = stof(params["cbLRateUpdSpdMax"]);
     cbRateDepr = stof(params["cbRateDepr"]);
     cbRateDepr = stof(params["cbRateDepr"]);
+ 
+    string s = params["cbLRateUpd_errDiffBased"];
+    cbLRateUpd_errDiffBased = s != "" ? stoi(s) : 0;
 
    //////////////// WARNING!!!!
     cbLDeprUpdSpd = stof(params["cbLDeprUpdSpd"]);

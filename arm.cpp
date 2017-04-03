@@ -37,13 +37,13 @@ void Arm::init(parmap & p) //, bool oldverIni)
 
     if( ! cortData.good() )
     {
-      cout<<" It looks like file with arm cortical controller data ("<<fname<<") does not exist"<<endl;
-      //cout<<" before doing computation, please calibrate cortical controller by running "<<endl;
-      //cout<<"make pert && pert --ini=<your ini> --recalibrateArmCortControl=1"<<endl;
-      //throw string("no cortical data file!");
+      cout<<"--------- Warning:  It looks like file with arm cortical controller data ("<<fname<<") does not exist"<<endl;
+      cout<<"--------- Warning:  before doing computation, please calibrate cortical controller by running "<<endl;
+      cout<<"make pert && pert --ini=<your ini> --recalibrateArmCortControl=1"<<endl;
+      throw string("no cortical data file!");
       
-      genCortcalData(p); 
-      cortData.open(fname);
+      //genCortcalData(p); 
+      //cortData.open(fname);
     }
 
     float minAngDeg_,maxAngDeg_;
@@ -65,14 +65,16 @@ void Arm::init(parmap & p) //, bool oldverIni)
     { 
       cout<<"--------- Warning: Arm cortical data file was generated for different parameters"<<endl;
       cout<<"--------- Warning: "<<minAngDeg_<<" "<<maxAngDeg_<<" "<<na<<endl;
+      cout<<"--------- Warning:  before doing computation, please calibrate cortical controller by running "<<endl;
+      cout<<"make pert && pert --ini=<your ini> --recalibrateArmCortControl=1"<<endl;
 
-      cortData.close();
-      genCortcalData(p); 
-      cortData.open(fname);
-      cortData>>minAngDeg_;
-      cortData>>maxAngDeg_;
-      cortData>>na_;
-      //throw string("wrong cort data params");
+      //cortData.close();
+      //genCortcalData(p); 
+      //cortData.open(fname);
+      //cortData>>minAngDeg_;
+      //cortData>>maxAngDeg_;
+      //cortData>>na_;
+      throw string("wrong cort data params");
     }
     
     reach_init(cortData);

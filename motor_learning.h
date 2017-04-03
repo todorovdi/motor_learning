@@ -106,7 +106,7 @@ class MotorLearning
 
     void getReachCenterPos(float &x, float&y);
 
-    float getErrRatio();
+    float getLastErr();
 
     ////////////////////////////////
     // initialization
