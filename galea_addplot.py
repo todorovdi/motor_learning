@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 def makeNicer(ax):            
     return
 def makeNicerMulti(fig,ax):            
-    print "Making nicer!"
+    print("Making nicer!")
     #ax.set_color_cycle(['blue', 'red'])
     ax.set_prop_cycle(plt.cycler('color', ['b','r']))
 

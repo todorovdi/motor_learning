@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 def makeNicer(ax):            
     return
 def makeNicerMulti(fig,ax):            
-    print "Making nicer!"
+    print("Making nicer!")
     #ax.set_color_cycle(['blue', 'red'])
     ax.set_prop_cycle(plt.cycler('color', ['b','r']))
 
@@ -63,7 +63,7 @@ def annotateCommon(ax):
 def makePubPlot(fnames2d):
     # shiny plotting code goes here
     if(len(fnames2d) != 6):
-        print "---Error -- not enough data to plot, exiting! "
+        print("---Error -- not enough data to plot, exiting! ")
         return
 
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=True, sharey=True)
