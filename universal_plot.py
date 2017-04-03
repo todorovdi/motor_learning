@@ -22,9 +22,11 @@ import matplotlib.pyplot as plt
 
 import fnmatch
 import os
-import ConfigParser
+try:
+    import ConfigParser
+except ModuleNotFoundError:
+    import configparser as ConfigParser
 import io
-import StringIO
 import math
 import sys
 

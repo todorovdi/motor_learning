@@ -1,5 +1,11 @@
-import ConfigParser
-import StringIO
+try:
+    import ConfigParser
+except ModuleNotFoundError:
+    import configparser as ConfigParser
+try:
+    import StringIO
+except ModuleNotFoundError:
+    import io as StringIO
  
 #if __name__ != "__main__":
 #    paramsEnv = ConfigParser.RawConfigParser(allow_no_value=True) 
@@ -194,4 +200,4 @@ def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one be
         trials1End = numTrialsPre+numTrialsAdapt+numTrialsPost
         trials1 = range(trials1End)
         trials2 = range(trials1End,trials1End*2)
-        print "---- old version of ini file found"
+        print("---- old version of ini file found")
