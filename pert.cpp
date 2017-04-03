@@ -16,7 +16,8 @@ void runExperiment(parmap & params)
     unsigned int seed =   time(NULL);  
     bool presetSeed = false; 
 
-    unsigned int t_seed = stoul(params["seed"]);
+    string s = params["seed"];
+    unsigned int t_seed = s != "" ? stoul(s) : 0;
     if(t_seed != 0)
     {
         seed = t_seed;
@@ -425,6 +426,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     {
       minActionAngDeg = 0;
     }
+
     key = string("maxActionAngDeg");
     iter = params.find(key);
     if(iter!=params.end())
@@ -433,7 +435,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     }
     else
     {
-      maxActionAngDeg = 360;
+      maxActionAngDeg = 360.;
     }
 
     key = string("actRotAngleIncSess");

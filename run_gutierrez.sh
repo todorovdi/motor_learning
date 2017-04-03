@@ -13,10 +13,10 @@ seed=0     #makes <more or less> random seed
 
 . ./run_dif_perturb.sh    # . means to source a script, so that it can use variables from the current script
 
-if [ $# -ne 0 ]; then
+#make pert
+#./pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
 
-  #make pert
-  #./pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
+if [ $# -ne 0 ]; then
 
   delay="3.0s"
   if [ $useOldData == '0' ]; then

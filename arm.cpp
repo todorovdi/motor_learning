@@ -63,7 +63,8 @@ void Arm::init(parmap & p) //, bool oldverIni)
     if( ! cortData.good() )
     {
       cout<<" It looks like file with arm cortical controller data ("<<fname<<") does not exist"<<endl;
-      cout<<" before doing computation, please calibrate cortical controller by running pert --ini=<your ini> --recalibrateArmCortControl=1"<<endl;
+      cout<<" before doing computation, please calibrate cortical controller by running "<<endl;
+      cout<<"make pert && pert --ini=<your ini> --recalibrateArmCortControl=1"<<endl;
       throw string("no cortical data file!");
     }
 
@@ -73,8 +74,14 @@ void Arm::init(parmap & p) //, bool oldverIni)
     cortData>>maxAngDeg_;
     cortData>>na_;
 
-    bool b = fabs(minAngDeg_ - stof(p["minActionAngDeg"]) ) < EPS && 
-      fabs(maxAngDeg_ - stof(p["maxActionAngDeg"]) ) < EPS &&
+    string ma = p["minActionAngDeg"];
+    float minAngDeg_p = ma != "" ? stof(ma) : 0; 
+
+    string mma =  p["maxActionAngDeg"];
+    float maxAngDeg_p = mma != "" ? stof(mma) : 360.; 
+
+    bool b = fabs(minAngDeg_ - minAngDeg_p)  < EPS && 
+      fabs(maxAngDeg_ - maxAngDeg_p ) < EPS &&
       na_ == stoi(p["na"]);
     if(!b)
     { 

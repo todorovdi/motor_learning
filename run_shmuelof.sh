@@ -11,8 +11,10 @@ bg_on_cb_off=1
 
 seed=0     #makes <more or less> random seed
 
-
 . ./run_dif_perturb.sh    # . means to source a script, so that it can use variables from the current script
+
+#make pert
+#./pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
 
 if [ $# -ne 0 ]; then
   args1=""
