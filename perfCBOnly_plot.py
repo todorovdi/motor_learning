@@ -46,8 +46,9 @@ def annotateGraph(ax):
     ax_ = ax.twiny()
     ax_.set_xlim([0, n])
     ax_.set_xticks(pp.phaseBegins[1:-1])
-    ax_.set_xticklabels(pp.phaseNames)
-    ax_.xaxis.grid(True,color='w')
+    ax_.set_xticklabels(pp.phaseNames, size=20)
+    ax_.xaxis.grid(True,color='k')
+    ax.tick_params(axis='x', labelsize=20, pad=15)
 
 ###############################
 
@@ -67,10 +68,10 @@ def genMainPlot(fig,ax,fnames,nums):
 
     if (pp.plotReachAngles  != 0 ) :
         ax.set_title("Average Endpoint Angles and SEMs", size=32, y=1.04)
-        ax.ylabel("Endpoint Angle")
+        ax.set_ylabel("Endpoint Angle", size=26)
     else:
         ax.set_title("Average Errors and SEMs", size=32, y=1.04)
-        ax.ylabel("Error")
+        ax.set_ylabel("Error", size=26)
 
     fig.suptitle(stitle, size=40)
 
@@ -89,8 +90,9 @@ def genMainPlot(fig,ax,fnames,nums):
     ax.axhline(y=pp.rewardDist,c="red",linewidth=0.5,zorder=0,label="Reward Dist.")
     ax.axhline(y=-pp.rewardDist,c="red",linewidth=0.5,zorder=0)
     ax.tick_params(axis='x', which='major', labelsize=24)
+    ax.tick_params(axis='y', which='major', labelsize=18)
 
-    ax.xlabel("Trials")
+    ax.set_xlabel("Trials", size=26)
 
     plt.legend()
   
