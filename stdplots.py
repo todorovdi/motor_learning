@@ -128,14 +128,14 @@ def armFileRead(fname):
     armData = np.loadtxt(fname)#,skiprows=pp.armFileSkiprows)
     return armData
 
-def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_actual=[],cbtgt_actual=[]):
+def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=list(),tgt_actual=list(),cbtgt_actual=list()):
 
     yc = 0.4
     xlim = pp.reachBoxXsz
     yadd = pp.reachBoxYsz
     ylim = yadd + yc
 
-    ax.set_ylim([0,ylim])
+    ax.set_ylim([0.2,ylim]) # set ymin
     ax.set_xlim([-xlim,xlim])
     ax.set_xticks(np.arange(-xlim,xlim,0.1))
     ax.set_yticks(np.arange(0.0,ylim,0.1))
@@ -156,12 +156,13 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
 
     lastx=0
     lasty=0
-    if len(xs)<=30 or pp.showPointNumbers:
-        for i, x, y in zip(nums, xs, ys):
-            if (math.sqrt( (lastx-x)**2 + (lasty-y)**2 ) > 0.03):
-                ax.annotate(int(i), (x,y), fontsize=7)
-            lastx = x
-            lasty = y
+    # No point numbers
+    # if len(xs)<=30 or pp.showPointNumbers:
+    #     for i, x, y in zip(nums, xs, ys):
+    #         if (math.sqrt( (lastx-x)**2 + (lasty-y)**2 ) > 0.03):
+    #             ax.annotate(int(i), (x,y), fontsize=7)
+    #         lastx = x
+    #         lasty = y
 
     addxs = [0.]
     addys = [0.4]
@@ -170,7 +171,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
 
     learn_cb = int(pp.paramsEnv["learn_cb"] )
 
-    if(len(cbtgt) > 0 and learn_cb):
+    if (len(cbtgt) > 0) and learn_cb:
         addxs.append(cbtgt[0][0])
         addys.append(cbtgt[0][1])
         addlabel.append("CBtgt_p")
@@ -180,13 +181,14 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=[],cbtgt=[],tgt_
         addlabel.append("CBtgt_a")
 
     # todo make additional labels for targets
-    for label, x, y in zip(addlabel, addxs, addys):
-        ax.annotate(
-            label,
-            xy=(x, y), xytext=(0, -270),
-            textcoords='offset points', ha='right', va='bottom',
-            bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-            arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
+    # No Labels
+    # for label, x, y in zip(addlabel, addxs, addys):
+    #     ax.annotate(
+    #         label,
+    #         xy=(x, y), xytext=(0, -270),
+    #         textcoords='offset points', ha='right', va='bottom',
+    #         bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
+    #         arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
 
     xc = 0
     yc = 0.4

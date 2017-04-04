@@ -62,22 +62,28 @@ def genMainPlot(fig,ax,fnames,nums):
     annotateGraph(ax)
     ax.yaxis.grid(False)
 
-    stitle = "CB "
+    stitle = "CB\n"
     if "force_field1" in pp.paramsEnv and abs(float(pp.paramsEnv['force_field1'])) > 0.0:
-        stitle = stitle + r"Force Field Perturbation: $%.1f$" % (round(float(pp.paramsEnv["force_field1"]), 1),)
+        stitle = stitle + r"Force Field Perturbation: %.1f" % (round(float(pp.paramsEnv["force_field1"]), 1),)
+    elif "percept_rot1" in pp.paramsEnv and abs(float(pp.paramsEnv["percept_rot1"])) > 0.0:
+        stitle = stitle + r"Perception Rotation: $%.1f^o$" % (round(float(pp.paramsEnv["percept_rot1"]), 1),)
+    elif "percept_xrev1" in pp.paramsEnv and bool(pp.paramsEnv["percept_xrev1"] ) is True:
+        stitle = stitle + "X Reversal"
 
     if (pp.plotReachAngles  != 0 ) :
-        ax.set_title("Average Endpoint Angles and SEMs", size=32, y=1.04)
+        ax.set_title("Average Endpoint Angles and SEMs", size=30, y=1.04)
         ax.set_ylabel("Endpoint Angle", size=26)
     else:
-        ax.set_title("Average Errors and SEMs", size=32, y=1.04)
+        ax.set_title("Average Errors and SEMs", size=30, y=1.04)
         ax.set_ylabel("Error", size=26)
 
-    fig.suptitle(stitle, size=40)
+    fig.suptitle(stitle, size=35, y=1.0)
 
     ymin = 0.
     ymax = pp.y_axis_max 
     ymin = pp.y_axis_min
+    ymin = -0.3
+    ymax = 0.3
     step = (ymax-ymin) / 10.
     if "y_axis_step" in pp.paramsEnv:
         step = (float(pp.paramsEnv["y_axis_step"]) ) 
@@ -214,14 +220,15 @@ def genFigurePert(fnames,outname):
         rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
         #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
         ax=axs[1,1]
-        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+        cbtgt = list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=cbtgt)
 
         pdf.savefig()
         plt.close()
 
         #ax = plt.gca
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(30, 20))
-        genMainPlot(ax,fnames,nums)
+        genMainPlot(fig,ax,fnames,nums)
         ax.set_title(pp.paramsEnv["pdfSuffix"])
 
         pdf.savefig()
@@ -312,7 +319,7 @@ def genFigurePertMulti(dat_basenames):
 
             ax = axs[1,ind]
 
-            genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+            genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
 
     if pp.multiSameGraph == 0:
         ax = axs[1,ind]
@@ -382,7 +389,7 @@ def genReachingByPhase(fname):
 
     if(len(rangePre1)>0):
         genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1")
-    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,tgt=zip(x_target[rangeAdapt1],y_target[rangeAdapt1]),cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,tgt=list(zip(x_target[rangeAdapt1],y_target[rangeAdapt1])),cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
     if(len(rangePost1)>0):
         genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
 
