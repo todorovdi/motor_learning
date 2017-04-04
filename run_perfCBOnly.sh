@@ -1,5 +1,5 @@
 runfile="./pert_prl"
-plotfile="universal_plot.py"
+plotfile="perfCBOnly_plot.py"
 pdfdir=output_for_paper
 experimentName=perfCBOnly
 ini="$experimentName.ini"
