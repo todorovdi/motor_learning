@@ -1,5 +1,6 @@
 runfile="./pert_prl"
-plotfile="perfCBOnly_plot.py"
+#plotfile="perfCBOnly_plot.py"
+plotfile="universal_plot.py"
 pdfdir=output_for_paper
 experimentName=perfCBOnly
 ini="$experimentName.ini"
@@ -39,6 +40,32 @@ if [ $# -ne 0 ]; then
   echo "Starting experiment "$experimentName
 
   addOptions=" --ini=$ini"
+  addOptionsLoc=""$addOptions
+  useOldData=$2   # 9 means don't plot
+
+  tgt=" --defTgt0=90 --defTgt1=90 --defTgt2=90"
+  addOptionsLoc="--force_field1=-2. --cue0=0 --cue1=0 --cue2=0"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_force_field=$pdfSuffix
+
+  tgt=" --defTgt0=0 --defTgt1=80 --defTgt2=0"
+  addOptionsLoc="--percept_rot1=80. --cue0=1 --cue1=2 --cue2=1"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_rot=$pdfSuffix
+
+  tgt=" --defTgt0=90 --defTgt1=90 --defTgt2=90"
+  addOptionsLoc="--percept_xrev1=1 --cue0=0 --cue1=0 --cue2=0"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_xrev=$pdfSuffix
+
+  tgt=" --defTgt0=0 --defTgt1=45 --defTgt2=0"
+  addOptionsLoc="--percept_rot1=45. --cue0=1 --cue1=4 --cue2=1"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_small_rot=$pdfSuffix
+
+  python "$plotfile" "$args_force_field" "$args_percept_rot" "$args_percept_xrev" "$args_percept_small_rot"
+
+  addOptions=" --ini=$ini --cbRateDepr=0."
   addOptionsLoc=""$addOptions
   useOldData=$2   # 9 means don't plot
 

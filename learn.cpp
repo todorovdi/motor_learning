@@ -114,7 +114,7 @@ int main(int argc, char** argv)
     i = params.find("iniAdd");
     if(i!= params.end())
         readIni(i->second,params);
-    
+
     readIni(paramsEnvFile,params);   // again, to replace what was in ini* files. To modify common params in general
 
     parseCMDargs(argc,argv,params);  // to overwrite ini file options
