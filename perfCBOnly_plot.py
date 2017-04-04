@@ -51,7 +51,7 @@ def annotateGraph(ax):
 
 ###############################
 
-def genMainPlot(ax,fnames,nums):
+def genMainPlot(fig,ax,fnames,nums):
     angs,SEMs = doStats(fnames)
 
     if(len(fnames) == 1):
@@ -59,12 +59,21 @@ def genMainPlot(ax,fnames,nums):
     else:
         ax.errorbar(nums, angs, yerr=SEMs)
     annotateGraph(ax)
-    ax.yaxis.grid(True)
+    ax.yaxis.grid(False)
+
+    stitle = "CB "
+    if "force_field1" in pp.paramsEnv and abs(float(pp.paramsEnv['force_field1'])) > 0.0:
+        stitle = stitle + r"Force Field Perturbation: $%.1f$" % (round(float(pp.paramsEnv["force_field1"]), 1),)
 
     if (pp.plotReachAngles  != 0 ) :
-        ax.set_title('Endpoint angles averaged and SEMs',y=1.04)
+        ax.set_title("Average Endpoint Angles and SEMs", size=32, y=1.04)
+        ax.ylabel("Endpoint Angle")
     else:
-        ax.set_title('Errors averaged and SEMs',y=1.04)
+        ax.set_title("Average Errors and SEMs", size=32, y=1.04)
+        ax.ylabel("Error")
+
+    fig.suptitle(stitle, size=40)
+
     ymin = 0.
     ymax = pp.y_axis_max 
     ymin = pp.y_axis_min
@@ -77,8 +86,13 @@ def genMainPlot(ax,fnames,nums):
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
 
-    ax.axhline(y=pp.rewardDist,c="red",linewidth=0.5,zorder=0)
+    ax.axhline(y=pp.rewardDist,c="red",linewidth=0.5,zorder=0,label="Reward Dist.")
     ax.axhline(y=-pp.rewardDist,c="red",linewidth=0.5,zorder=0)
+    ax.tick_params(axis='x', which='major', labelsize=24)
+
+    ax.xlabel("Trials")
+
+    plt.legend()
   
 #    if pp.plotPubFile != "":
 #        import imp
@@ -137,7 +151,7 @@ def genFigurePert(fnames,outname):
 
     # ax = axs[1,1]
 
-    genMainPlot(ax,fnames,nums)
+    genMainPlot(fig,ax,fnames,nums)
 
     # pos1 = axs[0,0].get_position()
     # xLeft = pos1.x0
@@ -278,7 +292,7 @@ def genFigurePertMulti(dat_basenames):
             
         from textwrap import wrap
 
-        genMainPlot(ax,fnames,nums)
+        genMainPlot(fig,ax,fnames,nums)
         #ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
         ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.08)
 
