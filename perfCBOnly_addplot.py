@@ -79,9 +79,9 @@ def makePubPlot(fnames2d):
 
     # plot errors here
     ax = axs[1,1]
-    prep(fnames_nonEB_control)
+    prep(fnames_force_field)
     ax.errorbar(nums, errs, yerr=SEMs, marker='d', color=fireblack,markersize=msz,label='CPD')
-    prep(fnames_nonEB_PD)
+    prep(fnames_percept_rot)
     ax.errorbar(nums, errs, yerr=SEMs, marker='^', color=lightcoral,markersize=msz,label='PD')
     annotateCommon(ax)
 

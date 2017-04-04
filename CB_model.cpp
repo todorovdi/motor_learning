@@ -111,7 +111,7 @@ void CB_model::learn(float dx,float dy)
 {      
   float errAbs = sqrt(dx*dx +dy*dy);
   float cblr_upd = 0.;
-  if(prevErrAbs < 10.)   // if not, it is set artificially
+  if(prevErrAbs < 10. && !cbLRateIsConst)   // if not, it is set artificially
   {
     //float mult = ( 1./(1.+m)  );
 
@@ -233,31 +233,32 @@ void CB_model::moveArm(float * y, float * out, float ffield)
 
 void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
 {
-    //readIni(iniCBname,params);
+  cbLRate = stof(params["cbLRate"]);
+  cbLRateMax = stof(params["cbLRateMax"]);
+  cbLRate_init = cbLRate;
+  cb_init_shift_size = stof(params["cb_init_shift_size"]);
+  updateCBStateDist = stof(params["updateCBStateDist"]);
+  cbLRateUpdSpdUp = stof(params["cbLRateUpdSpdUp"]);
+  cbLRateUpdSpdDown = stof(params["cbLRateUpdSpdDown"]);
+  cbLRateUpdSpdMax = stof(params["cbLRateUpdSpdMax"]);
+  cbRateDepr = stof(params["cbRateDepr"]);
+  cbRateDepr = stof(params["cbRateDepr"]);
 
-    cbLRate = stof(params["cbLRate"]);
-    cbLRateMax = stof(params["cbLRateMax"]);
-    cbLRate_init = cbLRate;
-    cb_init_shift_size = stof(params["cb_init_shift_size"]);
-    updateCBStateDist = stof(params["updateCBStateDist"]);
-    cbLRateUpdSpdUp = stof(params["cbLRateUpdSpdUp"]);
-    cbLRateUpdSpdDown = stof(params["cbLRateUpdSpdDown"]);
-    cbLRateUpdSpdMax = stof(params["cbLRateUpdSpdMax"]);
-    cbRateDepr = stof(params["cbRateDepr"]);
-    cbRateDepr = stof(params["cbRateDepr"]);
- 
-    string s = params["cbLRateUpd_errDiffBased"];
-    cbLRateUpd_errDiffBased = s != "" ? stoi(s) : 0;
+  string s = params["cbLRateUpd_errDiffBased"];
+  cbLRateUpd_errDiffBased = s != "" ? stoi(s) : 0;
 
-   //////////////// WARNING!!!!
-    cbLDeprUpdSpd = stof(params["cbLDeprUpdSpd"]);
-    
-    cbRateDepr_def = cbRateDepr;
+ //////////////// WARNING!!!!
+  cbLDeprUpdSpd = stof(params["cbLDeprUpdSpd"]);
+  
+  s = params["cbLRateIsConst"];
+  cbLRateIsConst = s != "" ? stoi(s) : 0; 
+  
+  cbRateDepr_def = cbRateDepr;
 
-    def_updateCBStateDist = updateCBStateDist;
+  def_updateCBStateDist = updateCBStateDist;
 
-    arm = arm_;
-    exporter = exporter_;
+  arm = arm_;
+  exporter = exporter_;
 }
 
 void CB_model::CBExport(int k)

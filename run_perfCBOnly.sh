@@ -52,8 +52,8 @@ if [ $# -ne 0 ]; then
   perturbSimple "$addOptionsLoc" $1 $useOldData
   args_percept_rot=$pdfSuffix
 
-  tgt=" --defTgt0=135 --defTgt1=45 --defTgt2=135"
-  addOptionsLoc="--percept_xrev1=1 --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
+  tgt=" --defTgt0=90 --defTgt1=90 --defTgt2=90"
+  addOptionsLoc="--percept_xrev1=1 --cue0=0 --cue1=0 --cue2=0"$tgt$addOptions
   perturbSimple "$addOptionsLoc" $1 $useOldData
   args_percept_xrev=$pdfSuffix
 

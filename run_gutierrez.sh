@@ -16,6 +16,30 @@ seed=0     #makes <more or less> random seed
 #make pert
 #./pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
 
+fullSim()
+{
+  perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
+  args_EB_control=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
+  args_nonEB_control=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=1 --HD=1$addOptionsLoc" $1 $useOldData
+  args_nonEB_HD=$pdfSuffix
+
+  perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
+  args_EB_HD=$pdfSuffix
+
+  perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1 $useOldData
+  args_EB_PD=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=1 --PD=1$addOptionsLoc" $1  $useOldData
+  args_nonEB_PD=$pdfSuffix
+
+  python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" 
+}
+
+
 if [ $# -ne 0 ]; then
 
   delay="3.0s"
@@ -41,34 +65,106 @@ if [ $# -ne 0 ]; then
   echo "Starting experiment "$experimentName
 
   addOptions=""
-  addOptionsLoc=""$addOptions
   useOldData=$2   # 9 means don't plot
 
-  #addOptions=" --actPrelearnAng0=110 --actPrelearnAng1=70"
+  addOptionsLoc=" --cbRateDepr=0.08"$addOptions
+  fullSim $1
 
-#  addOptionsLoc=" --rewardDist=0.18"$addOptions 
-#  perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
-#  perturbSimple "--ini=$ini$addOptionsLoc --percept_xrev1=1" $1 $useOldData
+  addOptionsLoc=" --cbRateDepr=0.09"$addOptions
+  fullSim $1
 
-  perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
-  args_EB_control=$pdfSuffix
+  addOptionsLoc=" --cbRateDepr=0.1"$addOptions
+  fullSim $1
 
-  perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
-  args_nonEB_control=$pdfSuffix
+  addOptionsLoc=" --cbRateDepr=1.1"$addOptions
+  fullSim $1
 
-  perturbSimple "--ini=$ini --percept_xrev1=1 --HD=1$addOptionsLoc" $1 $useOldData
-  args_nonEB_HD=$pdfSuffix
-
-  perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
-  args_EB_HD=$pdfSuffix
-
-  perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1 $useOldData
-  args_EB_PD=$pdfSuffix
-
-  perturbSimple "--ini=$ini --percept_xrev1=1 --PD=1$addOptionsLoc" $1  $useOldData
-  args_nonEB_PD=$pdfSuffix
-
-  python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" 
+#  addOptionsLoc=""$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --lam2=0.16"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --lam2=0.17"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --lam2=0.18"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --lam2=0.19"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --wmmax_fake_prelearn=0.5"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --wmmax_fake_prelearn=0.6"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --wmmax_fake_prelearn=0.7"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateMax=1.5"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateMax=2"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateMax=2.5"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdDown=1.7"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdDown=2."$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdDown=2.3"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdUp=0.5"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdUp=0.4"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdUp=0.3"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdMax=2.25"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdMax=2."$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdMax=1.75"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdMax=1.5"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbLRateUpdSpdMax=1.25"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --updateCBStateDist=0.02"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --updateCBStateDist=0.01"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbRateDepr=0.07"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbRateDepr=0.06"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbRateDepr=0.04"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbRateDepr=0.03"$addOptions
+#  fullSim $1
+#
+#  addOptionsLoc=" --cbRateDepr=0.02"$addOptions
+#  fullSim $1
 
   ./beep.sh
   sleep 0.1s

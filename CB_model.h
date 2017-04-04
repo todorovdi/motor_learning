@@ -35,6 +35,7 @@ class CB_model
 
   //float lastErrRatio;
   bool cbLRateUpd_errDiffBased;
+  bool cbLRateIsConst;
 
     float wcb[6][6];                 // current CB state
     float dfwx[6][6],dfwy[6][6];     // CB state corrections, corresponding to the current CB target
