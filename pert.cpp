@@ -577,7 +577,6 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       if(iter != params.end() )
       {
         p.cue = stoi(iter->second);
-        cout<<iter->first<<i<<" is "<<iter->second<<endl;
       }
 
       key = string("target_xreverse") + to_string(i);
