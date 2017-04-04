@@ -34,7 +34,7 @@ from matplotlib import cm
 from scipy import stats
 
 import plotparams as pp
-from stdplots import *
+from stdplots_robbie import *
 
 from matplotlib.backends.backend_pdf import PdfPages
 import re
@@ -75,7 +75,7 @@ def genMainPlot(fig,ax,fnames,nums):
         ax.set_ylabel("Endpoint Angle", size=26)
     else:
         ax.set_title("Average Errors and SEMs", size=30, y=1.04)
-        ax.set_ylabel("Error", size=26)
+        ax.set_ylabel("x Error", size=26)
 
     fig.suptitle(stitle, size=35, y=1.0)
 
@@ -93,14 +93,15 @@ def genMainPlot(fig,ax,fnames,nums):
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
 
-    ax.axhline(y=pp.rewardDist,c="red",linewidth=0.5,zorder=0,label="Reward Dist.")
-    ax.axhline(y=-pp.rewardDist,c="red",linewidth=0.5,zorder=0)
+    # ax.axhline(y=pp.rewardDist,c="red",linewidth=0.5,zorder=0,label="Reward Dist.")
+    # ax.axhline(y=-pp.rewardDist,c="red",linewidth=0.5,zorder=0)
     ax.tick_params(axis='x', which='major', labelsize=24)
     ax.tick_params(axis='y', which='major', labelsize=18)
 
     ax.set_xlabel("Trials", size=26)
 
     plt.legend()
+    # plt.savefig(pp.out_dir_pdf+stitle.replace('\n','').replace(' ', "_")+".png")
   
 #    if pp.plotPubFile != "":
 #        import imp
@@ -176,8 +177,10 @@ def genFigurePert(fnames,outname):
 
     with PdfPages(pdfname) as pdf:
         pdf.savefig()
+        plt.savefig(pdfname+'MAIN'+".png")
         plt.close()
         genReachingByPhase(fileToPlot)
+        plt.savefig(pdfname+'ReachingByPhase'+".png")
         pdf.savefig()
         plt.close()
 
@@ -222,7 +225,7 @@ def genFigurePert(fnames,outname):
         ax=axs[1,1]
         cbtgt = list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
         genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=cbtgt)
-
+        plt.savefig(pdfname+'REACH'+".png")
         pdf.savefig()
         plt.close()
 
@@ -302,6 +305,7 @@ def genFigurePertMulti(dat_basenames):
         from textwrap import wrap
 
         genMainPlot(fig,ax,fnames,nums)
+        plt.savefig(fnames[0]+'MAIN'+".png")
         #ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
         ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.08)
 
@@ -321,6 +325,7 @@ def genFigurePertMulti(dat_basenames):
 
             genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],
                             figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
+            plt.savefig(fnames[0]+'REACH'+".png")
 
     if pp.multiSameGraph == 0:
         ax = axs[1,ind]
@@ -397,6 +402,7 @@ def genReachingByPhase(fname):
         # genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
 
     # genReachPlot(fig,axs[1,1],x_actual[rangeAdapt1],y_actual[rangeAdapt1],nums[rangeAdapt1],figName+" actual pos")
+    # plt.savefig(pp.out_dir_pdf+fname+".png")
 
 def printParams(fig,pos):
     axlm= fig.add_axes(pos,frameon=False); 
