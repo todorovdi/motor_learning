@@ -47,7 +47,7 @@ def annotateGraph(ax):
     ax_.set_xlim([0, n])
     ax_.set_xticks(pp.phaseBegins[1:-1])
     ax_.set_xticklabels(pp.phaseNames)
-    ax_.xaxis.grid(True,color='w')
+    ax_.xaxis.grid(True,color='k')
 
 ###############################
 
@@ -62,9 +62,11 @@ def genMainPlot(ax,fnames,nums):
     ax.yaxis.grid(True)
 
     if (pp.plotReachAngles  != 0 ) :
-        ax.set_title('Endpoint angles averaged and SEMs',y=1.04)
+        ax.set_title("Average Endpoint Angles and SEMs", size=32, y=1.04)
+        ax.set_ylabel("Endpoint Angle", size=26)
     else:
-        ax.set_title('Errors averaged and SEMs',y=1.04)
+        ax.set_title("Average Errors and SEMs", size=32, y=1.04)
+        ax.set_ylabel("Error", size=26)
     ymin = 0.
     ymax = pp.y_axis_max 
     ymin = pp.y_axis_min
