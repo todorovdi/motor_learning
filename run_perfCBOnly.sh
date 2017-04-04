@@ -39,55 +39,49 @@ if [ $# -ne 0 ]; then
 
   echo "Starting experiment "$experimentName
 
-  addOptions=" --ini=$ini"
-  addOptionsLoc=""$addOptions
-  useOldData=$2   # 9 means don't plot
-
-  tgt=" --defTgt0=90 --defTgt1=90 --defTgt2=90"
-  addOptionsLoc="--force_field1=-2. --cue0=0 --cue1=0 --cue2=0"$tgt$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_force_field=$pdfSuffix
-
-  tgt=" --defTgt0=0 --defTgt1=80 --defTgt2=0"
-  addOptionsLoc="--percept_rot1=80. --cue0=1 --cue1=2 --cue2=1"$tgt$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_rot=$pdfSuffix
-
-  tgt=" --defTgt0=90 --defTgt1=90 --defTgt2=90"
-  addOptionsLoc="--percept_xrev1=1 --cue0=0 --cue1=0 --cue2=0"$tgt$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_xrev=$pdfSuffix
-
-  tgt=" --defTgt0=0 --defTgt1=45 --defTgt2=0"
-  addOptionsLoc="--percept_rot1=45. --cue0=1 --cue1=4 --cue2=1"$tgt$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_small_rot=$pdfSuffix
-
-  python "$plotfile" "$args_force_field" "$args_percept_rot" "$args_percept_xrev" "$args_percept_small_rot"
-
   addOptions=" --ini=$ini --cbRateDepr=0."
   addOptionsLoc=""$addOptions
   useOldData=$2   # 9 means don't plot
 
+  #tgt=" --defTgt0=0 --defTgt1=0 --defTgt2=0"
+  #addOptionsLoc="--percept_rot1=70. --cue0=1 --cue1=7 --cue2=1"$tgt$addOptions
+  #perturbSimple "$addOptionsLoc" $1 $useOldData
+  #args_percept_rot=$pdfSuffix
+
+  #tgt=" --defTgt0=0 --defTgt1=0 --defTgt2=0"
+  #addOptionsLoc="--percept_rot1=70. --cue0=1 --cue1=7 --cue2=1"$tgt$addOptions
+  #perturbSimple "$addOptionsLoc" $1 $useOldData
+  #args_percept_rot=$pdfSuffix
+
+  #tgt=" --defTgt0=290 --defTgt1=290 --defTgt2=290"
+  #addOptionsLoc="--percept_rot1=70. --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
+  #perturbSimple "$addOptionsLoc" $1 $useOldData
+  #args_percept_rot=$pdfSuffix
+
+  #tgt=" --defTgt0=270 --defTgt1=270 --defTgt2=270 --actPrelearnAng3=270"
+  #addOptionsLoc="--percept_rot1=90. --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
+  #perturbSimple "$addOptionsLoc" $1 $useOldData
+  #args_percept_rot=$pdfSuffix
+
+  tgt=" --defTgt0=0 --defTgt1=0 --defTgt2=0"
+  addOptionsLoc="--percept_rot1=70. --cue0=1 --cue1=7 --cue2=1"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_rot=$pdfSuffix
+
+  tgt=" --defTgt0=0 --defTgt1=0 --defTgt2=0"
+  addOptionsLoc="--percept_rot1=45. --cue0=1 --cue1=2 --cue2=1"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_small_rot=$pdfSuffix
+
+  tgt=" --defTgt0=90 --defTgt1=90 --defTgt2=90"
+  addOptionsLoc="--percept_xrev1=1 --cue0=5 --cue1=6 --cue2=5"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_xrev=$pdfSuffix
+
   tgt=" --defTgt0=90 --defTgt1=90 --defTgt2=90"
   addOptionsLoc="--force_field1=-2. --cue0=0 --cue1=0 --cue2=0"$tgt$addOptions
   perturbSimple "$addOptionsLoc" $1 $useOldData
   args_force_field=$pdfSuffix
-
-  tgt=" --defTgt0=0 --defTgt1=80 --defTgt2=0"
-  addOptionsLoc="--percept_rot1=80. --cue0=1 --cue1=2 --cue2=1"$tgt$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_rot=$pdfSuffix
-
-  tgt=" --defTgt0=90 --defTgt1=90 --defTgt2=90"
-  addOptionsLoc="--percept_xrev1=1 --cue0=0 --cue1=0 --cue2=0"$tgt$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_xrev=$pdfSuffix
-
-  tgt=" --defTgt0=0 --defTgt1=45 --defTgt2=0"
-  addOptionsLoc="--percept_rot1=45. --cue0=1 --cue1=4 --cue2=1"$tgt$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_small_rot=$pdfSuffix
 
   python "$plotfile" "$args_force_field" "$args_percept_rot" "$args_percept_xrev" "$args_percept_small_rot"
 
