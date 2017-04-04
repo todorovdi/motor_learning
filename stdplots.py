@@ -152,7 +152,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
     #ax.scatter(x2, y2, color='b', s=s/2, alpha=.4)
 
     ax.grid()
-    ax.set_title('Reaching points '+title)
+    ax.set_title('Reaching points '+title, size=30, y=1.03)
 
     lastx=0
     lasty=0
@@ -324,7 +324,7 @@ def genBGWeightsPlot(fig,ax,fname,cue=0):
 def genCBStatePlot(fig,ax,fname):
     # 300 -- w1 + w2 + wm
     pcol = genBGActivityPlot(fig,ax,fname,range(1,6*6+1) )
-    ax.set_title('CB state plot',y=1.04)
+    ax.set_title('CB state plot',y=1.04,size=26)
     ax.set_yticks(range(0,36))
     ax.set_ylabel('wcb[0 1 2 3 4 5][*]',rotation=90)
     ax.set_ylim(0,36)
@@ -343,7 +343,7 @@ def genCBStateMaxPlot(fig,ax,fname):
     
     ax.xaxis.grid(True)
 
-    ax.set_title('CB state max',y=1.04)
+    ax.set_title('CB state max',y=1.04,size=26)
     #ax.set_yticks(range(0,6*6*2,6))
     ax.set_ylabel('abs max',rotation=90)
     ax.set_ylim(0,pp.cbStateMax)
@@ -351,7 +351,7 @@ def genCBStateMaxPlot(fig,ax,fname):
 def genCBTuningPlot(fig,ax,fname):
     # 300 -- w1 + w2 + wm
     pcol = genBGActivityPlot(fig,ax,fname,range(1,6*6*2+1) )
-    ax.set_title('CB Tuning plot',y=1.04)
+    ax.set_title('CB Tuning plot',y=1.04,size=26)
     ax.set_yticks(range(0,6*6*2,6))
     ax.set_ylabel('dfwx dfwy',rotation=90)
     ax.set_ylim(0,36*2)
@@ -386,7 +386,7 @@ def genCBMiscPlot(fig,ax,fname):
     ax.set_ylim(ylmin,ylmax)
     ax.set_yticks(np.arange(ylmin,ylmax,1.))
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
-    ax.set_title('CB misc plot',y=1.04)
+    ax.set_title('CB misc plot',y=1.04,size=26)
 
     ax.xaxis.grid(True, which='minor')
 
@@ -400,7 +400,7 @@ def genRwdPlot(fig,ax,fname):
 
     ax.legend(loc='upper right')
     
-    ax.set_title('Reward plot',y=1.04)
+    ax.set_title('Reward plot',y=1.04,size=26)
     
     mux =float(pp.paramsEnv["cbLRateUpdSpdMax"])  
     rsz = float(pp.paramsEnv["rewardSize"])
