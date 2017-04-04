@@ -271,7 +271,7 @@ int perturbationExperimentEnv::turnOnCues(int k, float * cues)
 void perturbationExperimentEnv::getCurTgt(float * x, float & x0, float & y0, float & tgtAngleDeg)
 {
   expPhaseParams & p = phaseParams[experimentPhase];
-  float target = p.defTgt + p.target_rotation;
+  float target = angDegAdd(p.defTgt,p.target_rotation);
   if(p.target_xreverse)
     target = 180. - target;
 
