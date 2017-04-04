@@ -44,7 +44,7 @@ if [ $# -ne 0 ]; then
   useOldData=$2   # 9 means don't plot
 
   tgt=" --defTgt0=0 --defTgt1=0 --defTgt2=0"
-  addOptionsLoc="--percept_rot1=45. --cue0=1 --cue1=4 --cue2=1"$tgt$addOptions
+  addOptionsLoc="--percept_rot1=45. --cue0=1 --cue1=3 --cue2=1"$tgt$addOptions
   perturbSimple "$addOptionsLoc" $1 $useOldData
   args_percept_small_rot=$pdfSuffix
 
