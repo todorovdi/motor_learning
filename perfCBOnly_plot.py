@@ -319,7 +319,8 @@ def genFigurePertMulti(dat_basenames):
 
             ax = axs[1,ind]
 
-            genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
+            genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],
+                            figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
 
     if pp.multiSameGraph == 0:
         ax = axs[1,ind]
@@ -375,7 +376,9 @@ def genReachingByPhase(fname):
     n = len(xs)
     lastNum = nums[-1]
 
-    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
+    # fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
+    fig = plt.figure(figsize=(30,20))
+    axs = plt.gca()
 
     rangePre1 = range(0,pp.phaseBegins[1])
     figName = "Adapt1"
@@ -387,13 +390,13 @@ def genReachingByPhase(fname):
         rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
     rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
 
-    if(len(rangePre1)>0):
-        genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1")
-    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,tgt=list(zip(x_target[rangeAdapt1],y_target[rangeAdapt1])),cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
-    if(len(rangePost1)>0):
-        genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
+    # if(len(rangePre1)>0):
+        # genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1")
+    genReachPlot(fig,axs,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,tgt=list(zip(x_target[rangeAdapt1],y_target[rangeAdapt1])),cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
+    # if(len(rangePost1)>0):
+        # genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
 
-    genReachPlot(fig,axs[1,1],x_actual[rangeAdapt1],y_actual[rangeAdapt1],nums[rangeAdapt1],figName+" actual pos")
+    # genReachPlot(fig,axs[1,1],x_actual[rangeAdapt1],y_actual[rangeAdapt1],nums[rangeAdapt1],figName+" actual pos")
 
 def printParams(fig,pos):
     axlm= fig.add_axes(pos,frameon=False); 
