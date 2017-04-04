@@ -62,18 +62,22 @@ def genMainPlot(fig,ax,fnames,nums):
     annotateGraph(ax)
     ax.yaxis.grid(False)
 
-    stitle = "CB "
+    stitle = "CB\n"
     if "force_field1" in pp.paramsEnv and abs(float(pp.paramsEnv['force_field1'])) > 0.0:
-        stitle = stitle + r"Force Field Perturbation: $%.1f$" % (round(float(pp.paramsEnv["force_field1"]), 1),)
+        stitle = stitle + r"Force Field Perturbation: %.1f" % (round(float(pp.paramsEnv["force_field1"]), 1),)
+    elif "percept_rot1" in pp.paramsEnv and abs(float(pp.paramsEnv["percept_rot1"])) > 0.0:
+        stitle = stitle + r"Perception Rotation: $%.1f^o$" % (round(float(pp.paramsEnv["percept_rot1"]), 1),)
+    elif "percept_xrev1" in pp.paramsEnv and bool(pp.paramsEnv["percept_xrev1"] ) is True:
+        stitle = stitle + "X Reversal"
 
     if (pp.plotReachAngles  != 0 ) :
-        ax.set_title("Average Endpoint Angles and SEMs", size=32, y=1.04)
+        ax.set_title("Average Endpoint Angles and SEMs", size=30, y=1.04)
         ax.set_ylabel("Endpoint Angle", size=26)
     else:
-        ax.set_title("Average Errors and SEMs", size=32, y=1.04)
+        ax.set_title("Average Errors and SEMs", size=30, y=1.04)
         ax.set_ylabel("Error", size=26)
 
-    fig.suptitle(stitle, size=40)
+    fig.suptitle(stitle, size=35, y=1.0)
 
     ymin = 0.
     ymax = pp.y_axis_max 

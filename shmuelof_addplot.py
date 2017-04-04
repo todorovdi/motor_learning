@@ -54,7 +54,7 @@ def makePubPlot(fnames2d):
         ax_.set_xlim([0, n])
         ax_.set_xticks(pp.phaseBegins[1:-1])
         ax_.set_xticklabels(pp.phaseNames)
-        ax_.xaxis.grid(True,color='w')
+        ax_.xaxis.grid(True,color='k')
 
         ax.yaxis.grid(True)
 
