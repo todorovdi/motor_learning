@@ -66,7 +66,7 @@ def genMainPlot(ax,fnames,nums):
         ax.set_ylabel("Endpoint Angle", size=26)
     else:
         ax.set_title("Average Errors and SEMs", size=32, y=1.04)
-        ax.set_ylabel("x Error", size=26)
+        ax.set_ylabel("Error", size=26)
     ymin = 0.
     ymax = pp.y_axis_max 
     ymin = pp.y_axis_min

@@ -138,20 +138,20 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
     ax.set_ylim([0.2,ylim]) # set ymin
     ax.set_xlim([-xlim,xlim])
     ax.set_xticks(np.arange(-xlim,xlim,0.1))
-    ax.set_yticks(np.arange(0.0,ylim,0.1))
+    ax.set_yticks(np.arange(0.2,ylim,0.1))
 
     if(twoPhases and int(pp.paramsEnv["numPhases"]) > 3 ):
         ax.scatter(xs[pp.trials1],ys[pp.trials1],c=nums[pp.trials1],lw=0.0,cmap='inferno',s=45)
         ax.scatter(xs[pp.trials2],ys[pp.trials2],c=nums[pp.trials2],lw=0.0,cmap='inferno',marker='^',s=45)
     else:
         #print zip(nums,xs,ys)
-        ax.scatter(xs,ys,c=range(len(nums)),lw=0.0,cmap='inferno',s=45)
+        ax.scatter(xs,ys,c=range(len(nums)),lw=0.0,cmap='inferno',s=300)
 
 
     #plt.scatter(xs, ys, color='r', marker='*', alpha=.4)
     #ax.scatter(x2, y2, color='b', s=s/2, alpha=.4)
 
-    ax.grid()
+    ax.grid(color='k')
     ax.set_title('Reaching points '+title, size=30, y=1.03)
 
     lastx=0
@@ -193,7 +193,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
     #label for target
     # for label, x, y in zip(addlabel, addxs, addys):
 
-    ax.scatter(addxs[-2], addys[-2], s=400, c='r', label="Percieved Target", marker='*')
+    # ax.scatter(addxs[-2], addys[-2], s=400, c='r', label="Percieved Target", marker='*')
     ax.scatter(addxs[-1], addys[-1], s=400, c='b', label="Actual Target", marker='*')
 
     xc = 0
@@ -242,16 +242,16 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
             xr2 = tgt_actual[0][0]
             yr2 = tgt_actual[0][1]
 
-    if(tgt1_defined):
-        rewardSpot1 = plt.Circle((xr1, yr1), pp.rewardDist, color='b', fill=False)
-    if(tgt2_defined):
-        rewardSpot2 = plt.Circle((xr2, yr2), pp.rewardDist, color='r', fill=False)
+    # if(tgt1_defined):
+        # rewardSpot1 = plt.Circle((xr1, yr1), pp.rewardDist, color='b', fill=False)
+    # if(tgt2_defined):
+        # rewardSpot2 = plt.Circle((xr2, yr2), pp.rewardDist, color='r', fill=False)
 
     #learn_bg = int(pp.paramsEnv["learn_bg"] )
-    if(tgt1_defined):
-        ax.add_artist(rewardSpot1)
-    if(tgt2_defined):
-        ax.add_artist(rewardSpot2)
+    # if(tgt1_defined):
+        # ax.add_artist(rewardSpot1)
+    # if(tgt2_defined):
+        # ax.add_artist(rewardSpot2)
 #        ax.add_artist(rewardSpot2)
 
     plt.legend(fontsize=26)
@@ -295,6 +295,7 @@ def addColorBar(fig,ax_,vals=0,tickSkip=10,dat=0,wd=0.01):
         cbar = mpl.colorbar.ColorbarBase(ax=ax1,norm=norm,ticks=colorTicks,orientation='vertical',cmap='inferno')
     else:
         cbar = fig.colorbar(dat,cax=ax1,orientation='vertical',cmap='inferno')
+    cbar.ax.tick_params(labelsize=26)
 
 def genBGActivityPlot(fig,ax,fname,cols=range(0,300)):
     activity = np.loadtxt(fname)

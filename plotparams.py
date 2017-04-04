@@ -17,7 +17,6 @@ def paramFileRead(fname):
     params = ConfigParser.RawConfigParser(allow_no_value=True)
     params.optionxform = str 
     params.readfp(ini_fp)
-    
     #sect = paramsEnv_pre.sections()
     items= params.items('root')
     params_ = dict(items)
