@@ -58,7 +58,7 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
         cbStateMax = float(params_["cbStateMax"])
     except KeyError as e:
         cbStateMax = 0.3
-        print str(e)
+        print(str(e))
 
     try:
         plotAngleErrs = int(params_["plotAngleErrs"])
