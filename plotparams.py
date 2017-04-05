@@ -44,6 +44,7 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global plotAngleErrs
     global datMult
     global cbStateMax
+    global baseAng_reachAngDisp
 
     #armFileSkiprows = int(params_["armFileSkiprows"])
     pdfForEachSession = int(params_["pdfForEachSession"])
@@ -53,6 +54,12 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     cbMiscErrMult = float(params_["cbMiscErrMult"])
     xtickSkip = int(params_["xtickSkip"])
     y_axis_step = float(params_["y_axis_step"])
+
+    try:
+        baseAng_reachAngDisp = float(params_["baseAng_reachAngDisp"])
+    except KeyError as e:
+        baseAng_reachAngDisp = 0
+        print(str(e))
 
     try:
         cbStateMax = float(params_["cbStateMax"])

@@ -37,6 +37,12 @@ class CB_model
   bool cbLRateUpd_errDiffBased;
   bool cbLRateIsConst;
 
+  int cbErrDepth;
+  float cbLRateUpdAbsErr_threshold;
+  float cbLRateUpdErrRatio_threshold;
+
+  vector<float> errHist;
+
     float wcb[6][6];                 // current CB state
     float dfwx[6][6],dfwy[6][6];     // CB state corrections, corresponding to the current CB target
 

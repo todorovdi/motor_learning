@@ -110,9 +110,13 @@ void CB_model::cblearn(float dx,float dy)
 void CB_model::learn(float dx,float dy)
 {      
   float errAbs = sqrt(dx*dx +dy*dy);
-  float cblr_upd = 0.;
-  if(prevErrAbs < 10. && !cbLRateIsConst)   // if not, it is set artificially
+  float errToCompare = 0;
+  float cblr_upd = 1.;
+
+  if(prevErrAbs < 10. && !cbLRateIsConst && errAbs > cbLRateUpdAbsErr_threshold)   // if not, it is set artificially
   {
+    int ind = std::min<int>(cbErrDepth,errHist.size());
+    errToCompare = *(errHist.end() - ind);
     //float mult = ( 1./(1.+m)  );
 
     if(cbLRateUpd_errDiffBased)
@@ -122,10 +126,10 @@ void CB_model::learn(float dx,float dy)
     }
     else
     { 
-      if(errAbs < prevErrAbs)       // means succesful correction. Then correct more!
+      if(cbLRateUpdErrRatio_threshold * errAbs < errToCompare)       // means succesful correction. Then correct more!
       { 
-        cblr_upd = fmin(cbLRateUpdSpdMax,prevErrAbs/errAbs);
-        cbLRate += cblr_upd* cbLRateUpdSpdUp;
+        cblr_upd = cbLRateUpdSpdUp;
+        cbLRate *= cblr_upd;
    
 #ifdef  DEPR_DEP_ON_ERR
         cbRateDepr = cbRateDepr_def;
@@ -134,8 +138,8 @@ void CB_model::learn(float dx,float dy)
       }
       else
       { 
-        cblr_upd = -fmin(cbLRateUpdSpdMax,errAbs/prevErrAbs); 
-        cbLRate += cblr_upd* cbLRateUpdSpdDown;
+        cblr_upd = 1/cbLRateUpdSpdDown;
+        cbLRate *= cblr_upd;
 
 #ifdef  DEPR_DEP_ON_ERR
         cbRateDepr = -cblr_upd* cbLDeprUpdSpd;
@@ -156,11 +160,12 @@ void CB_model::learn(float dx,float dy)
   }
   cblearn(dx, dy);
 
-  exporter->exportCBMisc(cbLRate,errAbs,cblr_upd,prevErrAbs);
+  exporter->exportCBMisc(cbLRate,errAbs,log(cblr_upd),errToCompare);
 
   //lastErrRatio = fmin(cbLRateUpdSpdMax,prevErrAbs/errAbs);
   //lastErrRatio = errAbs;
   prevErrAbs = errAbs;
+  errHist.push_back(errAbs);
 
   //cout<<"errAbs "<<errAbs<<", learn_rate  "<<cbLRate<<",  W norm "<<matrixNorm(wcb)<<endl;
 }
@@ -244,8 +249,18 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
   cbRateDepr = stof(params["cbRateDepr"]);
   cbRateDepr = stof(params["cbRateDepr"]);
 
-  string s = params["cbLRateUpd_errDiffBased"];
+  string s;
+  s = params["cbLRateUpd_errDiffBased"];
   cbLRateUpd_errDiffBased = s != "" ? stoi(s) : 0;
+
+  s = params["cbErrDepth"];
+  cbErrDepth = s != "" ? stoi(s) : 0;  ;
+
+  s = params["cbLRateUpdAbsErr_threshold"];
+  cbLRateUpdAbsErr_threshold = s != "" ? stof(s) : 0;  ;
+
+  s = params["cbLRateUpdErrRatio_threshold"];
+  cbLRateUpdErrRatio_threshold = s != "" ? stof(s) : 1.;  ;
 
  //////////////// WARNING!!!!
   cbLDeprUpdSpd = stof(params["cbLDeprUpdSpd"]);
@@ -259,6 +274,9 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_)
 
   arm = arm_;
   exporter = exporter_;
+ 
+  errHist.reserve(20);
+  errHist.resize(0);
 }
 
 void CB_model::CBExport(int k)

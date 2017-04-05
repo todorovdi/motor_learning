@@ -16,6 +16,17 @@ seed=0     #makes <more or less> random seed
 #make pert
 #./pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
 
+shortSim()
+{
+  perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
+  args_EB_control=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
+  args_nonEB_control=$pdfSuffix
+ 
+  python "$plotfile" "$args_EB_control" "$args_nonEB_control"
+}
+
 fullSim()
 {
   perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
@@ -50,6 +61,8 @@ if [ $# -ne 0 ]; then
   fi
     
 
+  useOldData=$2   # 9 means don't plot
+
   #./inv `cat tmp` -n 1000 -T 1.0 -N 100 -minAngDeg 10 -maxAngDeg 170
 
   # default
@@ -64,20 +77,101 @@ if [ $# -ne 0 ]; then
 
   echo "Starting experiment "$experimentName
 
-  addOptions=""
-  useOldData=$2   # 9 means don't plot
+#  addOptionsLoc=" --rewardDist=0.18 --cbLRate=0.6"$addOptions
+#  fullSim $1
 
-  addOptionsLoc=" --cbRateDepr=0.08"$addOptions
+  addOptionsLoc=" --rewardDist=0.18 --cbLRate=0.4"$addOptions
   fullSim $1
+  
 
-  addOptionsLoc=" --cbRateDepr=0.09"$addOptions
-  fullSim $1
-
-  addOptionsLoc=" --cbRateDepr=0.1"$addOptions
-  fullSim $1
-
-  addOptionsLoc=" --cbRateDepr=1.1"$addOptions
-  fullSim $1
+#  addOptions=" --lam2=0.15 --cbLRate=1"
+#
+#  addOptionsLoc=" --perfRwdMult=6 --rewardDist=0.05"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --perfRwdMult=4 --rewardDist=0.05"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --perfRwdMult=9 --rewardDist=0.05"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --perfRwdMult=5 --rewardDist=0.05"$addOptions
+#  shortSim $1
+#
+#  #
+#
+#  addOptionsLoc=" --rwdGradePower=1.5 --rewardDist=0.2"$addOptions
+#  shortSim $1
+#
+#
+#  addOptionsLoc=" --rwdGradePower=1 --rewardDist=0.25"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rwdGradePower=0.5 --rewardDist=0.25"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rwdGradePower=1.5 --rewardDist=0.25"$addOptions
+#  shortSim $1
+#
+#
+#  addOptionsLoc=""$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.19"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.21"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.18"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.17"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.22"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.23"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.24"$addOptions
+#  shortSim $1
+#
+#  addOptions=" --wmmax_fake_prelearn=0.4"
+#  useOldData=$2   # 9 means don't plot
+#
+##  addOptionsLoc=""$addOptions
+##  fullSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.20"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.19"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.21"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.18"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.17"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.22"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.23"$addOptions
+#  shortSim $1
+#
+#  addOptionsLoc=" --rewardDist=0.24"$addOptions
+#  shortSim $1
+#
+#######################
+#  addOptionsLoc=" --rwdGradePower=1.2"$addOptions
+#  shortSim $1
+# 
 
 #  addOptionsLoc=""$addOptions
 #  fullSim $1

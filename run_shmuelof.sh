@@ -87,6 +87,10 @@ if [ $# -ne 0 ]; then
   #genPdfSuffix "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
   args1Long=$pdfSuffix
 
+  # TODO: recalibrate arm to -30, 90
+  # maybe will have to modify deg2action  function
+  # or recalibration in arm_inv.cc
+
 
 #  addOptionsLoc="--resetRPre0=0"$addOptions
 #  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
@@ -109,7 +113,6 @@ if [ $# -ne 0 ]; then
 #  python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long" 
   python "$plotfile" "$argsCBon" "$args1" 
   python "$plotfile" "$argsCBonLong" "$args1Long" 
-#  python "$plotfile" "$argsCBon" "$args5" 
 
   ./beep.sh
   sleep 0.1s

@@ -39,7 +39,8 @@ if [ $# -ne 0 ]; then
 
   echo "Starting experiment "$experimentName
 
-  addOptions=" --ini=$ini --cbRateDepr=0."
+  addOptions=" --ini=$ini"
+  #--cbRateDepr=0."
   addOptionsLoc=""$addOptions
   useOldData=$2   # 9 means don't plot
 
@@ -62,9 +63,44 @@ if [ $# -ne 0 ]; then
   #addOptionsLoc="--percept_rot1=90. --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
   #perturbSimple "$addOptionsLoc" $1 $useOldData
   #args_percept_rot=$pdfSuffix
+  
 
-  tgt=" --defTgt0=0 --defTgt1=0 --defTgt2=0"
-  addOptionsLoc="--percept_rot1=70. --cue0=1 --cue1=7 --cue2=1"$tgt$addOptions
+  angg=-90
+  rott=90
+  angg2=$((angg+rott))
+  tgt=" --defTgt_all=$angg"
+  #tgt=" --defTgt0=$angg --defTgt1=$angg --defTgt2=$angg --actPrelearnAng3=$angg --actPrelearnAng4=$angg2"
+  addOptions=" --ini=$ini --numTrials1=80" 
+
+  addOptionsLoc="--percept_rot1=$rott. --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_rot=$pdfSuffix
+
+  addOptionsLoc=" --cbLRate = 3. --percept_rot1=$rott. --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_rot=$pdfSuffix
+
+  addOptionsLoc=" --cbLRate = 1. --percept_rot1=$rott. --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_rot=$pdfSuffix
+
+  addOptions=" --ini=$ini --cbRateDepr=0.0" 
+  addOptionsLoc="--percept_rot1=$rott. --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_rot=$pdfSuffix
+
+  addOptionsLoc=" --cbLRate = 3. --percept_rot1=$rott. --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_rot=$pdfSuffix
+
+  addOptionsLoc=" --cbLRate = 1. --percept_rot1=$rott. --cue0=3 --cue1=4 --cue2=3"$tgt$addOptions
+  perturbSimple "$addOptionsLoc" $1 $useOldData
+  args_percept_rot=$pdfSuffix
+
+  #####################################################
+
+  tgt=" --defTgt0=-40 --defTgt1=-40 --defTgt2=-40"
+  addOptionsLoc="--percept_rot1=80. --cue0=3 --cue1=4 --cue2=3 --actPrelearnAng3=-40 --actPrelearnAng4=40"$tgt$addOptions
   perturbSimple "$addOptionsLoc" $1 $useOldData
   args_percept_rot=$pdfSuffix
 

@@ -386,15 +386,22 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
 
     if(!sector_reward)
     { 
-        if(ratioBasedReward)
-        {
-          R =  rewardSize * (1. - ml.getLastErr() * ml.getLastErr() / (rewardDist * rewardDist) ) ;
-          // prev / cur
-        }
-        else if( fabs(sc) < rewardDist) 
-        {
-            R = rewardSize;
-        }
+      if(gradedReward)
+      {
+        R =  rewardSize * (1. - pow(sc / rewardDist, rwdGradePower) ) ;
+        // prev / cur
+      }
+      else if( fabs(sc) < rewardDist) 
+      {
+          R = rewardSize;
+      }
+
+      float lastErr =  ml.getLastErr();
+      float errReduction = lastErr - sc;
+      if(perfBasedReward && R<rewardSize && errReduction > 0 && lastErr < 5.)
+      {
+        R += rewardSize * pow(errReduction,perfGradePower) * perfRwdMult; 
+      }
     }
     else
     {
@@ -477,8 +484,23 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     }
 
     string s;
-    s = params["ratioBasedReward"];
-    ratioBasedReward = s!="" ? stoi(s) : 0;
+    s = params["gradedReward"];
+    gradedReward = s!="" ? stoi(s) : 0;
+
+    s = params["rwdGradePower"];
+    rwdGradePower = s!="" ? stof(s) : 2.;
+
+    s = params["perfBasedReward"];
+    perfBasedReward = s!="" ? stoi(s) : 0;
+
+    s = params["perfGradePower"];
+    perfGradePower = s!="" ? stof(s) : 1.;
+
+    s = params["perfRwdMult"];
+    perfRwdMult = s!="" ? stof(s) : 1.;
+
+    s = params["defTgt_all"];
+    float defTgt_all = s!="" ? stof(s) : 0.;
 
     numTrials = 0;
     phaseParams.resize(numPhases);
@@ -625,7 +647,11 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       iter = params.find(key);
       if(iter != params.end() )
       {
-        p.defTgt = stof(iter->second);
+        p.defTgt = fmodAng( stof(iter->second) );
+      }
+      else
+      {
+        p.defTgt = defTgt_all;
       }
 
       key = string("error_clamp") + to_string(i);
@@ -733,6 +759,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       if(iter != params.end() )
       { 
         float angDeg = stof(iter->second);
+        angDeg = fmodAng(angDeg); 
         c2p.action = deg2action(angDeg);
       }
 

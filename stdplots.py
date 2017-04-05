@@ -19,36 +19,45 @@ from scipy import stats
 
 import plotparams as pp
 
-def coord2AngleDeg(x,y):    # returns -180 to 180
-    xc = float(pp.paramsEnv["x_center"])
-    yc = float(pp.paramsEnv["y_center"])
-    baseAng = 0.  # relative to EAST direction
-
-    xd = x-xc
-    yd = y-yc
-
-    if(xd >= 0):
-        angleDeg = ( math.atan( yd / xd )  ) / (2*math.pi) * 360.
-#        if(yd>0):
-#            angleDeg = 360 - angleDeg
-    else:
-        angleDeg = ( math.atan( yd / (-xd) )   ) / (2*math.pi) * 360.
-        if yd >= 0:
-            angleDeg = math.pi/2 + (math.pi/2-angleDeg)
-        else:
-            angleDeg = -math.pi/2 - (math.pi/2+angleDeg)
-
-    return angleDeg - baseAng
-
 # returns a1-a2
 def angleDegDif(a1,a2):    # suppose 0 <= a1,a2 < 360
     r = a1 - a2
-    if (fabs(r) > 180):
+    if (math.fabs(r) > 180):
         if a1 < 180:
             r = a1 + (180*2 - a2)
         else:
             r = -angleDegDif(a2,a1)
     return r
+
+def coord2AngleDeg(x,y):    # returns -180 to 180
+    xc = float(pp.paramsEnv["x_center"])
+    yc = float(pp.paramsEnv["y_center"])
+    baseAng = pp.baseAng_reachAngDisp  # relative to EAST direction
+
+    xd = x-xc
+    yd = y-yc
+
+    if(xd >= 0):
+        angleRad = ( math.atan( yd / xd )  ) 
+#        if(yd>0):
+#            angleDeg = 360 - angleDeg
+    else:
+        angleRad = ( math.atan( yd / (-xd) )   ) 
+        if yd >= 0:
+            angleRad = math.pi/2. + (math.pi/2.-angleRad)
+        else:
+            angleRad = -math.pi/2. - (math.pi/2.+angleRad)
+
+    angleDeg = angleRad / (math.pi) * 180.
+
+    # here angleDeg between -180. and 180.
+    if angleDeg < 0.:
+        angleDeg = 360 + angleDeg;
+    angleDeg= angleDegDif(angleDeg,baseAng)
+    if angleDeg > 180.:
+        angleDeg = 360 - angleDeg;
+
+    return angleDeg
 
 def getReachAngles(armData):
     nums = armData[:,0]
@@ -156,13 +165,13 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
 
     lastx=0
     lasty=0
-    # No point numbers
-    # if len(xs)<=30 or pp.showPointNumbers:
-    #     for i, x, y in zip(nums, xs, ys):
-    #         if (math.sqrt( (lastx-x)**2 + (lasty-y)**2 ) > 0.03):
-    #             ax.annotate(int(i), (x,y), fontsize=7)
-    #         lastx = x
-    #         lasty = y
+    
+    if len(xs)<=30 or pp.showPointNumbers:
+         for i, x, y in zip(nums, xs, ys):
+             if (math.sqrt( (lastx-x)**2 + (lasty-y)**2 ) > 0.03):
+                 ax.annotate(int(i), (x,y), fontsize=7)
+             lastx = x
+             lasty = y
 
     addxs = [0.]
     addys = [0.4]
@@ -180,15 +189,15 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
         addys.append(cbtgt_actual[0][1])
         addlabel.append("CBtgt_a")
 
-    # todo make additional labels for targets
-    # No Labels
-    # for label, x, y in zip(addlabel, addxs, addys):
-    #     ax.annotate(
-    #         label,
-    #         xy=(x, y), xytext=(0, -270),
-    #         textcoords='offset points', ha='right', va='bottom',
-    #         bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
-    #         arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
+     #todo make additional labels for targets
+     #No Labels
+    for label, x, y in zip(addlabel, addxs, addys):
+        ax.annotate(
+            label,
+            xy=(x, y), xytext=(0, -270),
+            textcoords='offset points', ha='right', va='bottom',
+            bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.5),
+            arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
 
     xc = 0
     yc = 0.4
@@ -382,13 +391,14 @@ def genCBMiscPlot(fig,ax,fname):
     cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
 
     ylmax = pp.cbMiscGraph_y_axis_max
-    ylmin = -mux
+    ylmin = 1.2*math.log(1/float(pp.paramsEnv["cbLRateUpdSpdDown"]))
     ax.set_ylim(ylmin,ylmax)
-    ax.set_yticks(np.arange(ylmin,ylmax,1.))
+    ax.set_yticks(np.arange(ylmin,ylmax,0.5))
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
     ax.set_title('CB misc plot',y=1.04,size=26)
 
     ax.xaxis.grid(True, which='minor')
+    ax.yaxis.grid(True)
 
 def genRwdPlot(fig,ax,fname):
     misc = np.loadtxt(fname)
@@ -404,8 +414,8 @@ def genRwdPlot(fig,ax,fname):
     
     mux =float(pp.paramsEnv["cbLRateUpdSpdMax"])  
     rsz = float(pp.paramsEnv["rewardSize"])
-    ylmax = 4.
-    ylmin = 0
+    ylmax = rsz*2.
+    ylmin = -1
     ax.set_ylim(ylmin,ylmax)
     ax.set_yticks(np.arange(ylmin,ylmax,1.))
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)

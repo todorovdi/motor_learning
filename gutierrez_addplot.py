@@ -5,7 +5,7 @@ import universal_plot as up
 import stdplots as stdp
 import re
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib  as mpl
 
 def makeNicer(ax):            
     return
@@ -30,7 +30,7 @@ def prep(fnames):
 
     up.paramsInitFromArmFname(fnames[0])
     errs,SEMs = doStats(fnames)
-    errs = (-1.)*errs
+    errs = (-10.)*errs
     armData = stdp.armFileRead(fnames[0])
     #armData = np.loadtxt(fnames[0])
     nums = armData[:,0]
@@ -48,9 +48,9 @@ def annotateCommon(ax):
 
     ax.yaxis.grid(True)
 
-    ymin = -0.4
-    ymax = 0.5 
-    step = 0.1
+    ymin = -2
+    ymax = 2 
+    step = 1
     #ymin = -30
     #ymax = 50 
     #step = 10
@@ -66,7 +66,9 @@ def makePubPlot(fnames2d):
         print("---Error -- not enough data to plot, exiting! ")
         return
 
-    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=True, sharey=True)
+    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(20, 20), sharex=True, sharey=True)
+
+    mpl.rcParams.update({'font.size': 22})
 
     fnames_nonEB_HD = fnames2d[0]
     fnames_nonEB_PD = fnames2d[1]
@@ -91,7 +93,7 @@ def makePubPlot(fnames2d):
     annotateCommon(ax)
     
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
-    ax.set_ylabel('Error (m)')
+    ax.set_ylabel('Error (cm)')
 
     ax = axs[0,1]
     prep(fnames_EB_control)
@@ -107,19 +109,19 @@ def makePubPlot(fnames2d):
     fireblack = [0.6, 0.0, 0.0]
     ax = axs[1,0]
     prep(fnames_nonEB_control)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='o', color=fireblack,markersize=msz,label='CHD')
+    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='o', color=fireblack,markersize=msz,label='CHD')
     prep(fnames_nonEB_HD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='s', color=lightcoral,markersize=msz,label='HD')
+    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='s', color=lightcoral,markersize=msz,label='HD')
     annotateCommon(ax)
 
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
-    ax.set_ylabel('Error (m)')
+    ax.set_ylabel('Error (cm)')
 
     ax = axs[1,1]
     prep(fnames_nonEB_control)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='d', color=fireblack,markersize=msz,label='CPD')
+    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='d', color=fireblack,markersize=msz,label='CPD')
     prep(fnames_nonEB_PD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='^', color=lightcoral,markersize=msz,label='PD')
+    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='^', color=lightcoral,markersize=msz,label='PD')
     annotateCommon(ax)
 
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
