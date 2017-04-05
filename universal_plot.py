@@ -198,7 +198,7 @@ def genFigurePert(fnames,outname):
         rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
         #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
         ax=axs[1,1]
-        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
 
         pdf.savefig()
         plt.close()
@@ -296,7 +296,7 @@ def genFigurePertMulti(dat_basenames):
 
             ax = axs[1,ind]
 
-            genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+            genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
 
     if pp.multiSameGraph == 0:
         ax = axs[1,ind]
@@ -323,6 +323,7 @@ def genFigurePertMulti(dat_basenames):
         plt.close()
 
         if pp.plotPubFile != "":
+
             import imp
             modName,_ = pp.plotPubFile.split('.')
             nicener_ = imp.load_source('nicener',pp.plotPubFile)
@@ -366,7 +367,7 @@ def genReachingByPhase(fname):
 
     if(len(rangePre1)>0):
         genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1")
-    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,tgt=zip(x_target[rangeAdapt1],y_target[rangeAdapt1]),cbtgt=zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
+    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,tgt=list(zip(x_target[rangeAdapt1],y_target[rangeAdapt1])),cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
     if(len(rangePost1)>0):
         genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
 

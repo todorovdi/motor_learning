@@ -34,7 +34,7 @@ from matplotlib import cm
 from scipy import stats
 
 import plotparams as pp
-from stdplots import *
+from stdplots_robbie import *
 
 from matplotlib.backends.backend_pdf import PdfPages
 import re
@@ -79,11 +79,9 @@ def genMainPlot(fig,ax,fnames,nums):
 
     fig.suptitle(stitle, size=35, y=1.0)
 
-    ymin = 0.
-    ymax = pp.y_axis_max 
+    ymax = pp.y_axis_max
     ymin = pp.y_axis_min
-    ymin = -0.3
-    ymax = 0.3
+
     step = (ymax-ymin) / 10.
     if "y_axis_step" in pp.paramsEnv:
         step = (float(pp.paramsEnv["y_axis_step"]) ) 
@@ -93,19 +91,11 @@ def genMainPlot(fig,ax,fnames,nums):
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
 
-    ax.axhline(y=pp.rewardDist,c="red",linewidth=0.5,zorder=0,label="Reward Dist.")
-    ax.axhline(y=-pp.rewardDist,c="red",linewidth=0.5,zorder=0)
     ax.tick_params(axis='x', which='major', labelsize=24)
     ax.tick_params(axis='y', which='major', labelsize=18)
 
     ax.set_xlabel("Trials", size=26)
 
-    plt.legend()
-  
-#    if pp.plotPubFile != "":
-#        import imp
-#        nicener = imp.load_source(pp.plotPubFile,pp.plotPubFile)
-#        nicener.makeNicer(ax)
 
 def removeWrongDataLen(fnames,n):   # check if all have the same data length
     fngood = []
@@ -121,6 +111,7 @@ def removeWrongDataLen(fnames,n):   # check if all have the same data length
     return fngood
 
 def genFigurePert(fnames,outname):
+    #########################################
     fileToPlot = fnames[0]
     armData = armFileRead(fileToPlot)
     #armData = np.loadtxt(fnames[0])
@@ -133,51 +124,34 @@ def genFigurePert(fnames,outname):
 
     print("plotting from ",len(fnames)," sessions")
 
-    # fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
     fig = plt.figure(figsize=(30,20))
     ax = plt.gca()
-
-    # ax = axs[0,0]
-    # genBGActivityPlot(fig,ax,fileToPlot.replace('arm','var_dyn2'))
-    # annotateGraph(ax)
-
-    #lines = ax_.get_lines()
-    #lines = ax.get_legend().get_lines()
-    #for line in lines:
-    #    line.set_dashes([20,170])
-
-    # ax = axs[0,1]
-    # genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'))
-    # annotateGraph(ax)
-
-    #genReachPlot(fig,axs[1,0],xs,ys,nums,twoPhases=True)
-
-    # if(int(pp.paramsEnv["nc"]) > 1):
-    #     ax = axs[1,0]
-    #     genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),1)
-    #     annotateGraph(ax)
-
-    # ax = axs[1,1]
-
-    genMainPlot(fig,ax,fnames,nums)
-
-    # pos1 = axs[0,0].get_position()
-    # xLeft = pos1.x0
-    # yTop = pos1.y0+pos1.height
-    # posLeftMargin = [0,0,xLeft-0.00,1]             # from left, from down, width, height 
-    # printParams(fig,posLeftMargin)
 
     if(len(fnames) == 1):
         pdfname = pp.out_dir_pdf_single+outname+".pdf"
     else:
         pdfname = pp.out_dir_pdf+outname+"_stats_n="+str(len(fnames))+".pdf"
 
-    print('pdfname', pdfname)
+    # name for PNG figures
+    figname = '_'.join(fnames[0].split('--'))
+    figname = figname.replace(' ', '_')
+    figname = figname.replace('.pdf', '')
+    figname = ''.join(figname.split('='))
+    figname = figname.split('/')[-1]
+    figname = '/'.join(pdfname.split('/')[:-1]) + '/' + figname
+
+    genMainPlot(fig,ax,fnames,nums)
+    plt.savefig(figname+'ERROR'+".png") # SAVE ERROR FIGURE
+
+    # print('pdfname', pdfname)
+
+    print("PNG name: ", figname)
 
     with PdfPages(pdfname) as pdf:
         pdf.savefig()
         plt.close()
         genReachingByPhase(fileToPlot)
+        plt.savefig(figname+'REACH'+".png") # SAVE REACH FIGURE
         pdf.savefig()
         plt.close()
 
@@ -222,7 +196,6 @@ def genFigurePert(fnames,outname):
         ax=axs[1,1]
         cbtgt = list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1]))
         genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=cbtgt)
-
         pdf.savefig()
         plt.close()
 
@@ -302,6 +275,7 @@ def genFigurePertMulti(dat_basenames):
         from textwrap import wrap
 
         genMainPlot(fig,ax,fnames,nums)
+        
         #ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
         ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.08)
 
@@ -397,6 +371,7 @@ def genReachingByPhase(fname):
         # genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
 
     # genReachPlot(fig,axs[1,1],x_actual[rangeAdapt1],y_actual[rangeAdapt1],nums[rangeAdapt1],figName+" actual pos")
+    # plt.savefig(pp.out_dir_pdf+fname+".png")
 
 def printParams(fig,pos):
     axlm= fig.add_axes(pos,frameon=False); 

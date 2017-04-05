@@ -47,7 +47,9 @@ perturb()
 
   echo ".sh pdfSuffix ="$pdfSuffix
   runSimulation  "$1" "$2" "$3" "$4" $uod
-  python "$plotfile" "$pdfSuffix"
+  if [ $uod -ne 9 ]; then
+    python "$plotfile" "$pdfSuffix"
+  fi
   
   ./beep.sh
 }

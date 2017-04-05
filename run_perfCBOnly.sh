@@ -1,6 +1,6 @@
 runfile="./pert_prl"
-#plotfile="perfCBOnly_plot.py"
-plotfile="universal_plot.py"
+plotfile="perfCBOnly_plot.py"
+# plotfile="universal_plot.py"
 pdfdir=output_for_paper
 experimentName=perfCBOnly
 ini="$experimentName.ini"
@@ -119,7 +119,7 @@ if [ $# -ne 0 ]; then
   perturbSimple "$addOptionsLoc" $1 $useOldData
   args_force_field=$pdfSuffix
 
-  python "$plotfile" "$args_force_field" "$args_percept_rot" "$args_percept_xrev" "$args_percept_small_rot"
+  python3 "$plotfile" "$args_force_field" "$args_percept_rot" "$args_percept_xrev" "$args_percept_small_rot"
 
   ./beep.sh
   sleep 0.1s
