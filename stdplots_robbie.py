@@ -19,36 +19,45 @@ from scipy import stats
 
 import plotparams as pp
 
-def coord2AngleDeg(x,y):    # returns -180 to 180
-    xc = float(pp.paramsEnv["x_center"])
-    yc = float(pp.paramsEnv["y_center"])
-    baseAng = 0.  # relative to EAST direction
-
-    xd = x-xc
-    yd = y-yc
-
-    if(xd >= 0):
-        angleDeg = ( math.atan( yd / xd )  ) / (2*math.pi) * 360.
-#        if(yd>0):
-#            angleDeg = 360 - angleDeg
-    else:
-        angleDeg = ( math.atan( yd / (-xd) )   ) / (2*math.pi) * 360.
-        if yd >= 0:
-            angleDeg = math.pi/2 + (math.pi/2-angleDeg)
-        else:
-            angleDeg = -math.pi/2 - (math.pi/2+angleDeg)
-
-    return angleDeg - baseAng
-
 # returns a1-a2
 def angleDegDif(a1,a2):    # suppose 0 <= a1,a2 < 360
     r = a1 - a2
-    if (fabs(r) > 180):
+    if (math.fabs(r) > 180):
         if a1 < 180:
             r = a1 + (180*2 - a2)
         else:
             r = -angleDegDif(a2,a1)
     return r
+
+def coord2AngleDeg(x,y):    # returns -180 to 180
+    xc = float(pp.paramsEnv["x_center"])
+    yc = float(pp.paramsEnv["y_center"])
+    baseAng = pp.baseAng_reachAngDisp  # relative to EAST direction
+
+    xd = x-xc
+    yd = y-yc
+
+    if(xd >= 0):
+        angleRad = ( math.atan( yd / xd )  ) 
+#        if(yd>0):
+#            angleDeg = 360 - angleDeg
+    else:
+        angleRad = ( math.atan( yd / (-xd) )   ) 
+        if yd >= 0:
+            angleRad = math.pi/2. + (math.pi/2.-angleRad)
+        else:
+            angleRad = -math.pi/2. - (math.pi/2.+angleRad)
+
+    angleDeg = angleRad / (math.pi) * 180.
+
+    # here angleDeg between -180. and 180.
+    if angleDeg < 0.:
+        angleDeg = 360 + angleDeg;
+    angleDeg= angleDegDif(angleDeg,baseAng)
+    if angleDeg > 180.:
+        angleDeg = 360 - angleDeg;
+
+    return angleDeg
 
 def getReachAngles(armData):
     nums = armData[:,0]
