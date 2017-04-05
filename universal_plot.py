@@ -17,7 +17,7 @@
 
 import numpy as np
 import matplotlib as mpl
-mpl.use("Agg")
+# mpl.use("Agg")
 import matplotlib.pyplot as plt
 
 import fnmatch
@@ -323,6 +323,7 @@ def genFigurePertMulti(dat_basenames):
         plt.close()
 
         if pp.plotPubFile != "":
+
             import imp
             modName,_ = pp.plotPubFile.split('.')
             nicener_ = imp.load_source('nicener',pp.plotPubFile)

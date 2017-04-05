@@ -1,7 +1,7 @@
 execname="pert_prl"
 runfile="./$execname"
 plotfile="universal_plot.py"
-pdfdir=output_for_paper
+plotPubFile="shmuelof_addplot.py"
 experimentName=shmuelof
 ini="$experimentName.ini"
 
@@ -107,9 +107,12 @@ if [ $# -ne 0 ]; then
 #  python "$plotfile" "$argsCBon" "$args1" "$args2" "$args3" "$args4" "$args5"
 
 #  python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long" 
-  python "$plotfile" "$argsCBon" "$args1" 
-  python "$plotfile" "$argsCBonLong" "$args1Long" 
+  # python "$plotfile" "$argsCBon" "$args1" 
+  # python "$plotfile" "$argsCBonLong" "$args1Long"
+  # python "$plotPubFile"
 #  python "$plotfile" "$argsCBon" "$args5" 
+
+python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long"
 
   ./beep.sh
   sleep 0.1s
