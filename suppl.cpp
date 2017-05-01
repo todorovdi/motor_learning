@@ -116,3 +116,69 @@ void parseCMDargs(int argc, char ** argv, parmap & configValues)
     }
   }
 }
+
+// standard Fisher-Yates modern shuffle algorithm
+void shuffle(vector<int> & elements)
+{
+  // the counter to be used to generate the random number
+  int currentIndexCounter = elements.size();
+  for (auto currentIndex = elements.rbegin(); currentIndex != elements.rend() - 1;
+       currentIndex++ , --currentIndexCounter)
+      {
+          int randomIndex = rand() % currentIndexCounter;
+          // if its not pointing to the same index      
+          if (*currentIndex != elements.at(randomIndex))
+          {
+              //then swap the elements
+              swap(elements.at(randomIndex), *currentIndex);
+          }
+      }
+}
+
+
+// "cueNum:numTrialsShow:feedbackOn"   "0:10:1|1:20:0|2:30:0" 
+// just to show off, I use boost for tokenizing here 
+void parseCueList(std::string str, vector<int> & cues, vector<int> & numShows, vector<int> & feedbackOn)
+{ 
+  typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+  boost::char_separator<char> sep("|");
+  tokenizer tokens(str, sep);
+
+  //cues.reserve(tokens.size());
+  //numShows.reserve(tokens.size());
+  //feedbackOn.reserve(tokens.size());
+  cues.resize(0);
+  numShows.resize(0);
+  feedbackOn.resize(0);
+
+  boost::char_separator<char> sep2(":");
+  typedef boost::tokenizer<boost::char_separator<char> > tokenizer2;
+  for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
+  {
+    tokenizer2 subtokens(*tok_iter, sep2);
+    tokenizer2::iterator it=subtokens.begin();
+    cues.push_back(stoi(*it)); it++;
+    numShows.push_back(stoi(*it)); it++;
+    feedbackOn.push_back(stoi(*it));
+  }
+
+  //std::vector<std::string> cueNumList;
+  //strtk::parse(str,"|",cueNumList);
+
+  //cues.reserve(cueNumList.size());
+  //cues.resize(0);
+  //numShows.reserve(cueNumList.size());
+  //numShows.resize(0);
+  //feedbackOn.reserve(cueNumList.size());
+  //feedbackOn.resize(0);
+
+  //std::vector<std::string>::iterator it = cueNumList.begin();
+  //for(;it != cueNumList.end(); it++)
+  //{
+  //  std::vector<int> sublist;
+  //  strtk::parse(str,":",sublist);
+  //  cue.push_back(sublist[0]);
+  //  numShows.push_back(sublist[1]);
+  //  feedbackOn.push_back(sublist[2]);
+  //}
+}

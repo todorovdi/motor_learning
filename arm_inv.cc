@@ -8,9 +8,6 @@
 
 int genCortcalData(parmap & params) //int argc,char** argv)
 {
-  //float x1=.4, y1=-.6;
-	float x2=-.5, y2=-.2;
-	
 	float T=1;
 	int n=1000;
   int N =100;
@@ -59,17 +56,6 @@ int genCortcalData(parmap & params) //int argc,char** argv)
 
   float x1=0, y1=0.4;
 
-//# Target directions
-//  td1=25
-//  td2=75
-//
-//  x2=x1+0.2*cos(2*M_PI*td1/N);
-//  y2=y1+0.2*sin(2*M_PI*td1/N);
-
-  //set print 'tmp'
-  //print "-x1 ",x1," -x2 ",x2," -y1 ",y1," -y2 ",y2
-  //set print
-
 	//for(int i=1;i<argc;i++)
 	//{
 	//	if(strcmp(argv[i],"-x1")==0) x1=atof(argv[++i]);
@@ -104,8 +90,8 @@ int genCortcalData(parmap & params) //int argc,char** argv)
   
   AllD_CorticalData<<minAngDeg<<'\t'<<maxAngDeg<<'\t'<<N<<endl;
 
-  float minAngRad = minAngDeg / 180 * M_PI;
-  float maxAngRad = maxAngDeg / 180 * M_PI;
+  float minAngRad = minAngDeg / 180. * M_PI;
+  float maxAngRad = maxAngDeg / 180. * M_PI;
 
   string fname="ini";
   key = "armInitAng_fname";
@@ -118,13 +104,17 @@ int genCortcalData(parmap & params) //int argc,char** argv)
   cout<<"------- recalibrating arm -- minAngDeg="<<minAngDeg<<" maxAngDeg="<<maxAngDeg<<" na="<<N<<endl;
   cout<<"------- recalibrating may take up to several minutes, please wait"<<endl;
 
+  float arr = stof(params["armReachRadius"]);
+
  for (int TD=0;TD<N;TD++)
  {
          
-   cout<<" recalibrating action number "<<TD<<endl;
+   float curAngRad = minAngRad + (maxAngRad-minAngRad)*float(TD)/float(N);
+   cout<<" recalibrating action number "<<TD<<" for direction "<<curAngRad/M_PI*180.<<endl;
    //  cout << TD << endl;
-    x2=x1+0.2*cos(minAngRad + maxAngRad*float(TD)/float(N));
-    y2=y1+0.2*sin(minAngRad + maxAngRad*float(TD)/float(N));
+    float x2,y2;
+    x2=x1+arr*cos(curAngRad);
+    y2=y1+arr*sin(curAngRad);
 
     //ofstream CorticalData("CorticalData");
 

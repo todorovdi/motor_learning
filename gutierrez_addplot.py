@@ -31,6 +31,7 @@ def prep(fnames):
     up.paramsInitFromArmFname(fnames[0])
     errs,SEMs = doStats(fnames)
     errs = (-10.)*errs
+    SEMs = (-10.)*SEMs
     armData = stdp.armFileRead(fnames[0])
     #armData = np.loadtxt(fnames[0])
     nums = armData[:,0]

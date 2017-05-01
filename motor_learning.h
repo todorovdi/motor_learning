@@ -4,6 +4,7 @@
 #include "exporter.h"
 #include "BG_model.h"
 #include "CB_model.h"
+#include "percept.h"
 #include <vector>
 //#include "BG_model.h"
 
@@ -16,6 +17,7 @@ class MotorLearning
 
     Exporter *exporter;
     Environment* env;
+    Percept * percept;
 
     // do we do cerebellum and bg learning 
     bool learn_cb;                
@@ -25,13 +27,12 @@ class MotorLearning
     float Rpre_coef;              // how much of current reward we use for the new reward prediction error
 
     float T;                      // integration duration max limit
-    float rewardSize;
     float rotateErr;
     bool xreverseErr;
     bool modError;
     bool habit2PMCdirectly;
 
-    bool error_clamp_mode;
+    bool setRpre_firstR;
     //vector<float> prevy;
 
     //parmap & params;
@@ -63,8 +64,8 @@ class MotorLearning
     
     // it is here because we don't have direct access from Environment to the cerebellum
     void trainCB(float x0, float y0, float * yy, bool flushW=true) ; // CB_model method description
-    void resetCBerr();
     void resetCBLRate(float lr=-100);
+    float getCBLRate();
     void setCBtCDS(float val);
     
     // turns off and on BG nd cerebellum learning, respectively
@@ -74,6 +75,7 @@ class MotorLearning
     // whether we use distorted error for cb learning
     void setModError(bool me);
     void setErrorClamp(bool ec);
+    void setRpre_firstR_mode(bool sr);
 
     // sets paritcular habit, does not flush existing habits
     void setHabit(int cue, int action, float strength);
@@ -95,7 +97,7 @@ class MotorLearning
     // where we did fake prelearning (direct cue-action association 
     // without real prelearning trials), for example)
     void setRpre(float * rpre);
-    void setRpreMax();
+    void setRpreSame(float r);
     void setSingleRPre(int cue, float rpeval);
     void flushRpre();
 
@@ -106,17 +108,15 @@ class MotorLearning
 
     void getReachCenterPos(float &x, float&y);
 
-    float getLastErr();
-
     ////////////////////////////////
     // initialization
     ////////////////////////////////
 
-    MotorLearning(Environment* env, Exporter * exporter_, parmap & params);
+    MotorLearning(Environment* env, Exporter * exporter_, Percept * percept_, parmap & params);
     MotorLearning();
     ~MotorLearning();
 
-    void init(Environment* env, Exporter* exporter_,parmap & params);
+    void init(Environment* env, Exporter* exporter_,Percept * percept_, parmap & params);
     void initParams(parmap & params);
 };
 

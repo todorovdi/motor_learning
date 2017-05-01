@@ -22,11 +22,11 @@ void MotorLearning::setRpre(float * rpre)
   }
 }
 
-void MotorLearning::setRpreMax()
+void MotorLearning::setRpreSame(float r)
 {
     for(int i=0;i<nc;i++)
     {
-        Rpre[i] = rewardSize;
+        Rpre[i] = r;
     }
 }
 
@@ -77,14 +77,14 @@ void MotorLearning::setRandomCBState(float a)
     }
 }
 
-void MotorLearning::resetCBerr()
-{
-  cb.resetPrevErr();
-}
-
 void MotorLearning::resetCBLRate(float lr)
 {
   cb.resetLearnRate(lr);
+}
+
+float MotorLearning::getCBLRate()
+{
+  cb.getLearnRate();
 }
 
 // calls getSuccess, which calls moveArm
@@ -100,14 +100,17 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
 
     float x[nc];
     float y[na];
+
     // cycle over trials
     for(int k=indAdd;k<(ntrials+indAdd);k++)
     {
 
       bg.resetForTrialBegin();
 
-      int cueActive = env->turnOnCues(k,x);
+      int addInfoCue;
+      int cueActive = env->turnOnCues(k,x,&addInfoCue);
       bg.setCues(x);
+      int feedbackGiven = addInfoCue;
 
       if(learn_bg || !habit2PMCdirectly)
       {
@@ -157,15 +160,19 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
 
       float addInfoItem[7];
       float sc = env->getSuccess(x,y,k,addInfoItem);   // here arm export happens
-      float endpt_percieved_x = addInfoItem[1];
-      float endpt_percieved_y = addInfoItem[2];
+      //float endpt_percieved_x = addInfoItem[1];
+      //float endpt_percieved_y = addInfoItem[2];
       float endpt_x = addInfoItem[3];
       float endpt_y = addInfoItem[4];
 
       float t; // is may be set in the following function (it passes as a reference argument) -- originally thought to be randomness, determining whether we get reward or not, based on success (Piron setup)
+      percept->saveCurErr();
+
       float R = env->getReward(sc,x,y,t);
-      if(error_clamp_mode)
-        R = rewardSize;
+      if( k==indAdd && setRpre_firstR )
+      {
+        setSingleRPre(cueActive,R);
+      }
 
       if(doExport )
       { 
@@ -175,30 +182,22 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       } 
 
           //rnd();  // just to follow same seed as Slava's code
-      if(learn_bg)
+      if(learn_bg && feedbackGiven)
       { 
         bg.learn(R- Rpre[cueActive]);
       } 
 
-      if(learn_cb)
+      if(learn_cb && feedbackGiven)
       { 
               //if( fzero(R) )
-        float dx = endpt_percieved_x-x_cb_target;
-        float dy = endpt_percieved_y-y_cb_target;
+        float dx, dy;
+        percept->calcErr(&dx,&dy);
         float mod_dx = dx*cos(rotateErr) - dy*sin(rotateErr);
         float mod_dy = dx*sin(rotateErr) + dy*cos(rotateErr);
         if(xreverseErr)
           mod_dx = -mod_dx;
 
-        if(error_clamp_mode)
-        {
-          dx = 0, dy =0, mod_dx=0, mod_dy=0;
-        }
-
-        if(modError)
-          cb.learn(mod_dx, mod_dy); 
-        else
-          cb.learn(dx,dy);
+        cb.learn();
         // else
         // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
       }
@@ -220,11 +219,6 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     //        trialEndExport(sumM1freq, 0);
 
     return 0;
-}
-
-float MotorLearning::getLastErr()
-{
-  return cb.getLastErr();
 }
 
 void MotorLearning::backupWeights()
@@ -253,16 +247,15 @@ void MotorLearning::restoreWeights(bool w12too)
     bg.restoreWeights(w12too);
 }
 
-MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, parmap & params ) 
+MotorLearning::MotorLearning(Environment * env_, Exporter * exporter_, Percept * percept_, parmap & params ) 
 {
   ffield = 0;
-  init(env_,exporter_,params);
+  init(env_,exporter_,percept_,params);
   x_cb_target = 0;
   y_cb_target = 0;
   modError = false;
   //prevy.resize(na);
   //std::fill(prevy.begin(),prevy.end(),0.);
-  error_clamp_mode = false;
 }
 
 MotorLearning::MotorLearning()
@@ -271,8 +264,6 @@ MotorLearning::MotorLearning()
   x_cb_target = 0;
   y_cb_target = 0;
   modError = false;
-
-  error_clamp_mode = false;
 }
 
 MotorLearning::~MotorLearning()
@@ -284,7 +275,6 @@ void MotorLearning::initParams(parmap & params)
     //expCoefRpre = paramsML["expCoefRpre"]; 
     Rpre_coef = stof(params["Rpre_coef"]); 
     T = stof(params["T"]); 
-    rewardSize = stof(params["rewardSize"]);
 
     learn_cb = stoi(params["learn_cb"]);
     learn_bg = stoi(params["learn_bg"]); 
@@ -309,17 +299,18 @@ void MotorLearning::setModError(bool me)
   modError = me;
 }
 
-void MotorLearning::setErrorClamp(bool ec)
+void MotorLearning::setRpre_firstR_mode(bool sr)
 {
-  error_clamp_mode = ec;
+  setRpre_firstR = sr;
 }
 
-void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & params)
+void MotorLearning::init(Environment* env_, Exporter* exporter_,Percept * percept_,parmap & params)
 {
     initParams(params);
     env = env_;
 
     exporter = exporter_;
+    percept = percept_;
 
     //if( stoi(params["learn_bg"]) == 0 )
     //{
@@ -327,7 +318,7 @@ void MotorLearning::init(Environment* env_, Exporter* exporter_,parmap & params)
     //}
 
     arm.init(params);
-    cb.init(params,exporter,&arm);
+    cb.init(params,exporter,&arm,percept);
     bg.init(params,exporter);
 
     Rpre.resize(nc);

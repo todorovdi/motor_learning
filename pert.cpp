@@ -98,7 +98,7 @@ void perturbationExperimentEnv::runSession()
         //ml.flushWeights(false); 
         //flushRpre(); // flush all data except wm (we set them from prelearn)
         //float rpre = 3.;
-        ml.setRpreMax();   // if we use only CB not need this
+        ml.setRpreSame(rewardSize);   // if we use only CB not need this
 
         float cues[nc];
         int cue;
@@ -117,7 +117,7 @@ void perturbationExperimentEnv::runSession()
           {
             if(p.cbLRateReset)
             { 
-              ml.resetCBerr();
+              percept.resetErrHist();
               ml.resetCBLRate(p.cbLRate);
             }
             //cout<<"4"<<endl;
@@ -131,12 +131,14 @@ void perturbationExperimentEnv::runSession()
           { 
             ml.setRandomCBState(0.);
           }
-          ml.setErrorClamp(p.error_clamp);
+          percept.setErrorClamp(p.error_clamp);
 
-          if(p.resetRPre)
+          if(p.setRPre > -1000.)
           {
-            ml.setSingleRPre(p.cue,0.);
+            ml.setSingleRPre(p.cue,p.setRPre);
           }
+
+          ml.setRpre_firstR_mode(p.resetRPre);
 
           //if(p.setRPre > EPS)
           //{
@@ -256,13 +258,25 @@ int perturbationExperimentEnv::deg2action(float degAngle)
     return int( (float(degAngle) - minActionAngDeg ) / (maxActionAngDeg - minActionAngDeg) * float(na) );
 }
 
-int perturbationExperimentEnv::turnOnCues(int k, float * cues)
+int perturbationExperimentEnv::turnOnCues(int k, float * cues, int * addInfo)
 { 
     int cueInd=-100;     
     for(int i=0; i<nc; i++)
         cues[i] = 0.;
 
-    cueInd = phaseParams[experimentPhase].cue;
+    auto p = phaseParams[experimentPhase];
+    if(p.cueSeq.size() == 0)
+    { 
+      cueInd = p.cue;
+      if(addInfo)
+        addInfo[0] = 1; // give full feedback (corresponding to current feedback regime)
+    }
+    else
+    {
+      cueInd = p.cueSeq[ k % p.cueSeq.size() ];
+      if(addInfo)
+        addInfo[0] = 0; // give no feedback
+    }
 
     cues[cueInd] = 1.;
     return cueInd;
@@ -319,6 +333,8 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
     float x0,y0,tgtAngleDeg;
     getCurTgt(x,x0,y0,tgtAngleDeg);
 
+    percept.setTgt(x0,y0);
+
     //setCBtarget(x0,y0);
 
     float out[2];
@@ -370,6 +386,8 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
     addInfo[1] = xcur;
     addInfo[2] = ycur;
 
+    percept.setEndpt(xcur,ycur);
+
     float xcbt,ycbt;
     ml.getCBtarget(xcbt,ycbt); // pass params as references
     addInfo[5] = xcbt;
@@ -380,34 +398,31 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
     return sc;
 }
 
-float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float & param)
+float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, float & param)
 {
-    float R = 0;
+    expPhaseParams & p = phaseParams[experimentPhase];
+
+    float absR = 0;
+    float relR = 0;
 
     if(!sector_reward)
     { 
       if(gradedReward)
       {
-        R =  rewardSize * (1. - pow(sc / rewardDist, rwdGradePower) ) ;
+        absR = rewardSize * ( pow(armReachRadius,rwdGradePower) -  pow(curErr, rwdGradePower) );
         // prev / cur
       }
-      else if( fabs(sc) < rewardDist) 
+      else if( fabs(curErr) < rewardDist) 
       {
-          R = rewardSize;
+        absR = rewardSize;
       }
 
-      float lastErr =  ml.getLastErr();
-      float errReduction = lastErr - sc;
-      if(perfBasedReward && R<rewardSize && errReduction > 0 && lastErr < 5.)
-      {
-        R += rewardSize * pow(errReduction,perfGradePower) * perfRwdMult; 
-      }
     }
     else
     {
-        if( fabs(sc) < sector_width/2) 
+        if( fabs(curErr) < sector_width/2) 
         {
-            R = rewardSize;
+            absR = rewardSize;
         }
         //else if(ratioBasedReward)
         //{
@@ -415,8 +430,34 @@ float perturbationExperimentEnv::getReward(float sc, float * x,float * y, float 
         //  // prev / cur
         //}
     } 
-    R = fmax(0.,  R);
+    //R = fmax(0.,  R);
     //R = fmin(rewardSize,  R);
+    
+    
+    float lastErr =  percept.getErr(1);
+    if(percept.getHistSz() <= 1 )
+    {
+      lastErr = -1000;
+    }
+    float errReduction = lastErr - curErr;
+    if(perfBasedReward &&  fabs(lastErr) < 5. && fabs(errReduction) > perfRwdErrChange_threshold)
+    {
+      float sign = errReduction > 0. ? 1 : -1;
+      //relR = rewardSize * sign* pow(sign*errReduction,perfGradePower) * perfRwdMult; 
+      //relR = sign * rewardSize * perfRwdMult;
+      relR = errReduction/lastErr / ml.getCBLRate()  * rewardSize * perfRwdMult;
+      relR = sign * fmin (sign * relR, rewardSize);
+    }
+
+    float R = 0.;
+    if(p.error_clamp)
+    {
+      R = rewardSize;
+    }
+    else
+    {
+      R = absR + relR; 
+    }
 
     return R;
 }  
@@ -435,7 +476,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     learn_cb = stoi(params["learn_cb"]); // it may look stupid to do so right after prev. line but note that the same parameters object are passed to MotorLearning
     learn_bg = stoi(params["learn_bg"]); 
         
-    ml.init(this,&exporter,params);  // we did it once in the Environemnt constructor but we might have changed learn_cb so do it again
+    ml.init(this,&exporter,&percept,params);  // we did it once in the Environemnt constructor but we might have changed learn_cb so do it again
 
     string key;
     parmap::iterator iter;
@@ -490,6 +531,9 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     s = params["rwdGradePower"];
     rwdGradePower = s!="" ? stof(s) : 2.;
 
+    s = params["perfRwdErrChange_threshold"];
+    perfRwdErrChange_threshold = s!="" ? stof(s) : 0;
+
     s = params["perfBasedReward"];
     perfBasedReward = s!="" ? stoi(s) : 0;
 
@@ -515,6 +559,8 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       iter = params.find(key);
       if(iter != params.end())
         p.name = params[key];
+      else
+        p.name = string("unnamed_phase, phase # = ")+to_string(i);
 
       key = string("percept_rot") + to_string(i);
       iter = params.find(key);
@@ -599,6 +645,14 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       if(iter != params.end() )
       {
         p.cue = stoi(iter->second);
+      }
+
+      key = string("cueList") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      {
+        parseCueList(iter->second,p.cueList,p.numShows,p.feedbackOn);
+        p.genCueSeq();
       }
 
       key = string("target_xreverse") + to_string(i);
@@ -691,12 +745,12 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
         p.resetCBState = val;
       }
 
-      key = string("resetRPre") + to_string(i);
+      key = string("setRPre") + to_string(i);
       iter = params.find(key);
       if(iter != params.end() )
       { 
         float val = stoi(iter->second);
-        p.resetRPre = val;
+        p.setRPre = val;
       }
 
       key = string("CBtCDS") + to_string(i);
@@ -705,6 +759,14 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       { 
         float val = stoi(iter->second);
         p.CBtCDS = val;
+      }
+
+      key = string("resetRPre") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stoi(iter->second);
+        p.resetRPre = val;
       }
 
       key = string("cbLRate") + to_string(i);
@@ -734,8 +796,8 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
     sector_thickness = stof(params["sector_thickness"]);
     sector_width = stof(params["sector_width"]);
-    wmmax_fake_prelearn = stof(params["wmmax_fake_prelearn"]);
-    fake_prelearn_tempWAmpl = stof(params["fake_prelearn_tempWAmpl"]);
+    wmmaxFP = stof(params["wmmaxFP"]);
+    w2maxFP = stof(params["w2maxFP"]);
     armReachRadius = stof(params["armReachRadius"]);
 
     randomCBStateInit = stoi(params["randomCBStateInit"]);
@@ -780,8 +842,8 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
       c2p.patPMC.resize(na);
       fill(c2p.patPMC.begin(),c2p.patPMC.end(),0.);
-      c2p.wmmax = wmmax_fake_prelearn;
-      c2p.tempWAmpl = fake_prelearn_tempWAmpl;
+      c2p.wmmax = wmmaxFP;
+      c2p.tempWAmpl = w2maxFP;
     }
 }
 

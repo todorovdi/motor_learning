@@ -3,6 +3,7 @@
 #include "suppl.h"
 #include "exporter.h"
 #include "environment.h"
+#include "percept.h"
 
 class expPhaseParams{
   public:
@@ -25,7 +26,9 @@ class expPhaseParams{
   bool  learn_cb;
   bool cbLRateReset;
   bool resetCBState;
+
   bool resetRPre;
+  float setRPre;
   float cbLRate;
   float CBtCDS;
 
@@ -34,7 +37,9 @@ class expPhaseParams{
   float tgt_xshift;
   float tgt_yshift;
 
-  float errClampDirDeg;
+  // only makes sense for a special parameter called cueList in the ini file
+  // done for Izawa-Shadmehr paper to generate generalization graph
+  vector<int> cueList,numShows,feedbackOn, cueSeq;    
 
   expPhaseParams()
   {
@@ -62,11 +67,37 @@ class expPhaseParams{
     cue = 0;
     cbLRateReset = 1;
     resetCBState = 0;
+    setRPre = -2000;
     resetRPre = 0;
-
-    errClampDirDeg = 1000;
   
     CBtCDS = 0.;
+  }
+
+  // generate a random seq of cues demonstrations. 
+  // first create a stupid seq and then shuffle it
+  void genCueSeq()
+  {
+    int totalNum = 0;
+    cueSeq.reserve(numTrials);
+    for(int i = 0; i<numShows.size(); i++)
+    {
+      // insert numShows[i] times cueList[i] at the end
+      cueSeq.insert(cueSeq.end(), numShows[i], cueList[i]);  
+      totalNum += numShows[i];
+    }
+    if (totalNum != numTrials)
+    {
+      string estr = "Wrong cueList contents, trial numbers don't add upp";
+      cout<<"---------- ERROR: "<<estr<<endl;
+      throw estr;
+    }
+    shuffle(cueSeq);
+
+    //for debug
+    //for(int i=0;i<cueSeq.size();i++)
+    //{
+    //  cout<<"cue seq "<<i<<" "<<cueSeq[i]<<endl;
+    //}
   }
 
   void print()
@@ -107,8 +138,8 @@ class perturbationExperimentEnv: public Environment
     float xcur,ycur;   // percieved endpoint
     float sector_thickness;
     float sector_width;
-    float wmmax_fake_prelearn;
-    float fake_prelearn_tempWAmpl;
+    float wmmaxFP;
+    float w2maxFP;
     float armReachRadius;
     int  numPhases;
 
@@ -133,6 +164,7 @@ class perturbationExperimentEnv: public Environment
     float rwdGradePower;
     float perfGradePower;
     float perfRwdMult;
+    float perfRwdErrChange_threshold;
 
     unsigned int sess_seed;
 
@@ -142,7 +174,7 @@ class perturbationExperimentEnv: public Environment
     vector<phaseParamPrelearn> cue2prelearnParam;
 
     public:
-    int turnOnCues(int trialNum, float * cues);
+    int turnOnCues(int trialNum, float * cues, int * addInfo = 0);
     float getSuccess(float * x,float * y,unsigned int k,float *addInfo);
     float getReward(float success, float * x,float * y, float & param);  
     void setParams(int argc, char** argv){}

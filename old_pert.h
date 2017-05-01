@@ -20,8 +20,8 @@ class perturbationExperimentEnv: public Environment
     float xcur,ycur;   // percieved endpoint
     float sector_thickness;
     float sector_width;
-    float wmmax_fake_prelearn;
-    float fake_prelearn_tempWAmpl;
+    float wmmaxFP;
+    float w2maxFP;
     float armReachRadius;
     int  numPhases;
 

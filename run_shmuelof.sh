@@ -15,6 +15,27 @@ seed=0     #makes <more or less> random seed
 # make pert
 # ./pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
 
+doSim()
+{
+  addOptionsLoc=""$addOptions
+  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
+  argsCBon=$pdfSuffix
+
+  addOptionsLoc=" $addTrials$addOptions"
+  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
+  argsCBonLong=$pdfSuffix
+
+  addOptionsLoc=""$addOptions
+  perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData  
+  args1=$pdfSuffix
+
+  addOptionsLoc=" $addTrials$addOptions"
+  perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData 
+  args1Long=$pdfSuffix
+
+  python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long"
+}
+
 if [ $# -ne 0 ]; then
   args1=""
   args2=""
@@ -24,32 +45,6 @@ if [ $# -ne 0 ]; then
    
   addTrials="--numTrials4=100"
 
-#  onlyBE="--learn_cb2=0 --resetCBState2=1"
-#  addOptionsLoc="--wmmax_fake_prelearn=0.1 --rewardDist=0.05 --cbRateDepr=0.03 "$addOptions
-
-#  #$useOldData="1"
-#  perturb "--ini=$ini $addOptionsLoc " 1 1 $1 
-#  argsNoRpre=$pdfSuffix
-#
-#  #$useOldData=$2
-#  
-#  perturb "--ini=$ini $onlyBE  $addOptionsLoc" 1 1 $1 
-#  argsRpre=$pdfSuffix
-#
-#  python "$plotfile" "$argsNoRpre" "$argsRpre"
-#
-#  #$useOldData="1"
-#  perturb "--ini=shmuelof_ext.ini $addOptionsLoc" 1 1 $1 
-#  argsNoRpreLong=$pdfSuffix
-#
-#  #$useOldData=$2
-#  perturb "--ini=shmuelof_ext.ini $onlyBE  $addOptionsLoc" 1 1 $1 
-#  argsRpreLong=$pdfSuffix
-#
-#  python "$plotfile" "$argsNoRpreLong" "$argsRpreLong"
-
-  #addOptionsLoc="--fake_prelearn_tempWAmpl=1."
-
   delay="4.0s"
   if [ $useOldData == '0' ]; then
     echo "!!! ----- Really delete corresponding *.dat files?" 
@@ -58,64 +53,37 @@ if [ $# -ne 0 ]; then
   fi
   echo "Starting experiment "$experimentName
 
-  onlyBE="--learn_cb2=0"
+  onlyBE=" --learn_cb2=0"
 
-  addOptions=" --wmmax_fake_prelearn=0.1 --cbRateDepr=0.03 " 
+  addOptions="" 
 
   addOptionsLoc=""$addOptions
   #useOldData="1"
   useOldData=$2
-  perturb "--ini=$ini $addOptionsLoc" 1 1 $1 $useOldData
-  #genPdfSuffix "--ini=$ini $addOptionsLoc" 1 1 $1
-  argsCBon=$pdfSuffix
 
-  addOptionsLoc=$addTrials$addOptions
-  perturb "--ini=$ini $addOptionsLoc" 1 1 $1 $useOldData
-  #genPdfSuffix "--ini=$ini $addOptionsLoc" 1 1 $1
-  argsCBonLong=$pdfSuffix
+  nsess=$1
 
-  useOldData=$2
+  addOptions=" --cbLRateUpdAbsErr_threshold=0.01"
+  doSim
 
-  addOptionsLoc="--rewardDist=0.06"$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-  #genPdfSuffix "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-  args1=$pdfSuffix
+  addOptions=" --wmmaxFP=0.2 --cbLRateUpdAbsErr_threshold=0.01" 
+  doSim
 
-  addOptionsLoc="--rewardDist=0.06 $addTrials"$addOptions
-  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-  #genPdfSuffix "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-  args1Long=$pdfSuffix
+  addOptions=" --cbLRateUpdAbsErr_threshold=0.05"
+  doSim
+
+  addOptions=" --wmmaxFP=0.2 --cbLRateUpdAbsErr_threshold=0.05" 
+  doSim
 
   # TODO: recalibrate arm to -30, 90
   # maybe will have to modify deg2action  function
   # or recalibration in arm_inv.cc
 
-
-#  addOptionsLoc="--resetRPre0=0"$addOptions
-#  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-#  args2=$pdfSuffix
-#
-#  addOptionsLoc="--fake_prelearn_tempWAmpl=0"$addOptions
-#  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-#  args3=$pdfSuffix
-#
-#  addOptionsLoc="--fake_prelearn_tempWAmpl=1."$addOptions
-#  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-#  args4=$pdfSuffix
-#
-#  addOptionsLoc="--rewardDist=0.08"$addOptions
-#  perturb "--ini=shmuelof.ini $onlyBE $addOptionsLoc" 1 1 $1 
-#  args5=$pdfSuffix
-
-#  python "$plotfile" "$argsCBon" "$args1" "$args2" "$args3" "$args4" "$args5"
-
 #  python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long" 
   # python "$plotfile" "$argsCBon" "$args1" 
   # python "$plotfile" "$argsCBonLong" "$args1Long"
-  # python "$plotPubFile"
 #  python "$plotfile" "$argsCBon" "$args5" 
 
-python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long"
 
   ./beep.sh
   sleep 0.1s

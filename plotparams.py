@@ -6,6 +6,8 @@ try:
     import StringIO
 except ModuleNotFoundError:
     import io as StringIO
+
+import math
  
 #if __name__ != "__main__":
 #    paramsEnv = ConfigParser.RawConfigParser(allow_no_value=True) 
@@ -21,6 +23,11 @@ def paramFileRead(fname):
     items= params.items('root')
     params_ = dict(items)
     return params_
+
+def eucl2angDist(d):
+    arr = float(paramsEnv["armReachRadius"]) 
+    szrad = math.asin(d/arr ) 
+    return ( szrad / math.pi * 180. )
 
 def exportVarsInit(params_):    # to avoid recalc if one just want to change export param (currently one takes all params from last initizlized param file, which is usually one from output data)
     #global armFileSkiprows
@@ -44,6 +51,11 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global datMult
     global cbStateMax
     global baseAng_reachAngDisp
+    global target_radius
+    global multi_onlyMainPlots
+    global rwdPlot_ymax
+    global rwdPlot_ymin
+    global rwdPlot_step
 
     #armFileSkiprows = int(params_["armFileSkiprows"])
     pdfForEachSession = int(params_["pdfForEachSession"])
@@ -53,6 +65,31 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     cbMiscErrMult = float(params_["cbMiscErrMult"])
     xtickSkip = int(params_["xtickSkip"])
     y_axis_step = float(params_["y_axis_step"])
+
+    try:
+        multi_onlyMainPlots = int(params_["multi_onlyMainPlots"])
+    except KeyError as e:
+        multi_onlyMainPlots = 0
+        print(str(e))
+
+    rsz = float(params_["rewardSize"])
+    try:
+        rwdPlot_ymax = float(params_["rwdPlot_ymax"])
+    except KeyError as e:
+        rwdPlot_ymax = rsz*2.
+        print(str(e))
+
+    try:
+        rwdPlot_ymin = float(params_["rwdPlot_ymin"])
+    except KeyError as e:
+        rwdPlot_ymin = -1
+        print(str(e))
+
+    try:
+        rwdPlot_step = float(params_["rwdPlot_step"])
+    except KeyError as e:
+        rwdPlot_step = rsz*0.5
+        print(str(e))
 
     try:
         baseAng_reachAngDisp = float(params_["baseAng_reachAngDisp"])
@@ -123,6 +160,9 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
         plotPubFile = ""
         print(str(e))
         
+    target_radius = rewardDist
+    if( plotReachAngles or plotAngleErrs):
+        target_radius = 2*eucl2angDist(rewardDist/2.)
 
 def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one before calc, or not. The one after calc contains changes from command line
     global paramsEnv
@@ -206,3 +246,5 @@ def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one be
         trials1 = range(trials1End)
         trials2 = range(trials1End,trials1End*2)
         print("---- old version of ini file found")
+
+

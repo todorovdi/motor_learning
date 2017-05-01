@@ -78,7 +78,7 @@ def makePubPlot(fnames2d):
         nums = nums.astype(np.int)
 
         # PLOT LINES AND ERROR FILL
-        ax.fill_between(nums, angs-SEMs, angs+SEMs, facecolor=(0.3, 0.3, 0.3, eopacity))
+        ax.fill_between(nums, angs-SEMs, angs+SEMs, facecolor=(0.3, 0.3, 0.3, eopacity),edgecolor=(0,0,0,0))
         angs_handle, = ax.plot(nums, angs, color=color, lw=3.0, label=label)
         if label != '':
             handles.append(angs_handle)
@@ -123,24 +123,31 @@ def makePubPlot(fnames2d):
             # ax_.xaxis.set(ticks=[int(ph+15) for ph in phases[:-1]], ticklabels=pp.phaseNames) # to offset like in the paper
             ax_.tick_params(axis='both', which='both', size=26)
 
+            tgtsz = pp.target_radius
+
             ax_.vlines(phases, ymin=-50, ymax=10, linestyles='dotted', color='k') # plot phase starting points
 
             # Plot target locations
+            rot0 = 0.0
+            xmin0, xmax0 = 0, phases[0]
+            ax_.plot(np.arange(xmin0, xmax0), [rot0]*int(xmax0-xmin0), lw=2.0, zorder=2, color='k') # target center
+            ax_.plot(np.arange(xmin0, xmax0), [rot0+tgtsz]*int(xmax0-xmin0), lw=2.0, zorder=2, color='grey') # target top
+            ax_.plot(np.arange(xmin0, xmax0), [rot0-tgtsz]*int(xmax0-xmin0), lw=2.0, zorder=2, color='grey') # target bottom
             rot1 = -30.0
-            xmin1, xmax1 = 0, phases[2]
+            xmin1, xmax1 = phases[0], phases[2]
             ax_.plot(np.arange(xmin1, xmax1), [rot1]*int(xmax1-xmin1), lw=2.0, zorder=2, color='k') # target center
-            ax_.plot(np.arange(xmin1, xmax1), [rot1+10]*int(xmax1-xmin1), lw=2.0, zorder=2, color='grey') # target top
-            ax_.plot(np.arange(xmin1, xmax1), [rot1-10]*int(xmax1-xmin1), lw=2.0, zorder=2, color='grey') # target bottom
+            ax_.plot(np.arange(xmin1, xmax1), [rot1+tgtsz]*int(xmax1-xmin1), lw=2.0, zorder=2, color='grey') # target top
+            ax_.plot(np.arange(xmin1, xmax1), [rot1-tgtsz]*int(xmax1-xmin1), lw=2.0, zorder=2, color='grey') # target bottom
             rot2 = -45.0
             xmin2, xmax2 = phases[2], phases[3]
             ax_.plot(np.arange(xmin2, xmax2), [rot2]*int(xmax2-xmin2), lw=2.0, zorder=2, color='k') # target center
-            ax_.plot(np.arange(xmin2, xmax2), [rot2+10]*int(xmax2-xmin2), lw=2.0, zorder=2, color='grey') # target top
-            ax_.plot(np.arange(xmin2, xmax2), [rot2-10]*int(xmax2-xmin2), lw=2.0, zorder=2, color='grey') # target bottom
+            ax_.plot(np.arange(xmin2, xmax2), [rot2+tgtsz]*int(xmax2-xmin2), lw=2.0, zorder=2, color='grey') # target top
+            ax_.plot(np.arange(xmin2, xmax2), [rot2-tgtsz]*int(xmax2-xmin2), lw=2.0, zorder=2, color='grey') # target bottom
             rot3 = 0.0
             xmin3, xmax3 = phases[4], phases[-1]
             ax_.plot(np.arange(xmin3, xmax3), [rot3]*int(xmax3-xmin3), lw=2.0, zorder=2, color='k') # target center
-            ax_.plot(np.arange(xmin3, xmax3), [rot3+10]*int(xmax3-xmin3), lw=2.0, zorder=2, color='grey') # target top
-            ax_.plot(np.arange(xmin3, xmax3), [rot3-10]*int(xmax3-xmin3), lw=2.0, zorder=2, color='grey') # target bottom
+            ax_.plot(np.arange(xmin3, xmax3), [rot3+tgtsz]*int(xmax3-xmin3), lw=2.0, zorder=2, color='grey') # target top
+            ax_.plot(np.arange(xmin3, xmax3), [rot3-tgtsz]*int(xmax3-xmin3), lw=2.0, zorder=2, color='grey') # target bottom
 
         ii += 1
     

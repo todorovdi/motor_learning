@@ -209,15 +209,15 @@ void perturbationExperimentEnv::prelearn(int n, float * addInfo)
     int wmmax_ind0=-1,wmmax_ind1 = -1;
     if(fake_prelearn)
     { 
-        wmmax0 = wmmax_fake_prelearn;
-        wmmax1 = wmmax_fake_prelearn;
+        wmmax0 = wmmaxFP;
+        wmmax1 = wmmaxFP;
         int dirIndPre1 = deg2action(targetPre1);
         int dirIndAdapt1 = deg2action(angDegAdd(targetPre1,dirShift));
         int dirIndPre2 = deg2action(targetPre2);
         int dirIndAdapt2 = deg2action(angDegAdd(targetPre2,dirShift));
 
 
-        float tempWAmpl = fake_prelearn_tempWAmpl;
+        float tempWAmpl = w2maxFP;
 
         ml.fakePrelearnReaching(0,dirIndPre1,wmmax0,tempWAmpl);
         ml.fakePrelearnReaching(2,dirIndPre2,wmmax0,tempWAmpl);
@@ -649,8 +649,8 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
     sector_thickness = stof(params["sector_thickness"]);
     sector_width = stof(params["sector_width"]);
-    wmmax_fake_prelearn = stof(params["wmmax_fake_prelearn"]);
-    fake_prelearn_tempWAmpl = stof(params["fake_prelearn_tempWAmpl"]);
+    wmmaxFP = stof(params["wmmaxFP"]);
+    w2maxFP = stof(params["w2maxFP"]);
     armReachRadius = stof(params["armReachRadius"]);
 
     randomCBStateInit = stoi(params["randomCBStateInit"]);

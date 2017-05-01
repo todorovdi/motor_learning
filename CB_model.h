@@ -3,6 +3,7 @@
 
 #include "arm.h"
 #include "exporter.h"
+#include "percept.h"
 #include <map>
 #include <string>
 
@@ -27,7 +28,7 @@ class CB_model
   float cbLRateUpdSpdDown;
   float cbRateDepr;
   float cbRateDepr_def;
-  float cbLRateUpdSpdMax;
+  //float cbLRateUpdSpdMax;
  
   float cbLDeprUpdSpd;
 
@@ -41,6 +42,8 @@ class CB_model
   float cbLRateUpdAbsErr_threshold;
   float cbLRateUpdErrRatio_threshold;
 
+  int cbLRateUpdTwoErrThreshold;
+
   vector<float> errHist;
 
     float wcb[6][6];                 // current CB state
@@ -48,9 +51,10 @@ class CB_model
 
     Arm * arm;
     Exporter * exporter;
+    Percept * percept;
 
     public:
-        void learn(float x, float y);
+        void learn();
 
         // train correcting reaching to (x0,y0). Supposeding that with this motor program 
         // without perturbation we reach (x0,y0) precisely
@@ -61,11 +65,11 @@ class CB_model
         void flushTuning();   // resets DF tensor to zeros
 
         void moveArm(float * y, float * out, float ffield);   // pretty sefl-descriptive
-        void resetPrevErr(float pe = 100.);
         void resetLearnRate(float lr = -100);
 
         void set_tCDS(float val);
     
+        float getLearnRate();
         // sets the target directly. Rarely used, because usually you would like 
         // to retrain CB to reach this point -- so you would call train method instead 
         void setCBtarget(float x, float y);  
@@ -73,11 +77,9 @@ class CB_model
         void setRandomState(float amplitudeOfRand); // fill W with random values from [0,amplitudeOfRand]
         void stateDegradeStep();
         void CBExport(int k);
-        void init(parmap & params,Exporter *exporter,Arm * arm_);
+        void init(parmap & params,Exporter *exporter,Arm * arm_, Percept * percept_);
         CB_model();
         CB_model(Arm * arm_);
-
-        float getLastErr();
 
     private:
         void cblearn(float xdif, float ydif);

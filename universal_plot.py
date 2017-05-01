@@ -61,12 +61,16 @@ def genMainPlot(ax,fnames,nums):
     annotateGraph(ax)
     ax.yaxis.grid(True)
 
+    print("last nums ",nums[-1], " last phase ",pp.phaseBegins[-1])
+
     if (pp.plotReachAngles  != 0 ) :
-        ax.set_title("Average Endpoint Angles and SEMs", size=32, y=1.04)
-        ax.set_ylabel("Endpoint Angle", size=26)
+        ax.set_title("Average Endpoint Angles and SEMs", y=1.04)
+        ax.set_ylabel("Endpoint Angle")
     else:
-        ax.set_title("Average Errors and SEMs", size=32, y=1.04)
-        ax.set_ylabel("Error", size=26)
+        ax.set_title("Average Errors and SEMs", y=1.04)
+        ax.set_ylabel("Error")
+        if pp.signed_dist_err:
+            ax.set_ylabel("x-Error")
     ymin = 0.
     ymax = pp.y_axis_max 
     ymin = pp.y_axis_min
@@ -79,8 +83,16 @@ def genMainPlot(ax,fnames,nums):
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
 
-    ax.axhline(y=pp.rewardDist,c="red",linewidth=0.5,zorder=0)
-    ax.axhline(y=-pp.rewardDist,c="red",linewidth=0.5,zorder=0)
+    tsz = pp.target_radius
+    ax.axhline(y=tsz,c="red",linewidth=0.5,zorder=0)
+    ax.axhline(y=-tsz,c="red",linewidth=0.5,zorder=0)
+
+    nsz = float(pp.paramsEnv["finalNoiseAmpl"] )
+    if( pp.plotReachAngles or pp.plotAngleErrs):
+        nsz = 2. * pp.eucl2angDist( 0.5*nsz )
+    myell = [1,167./255.,66./255.]
+    ax.axhline(y=nsz,c=myell,linewidth=1,zorder=0)
+    ax.axhline(y=-nsz,c=myell,linewidth=1,zorder=0)
   
 #    if pp.plotPubFile != "":
 #        import imp
@@ -159,21 +171,22 @@ def genFigurePert(fnames,outname):
         pdf.savefig()
         plt.close()
 
-        fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
-        ax = axs[0,1]
-        if(int(pp.paramsEnv["nc"]) > 1):
-            genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),1)
-            annotateGraph(ax)
+        #fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
+        #ax = axs[0,1]
+        #if(int(pp.paramsEnv["nc"]) > 1):
+        #    genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),1)
+        #    annotateGraph(ax)
 
         fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
         ax = axs[0,0]
-        #genCBStatePlot(fig,ax,fileToPlot.replace('arm','CBState'))
-        genRwdPlot(fig,ax,fileToPlot.replace('arm','output'))
+        genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'))
         annotateGraph(ax)
+        #genCBStatePlot(fig,ax,fileToPlot.replace('arm','CBState'))
+        ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
         ax = axs[0,1]
         #genCBTuningPlot(fig,ax,fileToPlot.replace('arm','CBTuning'))
-        genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'))
+        genRwdPlot(fig,ax,fileToPlot.replace('arm','output'))
         annotateGraph(ax)
         ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
@@ -205,8 +218,11 @@ def genFigurePert(fnames,outname):
 
         #ax = plt.gca
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(30, 20))
+        
+        mpl.rcParams.update({'font.size': 35})
         genMainPlot(ax,fnames,nums)
         ax.set_title(pp.paramsEnv["pdfSuffix"])
+        #ax.set_title("")
 
         pdf.savefig()
         plt.close()
@@ -240,9 +256,18 @@ def genFigurePertMulti(dat_basenames):
         nr = 1
         nc = 1
     else:
-        nr = 2
+        nr = 4
         nc = l
-    fig, axs = plt.subplots(ncols=nc, nrows=nr, figsize=(10*l, 20), sharex=False, sharey=False)
+
+    if pp.multi_onlyMainPlots:
+        fig, axs = plt.subplots(ncols=int(math.ceil(nc/2.)), nrows=nr, figsize=(5+10*l, 20), sharex=False, sharey=False)
+    else:
+        fig, axs = plt.subplots(ncols=nc, nrows=nr, figsize=(5+10*l, 20), sharex=False, sharey=False)
+
+    plt.subplots_adjust(left=0.16,right=0.98,bottom=0.1)
+
+    if pp.multi_onlyMainPlots:
+        axs=axs.ravel()
 
     fnames2d = []
     for ind,dat_basename in enumerate(dat_basenames_nonempty):
@@ -257,8 +282,8 @@ def genFigurePertMulti(dat_basenames):
 
         paramsInitFromArmFname(fnames[0])
 
-        fileToPlotReach = fnames[0]
-        armData = armFileRead(fileToPlotReach)
+        fileToPlot = fnames[0]
+        armData = armFileRead(fileToPlot)
         #armData = np.loadtxt(fnames[0])
         nums = armData[:,0]
         nums = nums.astype(np.int)
@@ -272,7 +297,10 @@ def genFigurePertMulti(dat_basenames):
         lastNum = nums[-1]
 
         if pp.multiSameGraph == 0:
-            ax = axs[0,ind]
+            if pp.multi_onlyMainPlots:
+                ax = axs[ind]
+            else:
+                ax = axs[0,ind]
         else:
             ax = axs
             
@@ -280,7 +308,7 @@ def genFigurePertMulti(dat_basenames):
 
         genMainPlot(ax,fnames,nums)
         #ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
-        ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.08)
+        ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.04)
 
         if pp.multiSameGraph == 0:
             rangePre1 = range(0,pp.phaseBegins[1])
@@ -294,12 +322,29 @@ def genFigurePertMulti(dat_basenames):
             rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
             #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
 
+        if pp.multi_onlyMainPlots == 0:
             ax = axs[1,ind]
+            genBGActivityPlot(fig,ax,fileToPlot.replace('arm','var_dyn2'))
+            annotateGraph(ax)
 
-            genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
+            ax = axs[2,ind]
+            genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'))
+            annotateGraph(ax)
+            ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
+
+            ax = axs[3,ind]
+            #genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
+            genRwdPlot(fig,ax,fileToPlot.replace('arm','output'))
+            annotateGraph(ax)
+            ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
+
+            #genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
 
     if pp.multiSameGraph == 0:
-        ax = axs[1,ind]
+        if pp.multi_onlyMainPlots:
+            ax = axs[ind]
+        else:
+            ax = axs[nr-1,ind]
     else: 
         ax = axs
     
@@ -382,9 +427,9 @@ def printParams(fig,pos):
     paramsToPlot.append("learn_bg")
     paramsToPlot.append("learn_cb")
     paramsToPlot.append("learn_cb2")
-    paramsToPlot.append("resetRPre0")
-    paramsToPlot.append("resetRPre1")
-    paramsToPlot.append("resetRPre3")
+    paramsToPlot.append("setRPre0")
+    paramsToPlot.append("setRPre1")
+    paramsToPlot.append("setRPre3")
 
     paramsToPlot.append("")
     paramsToPlot.append("HD_D2activity_reduction")
@@ -401,13 +446,19 @@ def printParams(fig,pos):
     paramsToPlot.append("cbRateDepr")
     paramsToPlot.append("cbLRateUpdSpdUp")
     paramsToPlot.append("cbLRateUpdSpdDown")
-    paramsToPlot.append("cbLRateUpdSpdMax")
+    #paramsToPlot.append("cbLRateUpdSpdMax")
+
+    paramsToPlot.append("cbErrDepth")
+    paramsToPlot.append("cbLRateUpdAbsErr_threshold")
+    paramsToPlot.append("cbLRateUpdErrRatio_threshold")
+
 
     paramsToPlot.append("")
     paramsToPlot.append("fake_prelearn")
-    paramsToPlot.append("wmmax_fake_prelearn")
+    paramsToPlot.append("wmmaxFP")
     paramsToPlot.append("numTrialsPrelearn")
     paramsToPlot.append("fake_prelearn_tempWAmpl")
+    paramsToPlot.append("lam2")
     paramsToPlot.append("A_exp")
     paramsToPlot.append("Q")
     paramsToPlot.append("finalNoiseAmpl")
@@ -420,6 +471,13 @@ def printParams(fig,pos):
     paramsToPlot.append("endpoint_xreverse1")
     paramsToPlot.append("force_field1")
     paramsToPlot.append("actPrelearn1")
+
+    paramsToPlot.append("gradedReward")
+    paramsToPlot.append("rwdGradePower")
+    paramsToPlot.append("perfBasedReward")
+    paramsToPlot.append("perfRwdMult")
+    paramsToPlot.append("perfRwdErrChange_threshold")
+     
 
     paramsToPlot.append("")
     paramsToPlot.append("learn_cb2")

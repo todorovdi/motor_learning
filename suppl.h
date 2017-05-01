@@ -24,10 +24,12 @@ void readIni(string fname, parmap & configValues);
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/generator_iterator.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <random>
 #include <functional>
 #include <thread>
+
 
 //inline std::mt19937 get_prng() {
 //    std::random_device r;
@@ -91,5 +93,9 @@ void parseCMDargs(int argc, char ** argv, parmap & params);
 //}
 
 int genCortcalData(parmap & params);
+
+void shuffle(vector<int> & elements);
+
+void parseCueList(std::string str, vector<int> & cues, vector<int> & numShows, vector<int> & feedbackOn);
 
 #endif

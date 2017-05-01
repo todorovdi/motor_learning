@@ -8,4 +8,5 @@ else
   sleep $delay
 fi
 calc_dir=$HOME/tmp_out_calc
-rm -f $calc_dir/${p}*.dat
+#rm -f $calc_dir/${p}*.dat   # if using this, if there are too many files, it does not delete it due to too long argument for rm command
+find "$calc_dir" -maxdepth 1 -name "${p}*.dat" -delete

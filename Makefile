@@ -4,8 +4,8 @@ addcCbonly = reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geome
 addh = pert.h BG_model.h suppl.h exporter.h environment.h arm.h motor_learning.h par.h 
 addc = pert.cpp learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp exporter.cpp environment.cpp suppl.cpp reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc                                                                 
 
-addh2 = BG_model.h suppl.h exporter.h environment.h arm.h motor_learning.h par.h 
-addc2 = learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp exporter.cpp environment.cpp suppl.cpp reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc arm_inv.cc Force_MN.cc Inverse_muscles.cc                                                              
+addh2 = BG_model.h suppl.h exporter.h environment.h arm.h motor_learning.h par.h percept.h
+addc2 = learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp exporter.cpp environment.cpp suppl.cpp reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc arm_inv.cc Force_MN.cc Inverse_muscles.cc percept.cpp
 
 #learn: learn.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc   par.h
 #	g++  -O2  learn.cc reach.cc TrajectoriesAnglesVelocityAcceleration.cc  muscles.cc geometry_block.cc calc_feedback.cc ParWeight.cc WeightedInput.cc sp_cord.cc Activationfunction.cc  -o    $@
@@ -32,6 +32,9 @@ addc2 = learn.cpp BG_model.cpp CB_model.cpp arm.cpp motor_learning.cpp exporter.
 pert: $(addc2) $(addh2)  pert.cpp pert.h 
 	g++ -std=c++11 -D BUILD_PERT  -O2 $(addc2) pert.cpp -o   $@        -lboost_system 
 	g++ -std=c++11 -D BUILD_PERT  -g $(addc2) pert.cpp -o   $@_dbg     -lboost_system   
+
+pert_oldcpp: $(addc2) $(addh2)  pert.cpp pert.h 
+	g++ -D BUILD_PERT  -O2 $(addc2) pert.cpp -o   $@        -lboost_system 
 
 pert_prl: $(addc2) $(addh2) pert.cpp pert.h
 	g++ -std=c++11 -D BUILD_PERT -D PARALLEL -fopenmp -O2 $(addc2) pert.cpp -o   $@  -lboost_system 

@@ -77,189 +77,35 @@ if [ $# -ne 0 ]; then
 
   echo "Starting experiment "$experimentName
 
-#  addOptionsLoc=" --rewardDist=0.18 --cbLRate=0.6"$addOptions
-#  fullSim $1
-
-  addOptionsLoc=" --rewardDist=0.18 --cbLRate=0.4"$addOptions
+  addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=100"$addOptions
   fullSim $1
+
+  addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=400"$addOptions
+  fullSim $1
+
+  addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=700"$addOptions
+  fullSim $1
+
+  addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=1500"$addOptions
+  fullSim $1
+
+  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=1"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=0.5"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=3"$addOptions
+  #fullSim $1
+
+
+  #########
+  #addOptionsLoc=" --rewardDist=0.18 --cbLRate=0.4"$addOptions
+  #fullSim $1
   
-
-#  addOptions=" --lam2=0.15 --cbLRate=1"
-#
-#  addOptionsLoc=" --perfRwdMult=6 --rewardDist=0.05"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --perfRwdMult=4 --rewardDist=0.05"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --perfRwdMult=9 --rewardDist=0.05"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --perfRwdMult=5 --rewardDist=0.05"$addOptions
-#  shortSim $1
-#
-#  #
-#
-#  addOptionsLoc=" --rwdGradePower=1.5 --rewardDist=0.2"$addOptions
-#  shortSim $1
-#
-#
-#  addOptionsLoc=" --rwdGradePower=1 --rewardDist=0.25"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rwdGradePower=0.5 --rewardDist=0.25"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rwdGradePower=1.5 --rewardDist=0.25"$addOptions
-#  shortSim $1
-#
-#
-#  addOptionsLoc=""$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.19"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.21"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.18"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.17"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.22"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.23"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.24"$addOptions
-#  shortSim $1
-#
-#  addOptions=" --wmmax_fake_prelearn=0.4"
-#  useOldData=$2   # 9 means don't plot
-#
-##  addOptionsLoc=""$addOptions
-##  fullSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.20"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.19"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.21"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.18"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.17"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.22"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.23"$addOptions
-#  shortSim $1
-#
-#  addOptionsLoc=" --rewardDist=0.24"$addOptions
-#  shortSim $1
-#
-#######################
-#  addOptionsLoc=" --rwdGradePower=1.2"$addOptions
-#  shortSim $1
-# 
-
-#  addOptionsLoc=""$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --lam2=0.16"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --lam2=0.17"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --lam2=0.18"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --lam2=0.19"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --wmmax_fake_prelearn=0.5"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --wmmax_fake_prelearn=0.6"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --wmmax_fake_prelearn=0.7"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateMax=1.5"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateMax=2"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateMax=2.5"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdDown=1.7"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdDown=2."$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdDown=2.3"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdUp=0.5"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdUp=0.4"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdUp=0.3"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdMax=2.25"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdMax=2."$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdMax=1.75"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdMax=1.5"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbLRateUpdSpdMax=1.25"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --updateCBStateDist=0.02"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --updateCBStateDist=0.01"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbRateDepr=0.07"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbRateDepr=0.06"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbRateDepr=0.04"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbRateDepr=0.03"$addOptions
-#  fullSim $1
-#
-#  addOptionsLoc=" --cbRateDepr=0.02"$addOptions
-#  fullSim $1
-
   ./beep.sh
   sleep 0.1s
   ./beep.sh

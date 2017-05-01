@@ -5,6 +5,7 @@
 #include "BG_model.h"
 #include "motor_learning.h"
 #include "exporter.h"
+#include "percept.h"
 #include <vector>
 #include <string>
 #include <map>
@@ -37,6 +38,7 @@ class Environment
 
     MotorLearning ml;
     Exporter exporter;
+    Percept percept;
 
     parmap params;   // contain ALL the parameters from all files
     int num_sess;
@@ -48,7 +50,7 @@ class Environment
 ///////////////////////////////////////
 //  Functions to implement in your experiment
 ///////////////////////////////////////
-        virtual int turnOnCues(int trialNum, float * cues) = 0;
+        virtual int turnOnCues(int trialNum, float * cues, int * addInfo) = 0;
         virtual float getSuccess(float * x,float * y,unsigned int k,float *addInfo) = 0;  // precise meaning of success differs from experiment to experiment
         virtual float getReward(float success, float * x,float * y, float & param) = 0;  
         virtual void runSession() = 0;

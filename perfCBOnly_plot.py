@@ -382,9 +382,9 @@ def printParams(fig,pos):
     paramsToPlot.append("learn_bg")
     paramsToPlot.append("learn_cb")
     paramsToPlot.append("learn_cb2")
-    paramsToPlot.append("resetRPre0")
-    paramsToPlot.append("resetRPre1")
-    paramsToPlot.append("resetRPre3")
+    paramsToPlot.append("setRPre0")
+    paramsToPlot.append("setRPre1")
+    paramsToPlot.append("setRPre3")
 
     paramsToPlot.append("")
     paramsToPlot.append("HD_D2activity_reduction")
@@ -405,7 +405,7 @@ def printParams(fig,pos):
 
     paramsToPlot.append("")
     paramsToPlot.append("fake_prelearn")
-    paramsToPlot.append("wmmax_fake_prelearn")
+    paramsToPlot.append("wmmaxFP")
     paramsToPlot.append("numTrialsPrelearn")
     paramsToPlot.append("fake_prelearn_tempWAmpl")
     paramsToPlot.append("A_exp")
