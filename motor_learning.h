@@ -31,6 +31,7 @@ class MotorLearning
     bool xreverseErr;
     bool modError;
     bool habit2PMCdirectly;
+    bool cbRetrainSpeedup;
 
     bool setRpre_firstR;
     //vector<float> prevy;

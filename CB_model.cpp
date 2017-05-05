@@ -4,28 +4,15 @@
 void CB_model::train(float x0, float y0, float * yy, bool flushW, bool useCurW, float ffield)
     // coef is the coef of the addition to the existing value
 {
-    float endpt[2];
-//    if(yy == 0)
-//        yy = last_y;
-
     x_cb_target = x0;     // TODO x_cb_target should debend on cues activated
     y_cb_target = y0;
 
-    float wcb_backup[6][6];
+    float wcb_train[6][6];
     for(int k=0;k<6;k++) 
         for(int l=0;l<6;l++) 
-            wcb_backup[k][l] = wcb[k][l];
+            wcb_train[k][l] = wcb[k][l];
 
-
-    if(useCurW)
-    {
-      for(int k=0;k<6;k++) 
-        for(int l=0;l<6;l++) 
-        { 
-          wcb[k][l]=wcb_backup[k][l];
-        }
-    }
-    else
+    if(!useCurW)
     {
       for(int k=0;k<6;k++) 
         for(int l=0;l<6;l++) 
@@ -34,7 +21,7 @@ void CB_model::train(float x0, float y0, float * yy, bool flushW, bool useCurW, 
         }
     }
 
-
+    float endpt[2];
 	  for(int i=0;i<6;i++) 
         for(int j=0;j<6;j++)
         {  
@@ -67,14 +54,9 @@ void CB_model::train(float x0, float y0, float * yy, bool flushW, bool useCurW, 
           for(int l=0;l<6;l++) 
               wcb[k][l]=0;
     }
-    else  // maybe redundant
-    { 
-        for(int k=0;k<6;k++) 
-            for(int l=0;l<6;l++) 
-                wcb[k][l] = wcb_backup[k][l];
-    } 
 
-    //learn_cb = true;
+    std::copy(yy,yy+train_patPMC.size(),train_patPMC.begin());
+    //cout<<" CB training"<<endl;
 }
 
 void CB_model::trainCurPt(float * yy, float ffield, bool flushW, bool useCurW)
@@ -88,24 +70,82 @@ void CB_model::stateDegradeStep()
   {
     for(int j=0;j<6;j++) 
     { 
-        wcb[i][j]-=cbRateDepr * wcb[i][j];
+      float t =  cbRateDepr * wcb[i][j];
+      wcb[i][j]-= t;
     } 
   }
 }
 
+// update W
 void CB_model::cblearn(float dx,float dy)
 {
   //float norm = matrixNorm(wcb);
+  last_errDFmod = 0;
 	for(int i=0;i<6;i++) 
   {
     for(int j=0;j<6;j++) 
     { 
-        wcb[i][j]-=cbLRate*(dx*dfwx[i][j]+dy*dfwy[i][j]); 
+      float t = (dx*dfwx[i][j]+dy*dfwy[i][j]);
+      wcb[i][j]-=cbLRate*t; 
+      last_errDFmod += t*t;
     } 
   }
+  //last_errDFmod = sqrt(last_errDFmod);
+  //last_errDFmod *= cbLRate;
 }
 
+float CB_model::errDFmod(float dx, float dy)
+{
+  float r = 0;
+	for(int i=0;i<6;i++) 
+  {
+    for(int j=0;j<6;j++) 
+    { 
+      float t = (dx*dfwx[i][j]+dy*dfwy[i][j]);
+        r+=t*t; 
+    } 
+  }
+  return sqrt(r);
+}
 //#define DEPR_DEP_ON_ERR
+
+// should be called before cb learning is done
+bool CB_model::trainNeeded(float * y_)
+{
+  bool ychanged = false;
+  for(int i = 0; i<train_patPMC.size();i++)
+  {
+    if(fabs(y_[i]-train_patPMC[i]) > 0.1)
+    { 
+      ychanged = true;
+      break;
+    }
+  }
+
+  bool Wchanged = false;
+  float tt = 0;
+  float ttt = 0;
+
+  if(!ychanged)
+  {
+    for(int k=0;k<6;k++) 
+      for(int l=0;l<6;l++) 
+      {
+        ttt += fabs( wcb_train[k][l] - wcb[k][l] );
+        //if( fabs( wcb_train[k][l] - wcb[k][l] ) > cbRetrainNeeded_thr )
+        //{
+        //  tt = fmax( tt, fabs( wcb_train[k][l] - wcb[k][l] ) );
+        //  Wchanged = true;
+        //  //break;
+        //}
+      }
+  }
+  Wchanged = ttt > cbRetrainNeeded_thr ? true : false;
+
+  bool needed = ychanged || Wchanged;
+  //cout<<" trainNeeded "<<needed<<" W change (L1 norm) "<<ttt<<endl;
+  return needed;
+} 
  
 void CB_model::learn()
 {      
@@ -124,6 +164,9 @@ void CB_model::learn()
     b = b || errToCompare > cbLRateUpdAbsErr_threshold;
   }
 
+  float upd_coef_real=0;
+  float upd_coef_cb = 0;
+
   // if we don't have even last error before current, don't update the learning rate
   if(percept->getHistSz() > 1 && !cbLRateIsConst && b)   // if not, it is set artificially
   {
@@ -131,31 +174,73 @@ void CB_model::learn()
 
     if(cbLRateUpd_errDiffBased)
     { 
-      cblr_upd = prevErrAbs - errAbs;
+      cblr_upd = errToCompare - errAbs;
       cbLRate += cblr_upd > 0 ? cblr_upd * cbLRateUpdSpdUp : cblr_upd * cbLRateUpdSpdDown;
     }
     else
     { 
-      if(cbLRateUpdErrRatio_threshold * errAbs < errToCompare)       // means succesful correction. Then correct more!
+      if(!cbLRateUpdVariableSpd)
       { 
-        cblr_upd = cbLRateUpdSpdUp;
-        cbLRate *= cblr_upd;
-   
-#ifdef  DEPR_DEP_ON_ERR
-        cbRateDepr = cbRateDepr_def;
-        //cbRateDepr = cbRateDepr_def;
-#endif
-      }
-      else
-      { 
-        cblr_upd = 1/cbLRateUpdSpdDown;
-        cbLRate *= cblr_upd;
-
-#ifdef  DEPR_DEP_ON_ERR
-        cbRateDepr = -cblr_upd* cbLDeprUpdSpd;
-        //cout<<" current depr rate is "<<cbRateDepr<<endl;
-#endif
+        if(cbLRateUpdErrRatio_threshold * errAbs < errToCompare)       // means succesful correction. Then correct more!
+        { 
+          cblr_upd = cbLRateUpdSpdUp;
+          cbLRate *= cblr_upd;
+        }
+        else
+        { 
+          cblr_upd = 1/cbLRateUpdSpdDown;
+          cbLRate *= cblr_upd;
+        } 
       } 
+      else
+      {
+        // note that the cost functions that CB aims to decrease is quadratic, thus it is 
+        // difference of SQUARES of moduli of vector errors, which is proportional to the prev learning rate
+        float easq = errAbs*errAbs;
+        float t = (errToCompare * errToCompare - easq) / easq / cbLRate; 
+        upd_coef_real = sqrt( fabs(t) );
+        upd_coef_cb = last_errDFmod/ errAbs;
+        bool b2,b2neg; 
+        if(acByUpdCoefThr)
+        { 
+          t = (prevErrAbs * prevErrAbs - easq) / easq / cbLRate; 
+          upd_coef_real = prevErrAbs * prevErrAbs - easq;
+          upd_coef_cb = last_errDFmod * cbLRate;
+          // if true we assume that CB did last correction. And it did it using
+          // correct visual feedback (more or less)
+          
+          float tt = acUpdCoefThr;
+          b2 = fabs( upd_coef_real - upd_coef_cb) < tt;   
+          b2neg = fabs( upd_coef_real - upd_coef_cb) > tt * 2.;   
+
+          if(b2)       // means succesful correction. Then correct more!
+          {
+            cblr_upd = 0.6 * prevErrAbs * prevErrAbs / last_errDFmod;
+            cbLRate = fmin( cbLRate * cbLRateUpdSpdUp , cblr_upd);
+          }
+          else if(b2neg)
+          {
+            cblr_upd = 1/(cbLRateUpdSpdDown);
+            cbLRate *= cblr_upd;
+            //cbLRate = 0;
+          }
+        }
+        else
+        {
+          b2 = cbLRateUpdErrRatio_threshold * errAbs < errToCompare; 
+
+          if(b2)       // means succesful correction. Then correct more!
+          {
+            cblr_upd = cbLRateUpdSpdUp * upd_coef_real;
+            cbLRate *= cblr_upd;
+          }
+          else 
+          {
+            cblr_upd = 1/(upd_coef_real * cbLRateUpdSpdDown);
+            cbLRate *= cblr_upd;
+          }
+        }
+      }
     }
 
     cbLRate = fmax(cbLRate , 0.001);  // to avoid negativity
@@ -163,20 +248,14 @@ void CB_model::learn()
     float m = errAbs/updateCBStateDist;
     
     if(cbLRate > 0)
-      cbLRate = fmin( cbLRate, cbLRateMax/m);
-    else                                    // can happen if we comment one of the lines abouve
-      cbLRate = max( cbLRate, -cbLRateMax/m);
-
+      cbLRate = fmin( fmin( cbLRate, cbLRateMax/m), 40.);
   }
   cblearn(dx, dy);
 
 
   float r = errToCompare /errAbs;
-  exporter->exportCBMisc(cbLRate,errAbs,r,errToCompare);
+  exporter->exportCBMisc(cbLRate,errAbs,r,errToCompare,upd_coef_real,upd_coef_cb);
   //exporter->exportCBMisc(cbLRate,errAbs,log(cblr_upd),errToCompare);
-
-  //lastErrRatio = fmin(cbLRateUpdSpdMax,prevErrAbs/errAbs);
-  //lastErrRatio = errAbs;
 
   //cout<<"errAbs "<<errAbs<<", learn_rate  "<<cbLRate<<",  W norm "<<matrixNorm(wcb)<<endl;
 }
@@ -190,6 +269,8 @@ void CB_model::resetLearnRate(float lr)
     cbLRate_init = lr;
     cbLRate = lr;
   }
+
+  last_errDFmod = 0; 
 }
 
 void CB_model::flushTuning()
@@ -239,6 +320,7 @@ void CB_model::moveArm(float * y, float * out, float ffield)
 
 void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * percept_)
 {
+
   cbLRate = stof(params["cbLRate"]);
   cbLRateMax = stof(params["cbLRateMax"]);
   cbLRate_init = cbLRate;
@@ -266,20 +348,30 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * p
   s = params["cbLRateUpdTwoErrThreshold"];
   cbLRateUpdTwoErrThreshold = s != "" ? stoi(s) : 0;  ;
 
- //////////////// WARNING!!!!
-  cbLDeprUpdSpd = stof(params["cbLDeprUpdSpd"]);
-  
+  s = params["cbLRateUpdVariableSpd"];
+  cbLRateUpdVariableSpd = s != "" ? stoi(s) : 1;  ;
+
+  s = params["acByUpdCoefThr"];
+  acByUpdCoefThr = s != "" ? stoi(s) : 0;  ;
+
+  s = params["acUpdCoefThr"];
+  acUpdCoefThr = s != "" ? stof(s) : 0.1;  ;
+
   s = params["cbLRateIsConst"];
   cbLRateIsConst = s != "" ? stoi(s) : 0; 
-  
-  cbRateDepr_def = cbRateDepr;
 
   def_updateCBStateDist = updateCBStateDist;
+ 
+  s = params["cbRetrainNeeded_thr"];
+  cbRetrainNeeded_thr = s != "" ? stof(s) : 0; 
 
   arm = arm_;
   exporter = exporter_;
   percept = percept_;
  
+  train_patPMC.resize(stoi(params["na"]));
+
+  last_errDFmod = 0; 
 }
 
 void CB_model::CBExport(int k)

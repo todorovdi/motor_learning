@@ -13,6 +13,7 @@ typedef map<string,string> parmap;
 // Cerebellum
 class CB_model
 {
+  //int na;
     ////////// CB related
   float cbLRate;   // learning rate for the CB 
   float cbLRateMax;  
@@ -27,27 +28,35 @@ class CB_model
   float cbLRateUpdSpdUp;
   float cbLRateUpdSpdDown;
   float cbRateDepr;
-  float cbRateDepr_def;
-  //float cbLRateUpdSpdMax;
- 
-  float cbLDeprUpdSpd;
+
+  float cbRetrainNeeded_thr;
 
   float prevErrAbs;
 
   //float lastErrRatio;
   bool cbLRateUpd_errDiffBased;
   bool cbLRateIsConst;
+  bool acByUpdCoefThr;
+
+  float acUpdCoefThr;
 
   int cbErrDepth;
   float cbLRateUpdAbsErr_threshold;
   float cbLRateUpdErrRatio_threshold;
 
   int cbLRateUpdTwoErrThreshold;
+  bool cbLRateUpdVariableSpd;
 
   vector<float> errHist;
 
     float wcb[6][6];                 // current CB state
     float dfwx[6][6],dfwy[6][6];     // CB state corrections, corresponding to the current CB target
+
+    vector<float> train_patPMC;
+    float wcb_train[6][6];                 // CB state used for last training
+
+    float last_errDFmod;  // last value of update of the W, not multiplied by learning rate. Equals 
+    // to  DF * err 
 
     Arm * arm;
     Exporter * exporter;
@@ -78,6 +87,11 @@ class CB_model
         void stateDegradeStep();
         void CBExport(int k);
         void init(parmap & params,Exporter *exporter,Arm * arm_, Percept * percept_);
+        
+        float errDFmod(float dx, float dy);
+
+        bool trainNeeded(float * y_); 
+
         CB_model();
         CB_model(Arm * arm_);
 

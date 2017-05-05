@@ -17,6 +17,82 @@ seed=0     #makes <more or less> random seed
 #make pert
 #./pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
 
+runtri()
+{
+  addOptionsLoc="--cue1=1"$1
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  args_cue_change=$pdfSuffix
+
+  addOptionsLoc="--endpoint_rotation1=$rotSmall"$1
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  args_small_rot=$pdfSuffix
+
+  addOptionsLoc="--endpoint_rotation1=$rotLarge"$1
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  args_large_rot=$pdfSuffix
+}
+
+runAcTest()
+{
+  ao=" --ini=$ini --learn_bg=0"$1 
+  runtri "$ao"
+  args_percept_cue_change_nobg=$args_cue_change
+  args_percept_small_rot_nobg=$args_small_rot
+  args_percept_large_rot_nobg=$args_large_rot
+
+  python $plotfile \
+    "$args_percept_cue_change_nobg" "$args_percept_small_rot_nobg" "$args_percept_large_rot_nobg"
+}
+
+runTables()
+{
+  runAcTest "$1"
+  ################################  only CB
+  ################################  only CB, no adapttive critique
+  ao=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=1.5"$1 
+  runtri "$ao"
+  args_percept_cue_change_nobg_noac=$args_cue_change
+  args_percept_small_rot_nobg_noac=$args_small_rot
+  args_percept_large_rot_nobg_noac=$args_large_rot
+  ################################  only CB, no adapttive critique, no degradation
+  ao=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=1.5 --cbRateDepr=0"$1 
+  runtri "$ao"
+  args_percept_cue_change_nobg_noac_nodepr=$args_cue_change
+  args_percept_small_rot_nobg_noac_nodepr=$args_small_rot
+  args_percept_large_rot_nobg_noac_nodepr=$args_large_rot
+  ################################      BG only
+  ao=" --ini=$ini --learn_cb=0"$1
+  runtri "$ao"
+  args_percept_cue_change_nocb=$args_cue_change
+  args_percept_small_rot_nocb=$args_small_rot
+  args_percept_large_rot_nocb=$args_large_rot
+  ################################    CB and BG, no adaptive critic, binary RWD
+  ao=" --ini=$ini --cbLRateIsConst=1 --cbLRate=1.5"$1 
+  runtri "$ao"
+  args_percept_cue_change_noac=$args_cue_change
+  args_percept_small_rot_noac=$args_small_rot
+  args_percept_large_rot_noac=$args_large_rot
+  ################################   CB and BG with adaptive critique, binary RWD
+  ao=" --ini=$ini"$1 
+  runtri "$ao"
+  args_percept_cue_change=$args_cue_change
+  args_percept_small_rot=$args_small_rot
+  args_percept_large_rot=$args_large_rot
+  ################################
+
+  python $plotfile \
+    "$args_percept_cue_change_nobg" "$args_percept_small_rot_nobg" "$args_percept_large_rot_nobg" \
+    "$args_percept_cue_change_nobg_noac" "$args_percept_small_rot_nobg_noac" "$args_percept_large_rot_nobg_noac" \
+    "$args_percept_cue_change_nobg_noac_nodepr" "$args_percept_small_rot_nobg_noac_nodepr" "$args_percept_large_rot_nobg_noac_nodepr" \
+    "$args_percept_cue_change_nocb" "$args_percept_small_rot_nocb" "$args_percept_large_rot_nocb" \
+    "$args_percept_cue_change" "$args_percept_small_rot" "$args_percept_large_rot"  \
+    "$args_percept_cue_change_noac" "$args_percept_small_rot_noac" "$args_percept_large_rot_noac" 
+
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
+}
+
 if [ $# -ne 0 ]; then
 
   delay="3.0s"
@@ -41,115 +117,36 @@ if [ $# -ne 0 ]; then
 
 
   # --ini=modelPerf.ini --learn_bg=0 --defTgt1=45 --cue1=1
+  nsess=$1
 
   tgt=45
   rotSmall=30
   rotLarge=70
-  ################################  only CB
-  addOptions=" --ini=$ini --learn_bg=0" 
 
-  addOptionsLoc="--cue1=1"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_cue_change_nobg=$pdfSuffix
+  #runAcTest  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1" 
 
-  addOptionsLoc="--endpoint_rotation1=$rotSmall"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_small_rot_nobg=$pdfSuffix
+  runTables ""
+  runTables " --cbRetrainNeeded_thr=4."
+  runTables " --cbRetrainNeeded_thr=6."
+  #runTables  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1 --cbRetrainNeeded_thr=2.5" 
+  #runTables  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1" 
 
-  addOptionsLoc="--endpoint_rotation1=$rotLarge"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_large_rot_nobg=$pdfSuffix
-
-  ################################  only CB, no adapttive critique
-  addOptions=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=1.5" 
-
-  addOptionsLoc="--cue1=1"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_cue_change_nobg_noac=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotSmall"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_small_rot_nobg_noac=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotLarge"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_large_rot_nobg_noac=$pdfSuffix
-
-  ################################  only CB, no adapttive critique, no degradation
-  addOptions=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=1.5 --cbRateDepr=0" 
-
-  addOptionsLoc="--cue1=1"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_cue_change_nobg_noac_nodepr=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotSmall"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_small_rot_nobg_noac_nodepr=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotLarge"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_large_rot_nobg_noac_nodepr=$pdfSuffix
-
-  ################################      BG only
-
-  addOptions=" --ini=$ini --learn_cb=0" 
-
-  addOptionsLoc="--cue1=1"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_cue_change_nocb=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotSmall"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_small_rot_nocb=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotLarge"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_large_rot_nocb=$pdfSuffix
-
-  ################################    CB and BG, no adaptive critic, binary RWD
-
-  addOptions=" --ini=$ini --cbLRateIsConst=1 --cbLRate=1.5" 
-
-  addOptionsLoc="--cue1=1"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_cue_change_noac=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotSmall"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_small_rot_noac=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotLarge"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_large_rot_noac=$pdfSuffix
-
-  ################################   CB and BG with adaptive critique, binary RWD
-  addOptions=" --ini=$ini" 
-
-  addOptionsLoc="--cue1=1"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_cue_change=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotSmall"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_small_rot=$pdfSuffix
-
-  addOptionsLoc="--endpoint_rotation1=$rotLarge"$addOptions
-  perturbSimple "$addOptionsLoc" $1 $useOldData
-  args_percept_large_rot=$pdfSuffix
+  #runTables ""
+  #runTables " --acByUpdCoefThr=1 --acUpdCoefThr=1.2"
+  #runTables " --finalNoiseAmpl=0 --habit2PMCdirectly=1"
+  #runTables " --trainCBEveryTrial=1 --acByUpdCoefThr=1 --acUpdCoefThr=1.2"
 
 
-  ################################
+  #ao=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=1.5 --cbRateDepr=0 --numTrials1=150" 
+  #addOptionsLoc="--endpoint_rotation1=$rotLarge"$ao
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #args_percept_large_rot_nobg=$pdfSuffix
+
 
   #addOptionsLoc="--force_field1=-2."$addOptions
   #perturbSimple "$addOptionsLoc" $1 $useOldData
   #args_force_field=$pdfSuffix
 
-  python $plotfile \ 
-    "$args_percept_cue_change_nobg" "$args_percept_small_rot_nobg" "$args_percept_large_rot_nobg" \
-    "$args_percept_cue_change_nobg_noac" "$args_percept_small_rot_nobg_noac" "$args_percept_large_rot_nobg_noac" \ 
-    "$args_percept_cue_change_nocb" "$args_percept_small_rot_nocb" "$args_percept_large_rot_nocb" \
-    "$args_percept_cue_change_noac" "$args_percept_small_rot_noac" "$args_percept_large_rot_noac" \
-    "$args_percept_cue_change" "$args_percept_small_rot" "$args_percept_large_rot" 
 
   #python3 "$plotfile" "$args_force_field" "$args_endpoint_rotation" "$args_percept_xrev" "$args_percept_small_rot"
 

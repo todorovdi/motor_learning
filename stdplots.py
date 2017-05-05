@@ -396,7 +396,7 @@ def genCBMiscPlot(fig,ax,fname):
     ylmin = 0
     #ylmin = 1.2*math.log(1/float(pp.paramsEnv["cbLRateUpdSpdDown"]))
     ax.set_ylim(ylmin,ylmax)
-    ax.set_yticks(np.append(np.arange(ylmin,0,1.),np.arange(0,ylmax,1.) ) )
+    ax.set_yticks(np.append(np.arange(ylmin,0,0.2),np.arange(0,ylmax,0.2) ) )
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
     ax.set_title('CB misc plot',y=1.04)
 
@@ -411,6 +411,53 @@ def genCBMiscPlot(fig,ax,fname):
     myDarkRed = [109./255, 33./255, 33./255]
     ax.axhline(y=float(pp.paramsEnv["cbLRateUpdErrRatio_threshold"]),c=myDarkRed,linewidth=1,
             zorder=0,label='ratioThreshold')
+    
+    ax.legend(loc='upper right')
+
+    ax.xaxis.grid(True, which='minor')
+    ax.yaxis.grid(True)
+
+def genCBMisc2Plot(fig,ax,fname):
+    #errMultSmall = 5.
+
+    errMult = pp.cbMiscErrMult
+    errMult = 0.03;
+
+    misc = np.loadtxt(fname)
+    errAbsLarge = errMult  * misc[:,1]
+    #errAbsSmall = errMultSmall * misc[:,1]
+
+    upd_real = misc[:,4]
+    upd_cb = misc[:,5]
+
+    ax.plot(upd_real,label='upd_real',c='blue')
+    ax.plot(upd_cb,label='upd_cb',c='red')
+    ax.plot(errAbsLarge,label=str(errMult)+'*cur_errAbs',c='green')
+    #ax.plot(ratios,label='errAbs/errToCompare',c='red')
+    #ax.plot(prevErrAbs,label=str(errMult)+'*prevErrAbs')
+    #ax.plot(errAbsSmall,label=str(errMultSmall)+'*cur_errAbs')
+    pos = ax.get_position()
+    
+    mx = float(pp.paramsEnv["cbLRate"])
+    mux =float(pp.paramsEnv["cbLRateUpdSpdMax"])  
+    cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
+
+    #ylmax = pp.cbMiscGraph_y_axis_max
+    ylmax = 0.008
+    ylmin = -ylmax
+    #ylmin = 1.2*math.log(1/float(pp.paramsEnv["cbLRateUpdSpdDown"]))
+    ax.set_ylim(ylmin,ylmax)
+    ax.set_yticks(np.append(np.arange(ylmin,0,0.001),np.arange(0,ylmax,0.001) ) )
+    #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
+    ax.set_title('CB misc plot',y=1.04)
+
+    myell2 = [1,110./255.,66./255.]
+    ax.axhline(y=float(pp.paramsEnv["cbLRateUpdAbsErr_threshold"])*errMult,c=myell2,linewidth=1,
+            zorder=0,label=str(errMult)+'*errThreshold')
+
+    myDarkRed = [109./255, 33./255, 33./255]
+    ax.axhline(y=float(pp.paramsEnv["acUpdCoefThr"]),c=myDarkRed,linewidth=1,
+            zorder=0,label='acUpdCoefThr')
     
     ax.legend(loc='upper right')
 

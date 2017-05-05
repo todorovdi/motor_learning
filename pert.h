@@ -167,6 +167,7 @@ class perturbationExperimentEnv: public Environment
     float perfRwdErrChange_threshold;
 
     unsigned int sess_seed;
+ 
 
     int gradedReward;
     int perfBasedReward;

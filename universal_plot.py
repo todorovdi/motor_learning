@@ -195,23 +195,28 @@ def genFigurePert(fnames,outname):
         annotateGraph(ax)
         ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
-        #x_target = armData[:,3]
-        #y_target = armData[:,4]
-        x_cbtgt = armData[:,10]
-        y_cbtgt = armData[:,11]
+        ax = axs[1,1]
+        genCBMisc2Plot(fig,ax,fileToPlot.replace('arm','CBMisc'))
+        annotateGraph(ax)
+        ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
-        rangePre1 = range(0,pp.phaseBegins[1])
-        figName = "Adapt1"
-        if pp.emphPhase != -1:
-            ep = pp.emphPhase
-            rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
-            figName = pp.paramsEnv["name"+str(ep)]
-        else:
-            rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
-        rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
-        #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
-        ax=axs[1,1]
-        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
+#        #x_target = armData[:,3]
+#        #y_target = armData[:,4]
+#        x_cbtgt = armData[:,10]
+#        y_cbtgt = armData[:,11]
+#
+#        rangePre1 = range(0,pp.phaseBegins[1])
+#        figName = "Adapt1"
+#        if pp.emphPhase != -1:
+#            ep = pp.emphPhase
+#            rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
+#            figName = pp.paramsEnv["name"+str(ep)]
+#        else:
+#            rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
+#        rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
+#        #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
+#        ax=axs[1,1]
+#        genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
 
         pdf.savefig()
         plt.close()
@@ -260,7 +265,12 @@ def genFigurePertMulti(dat_basenames):
         nc = l
 
     if pp.multi_onlyMainPlots:
-        fig, axs = plt.subplots(ncols=int(math.ceil(nc/2.)), nrows=nr, figsize=(5+10*l, 20), sharex=False, sharey=False)
+        if pp.multi_ncols > 0:
+            ncfinal=pp.multi_ncols
+            nr=int( math.ceil( float(l) / float(ncfinal) ) )
+        else:
+            ncfinal=int(math.ceil(nc/2.) )
+        fig, axs = plt.subplots(ncols=ncfinal, nrows=nr, figsize=(5+10*ncfinal, 10*nr), sharex=False, sharey=False)
     else:
         fig, axs = plt.subplots(ncols=nc, nrows=nr, figsize=(5+10*l, 20), sharex=False, sharey=False)
 

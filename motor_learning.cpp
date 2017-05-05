@@ -154,8 +154,10 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         //    break;
         //  }
         //}
-        //if(ychanged)
+        if(cb.trainNeeded(y) && cbRetrainSpeedup)
+        {
           cb.trainCurPt(y,ffield,false,retrainCB_useCurW);  // flushW= false, useCurW = true
+        }
       }
 
       float addInfoItem[7];
@@ -203,7 +205,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       }
       else
       {
-        exporter->exportCBMisc(0,0,0,0);
+        exporter->exportCBMisc(0,0,0,0,0,0);
       }
       cb.stateDegradeStep();    // should happen even with cb turned off!
 
@@ -289,6 +291,9 @@ void MotorLearning::initParams(parmap & params)
     habit2PMCdirectly=stoi(params["habit2PMCdirectly"]);
     if(habit2PMCdirectly)
       cout<<"habit2PMCdirectly mode is active!"<<endl;
+ 
+    string s = params["cbRetrainSpeedup"];
+    cbRetrainSpeedup = s != "" ? stoi(s) : 0; 
 
     nc=stoi(params["nc"]);
     na=stoi(params["na"]);
