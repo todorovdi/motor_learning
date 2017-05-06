@@ -157,6 +157,7 @@ class perturbationExperimentEnv: public Environment
     float actRotAngleIncSess;
     float endptRotAngleIncSess;
     float rewardSize;
+    float perfRewardSize;
 
     float minActionAngDeg;
     float maxActionAngDeg;
@@ -165,12 +166,13 @@ class perturbationExperimentEnv: public Environment
     float perfGradePower;
     float perfRwdMult;
     float perfRwdErrChange_threshold;
+    float acUpdCoefThr;
 
     unsigned int sess_seed;
  
-
     int gradedReward;
     int perfBasedReward;
+    bool perfFromAC;
 
     vector<phaseParamPrelearn> cue2prelearnParam;
 

@@ -126,8 +126,6 @@ if [ $# -ne 0 ]; then
   #runAcTest  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1" 
 
   runTables ""
-  runTables " --cbRetrainNeeded_thr=4."
-  runTables " --cbRetrainNeeded_thr=6."
   #runTables  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1 --cbRetrainNeeded_thr=2.5" 
   #runTables  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1" 
 

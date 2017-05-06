@@ -484,8 +484,11 @@ def printParams(fig,pos):
 
     paramsToPlot.append("gradedReward")
     paramsToPlot.append("rwdGradePower")
+
     paramsToPlot.append("perfBasedReward")
     paramsToPlot.append("perfRwdMult")
+    paramsToPlot.append("perfFromAC")
+    paramsToPlot.append("perfRewardSize")
     paramsToPlot.append("perfRwdErrChange_threshold")
      
 
@@ -500,6 +503,10 @@ def printParams(fig,pos):
 
     paramsToPlot.append("")
     paramsToPlot.append("rewardDist")
+    paramsToPlot.append("minActionAngDeg")
+    paramsToPlot.append("maxActionAngDeg")
+
+    paramsToPlot.append("")
     paramsToPlot.append("sector_reward")
     paramsToPlot.append("sector_width")
     paramsToPlot.append("sector_thickness")

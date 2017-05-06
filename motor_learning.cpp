@@ -205,7 +205,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       }
       else
       {
-        exporter->exportCBMisc(0,0,0,0,0,0);
+        exporter->exportCBMisc(0,sc,0,0,0,0);
       }
       cb.stateDegradeStep();    // should happen even with cb turned off!
 
@@ -364,6 +364,11 @@ void MotorLearning::setFfield(float ff)
 void MotorLearning::setCBtCDS(float val)
 {
   cb.set_tCDS(val);
+}
+
+float MotorLearning::get_cbACHappiness(float* real, float* expected)
+{
+  return cb.get_ACHappiness(real,expected);
 }
 
 //void initWeightNormFactor(unsigned int memoryLen)  // should be called ONLY ONCE

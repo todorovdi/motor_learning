@@ -94,20 +94,19 @@ void CB_model::cblearn(float dx,float dy)
   //last_errDFmod *= cbLRate;
 }
 
-float CB_model::errDFmod(float dx, float dy)
-{
-  float r = 0;
-	for(int i=0;i<6;i++) 
-  {
-    for(int j=0;j<6;j++) 
-    { 
-      float t = (dx*dfwx[i][j]+dy*dfwy[i][j]);
-        r+=t*t; 
-    } 
-  }
-  return sqrt(r);
-}
-//#define DEPR_DEP_ON_ERR
+//float CB_model::errDFmod(float dx, float dy)
+//{
+//  float r = 0;
+//	for(int i=0;i<6;i++) 
+//  {
+//    for(int j=0;j<6;j++) 
+//    { 
+//      float t = (dx*dfwx[i][j]+dy*dfwy[i][j]);
+//        r+=t*t; 
+//    } 
+//  }
+//  return sqrt(r);
+//}
 
 // should be called before cb learning is done
 bool CB_model::trainNeeded(float * y_)
@@ -146,7 +145,23 @@ bool CB_model::trainNeeded(float * y_)
   //cout<<" trainNeeded "<<needed<<" W change (L1 norm) "<<ttt<<endl;
   return needed;
 } 
+
+float CB_model::get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb)
+{
+  float dx,dy;
+  float errAbs = percept->calcErr(&dx,&dy);
+  float prevErrAbs = percept->getHistSz() > 1 ? percept->getErr(1) : -100;  
+  float easq = errAbs*errAbs;
+
+  *pupd_coef_real = prevErrAbs * prevErrAbs - easq;
+  *pupd_coef_cb = last_errDFmod * cbLRate;
+  // if true we assume that CB did last correction. And it did it using
+  // correct visual feedback (more or less)
+    
+  return fabs(*pupd_coef_real - *pupd_coef_cb);
+}
  
+// adaptive critic code is here
 void CB_model::learn()
 {      
   float dx,dy;
@@ -172,74 +187,46 @@ void CB_model::learn()
   {
     //float mult = ( 1./(1.+m)  );
 
-    if(cbLRateUpd_errDiffBased)
+    // note that the cost functions that CB aims to decrease is quadratic, thus it is 
+    // difference of SQUARES of moduli of vector errors, which is proportional to the prev learning rate
+    float easq = errAbs*errAbs;
+    bool b2,b2neg; 
+    if(acByUpdCoefThr)
     { 
-      cblr_upd = errToCompare - errAbs;
-      cbLRate += cblr_upd > 0 ? cblr_upd * cbLRateUpdSpdUp : cblr_upd * cbLRateUpdSpdDown;
+      upd_coef_real = prevErrAbs * prevErrAbs - easq;
+      upd_coef_cb = last_errDFmod * cbLRate;
+      // if true we assume that CB did last correction. And it did it using
+      // correct visual feedback (more or less)
+      
+      float tt = acUpdCoefThr;
+      b2 = fabs( upd_coef_real - upd_coef_cb) < tt;   
+      b2neg = fabs( upd_coef_real - upd_coef_cb) > tt * 2.;   
+
+      if(b2)       // means succesful correction. Then correct more!
+      {
+        cblr_upd = 0.6 * prevErrAbs * prevErrAbs / last_errDFmod;
+        cbLRate = fmin( cbLRate * cbLRateUpdSpdUp , cblr_upd);
+      }
+      else if(b2neg)
+      {
+        cblr_upd = 1/(cbLRateUpdSpdDown);
+        cbLRate *= cblr_upd;
+        //cbLRate = 0;
+      }
     }
     else
-    { 
-      if(!cbLRateUpdVariableSpd)
-      { 
-        if(cbLRateUpdErrRatio_threshold * errAbs < errToCompare)       // means succesful correction. Then correct more!
-        { 
-          cblr_upd = cbLRateUpdSpdUp;
-          cbLRate *= cblr_upd;
-        }
-        else
-        { 
-          cblr_upd = 1/cbLRateUpdSpdDown;
-          cbLRate *= cblr_upd;
-        } 
-      } 
-      else
+    {
+      b2 = cbLRateUpdErrRatio_threshold * errAbs < errToCompare; 
+
+      if(b2)       // means succesful correction. Then correct more!
       {
-        // note that the cost functions that CB aims to decrease is quadratic, thus it is 
-        // difference of SQUARES of moduli of vector errors, which is proportional to the prev learning rate
-        float easq = errAbs*errAbs;
-        float t = (errToCompare * errToCompare - easq) / easq / cbLRate; 
-        upd_coef_real = sqrt( fabs(t) );
-        upd_coef_cb = last_errDFmod/ errAbs;
-        bool b2,b2neg; 
-        if(acByUpdCoefThr)
-        { 
-          t = (prevErrAbs * prevErrAbs - easq) / easq / cbLRate; 
-          upd_coef_real = prevErrAbs * prevErrAbs - easq;
-          upd_coef_cb = last_errDFmod * cbLRate;
-          // if true we assume that CB did last correction. And it did it using
-          // correct visual feedback (more or less)
-          
-          float tt = acUpdCoefThr;
-          b2 = fabs( upd_coef_real - upd_coef_cb) < tt;   
-          b2neg = fabs( upd_coef_real - upd_coef_cb) > tt * 2.;   
-
-          if(b2)       // means succesful correction. Then correct more!
-          {
-            cblr_upd = 0.6 * prevErrAbs * prevErrAbs / last_errDFmod;
-            cbLRate = fmin( cbLRate * cbLRateUpdSpdUp , cblr_upd);
-          }
-          else if(b2neg)
-          {
-            cblr_upd = 1/(cbLRateUpdSpdDown);
-            cbLRate *= cblr_upd;
-            //cbLRate = 0;
-          }
-        }
-        else
-        {
-          b2 = cbLRateUpdErrRatio_threshold * errAbs < errToCompare; 
-
-          if(b2)       // means succesful correction. Then correct more!
-          {
-            cblr_upd = cbLRateUpdSpdUp * upd_coef_real;
-            cbLRate *= cblr_upd;
-          }
-          else 
-          {
-            cblr_upd = 1/(upd_coef_real * cbLRateUpdSpdDown);
-            cbLRate *= cblr_upd;
-          }
-        }
+        cblr_upd = cbLRateUpdSpdUp * upd_coef_real;
+        cbLRate *= cblr_upd;
+      }
+      else 
+      {
+        cblr_upd = 1/(upd_coef_real * cbLRateUpdSpdDown);
+        cbLRate *= cblr_upd;
       }
     }
 

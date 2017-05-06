@@ -88,7 +88,8 @@ class CB_model
         void CBExport(int k);
         void init(parmap & params,Exporter *exporter,Arm * arm_, Percept * percept_);
         
-        float errDFmod(float dx, float dy);
+        //float errDFmod(float dx, float dy);
+        float get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb);
 
         bool trainNeeded(float * y_); 
 

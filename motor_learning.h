@@ -106,6 +106,7 @@ class MotorLearning
     void getCBtarget(float & x, float & y);
     void flushCB();  // CB_model method description 
     void setRandomCBState(float amplRand);  // CB_model method description 
+    float get_cbACHappiness(float* real, float* expected) ;
 
     void getReachCenterPos(float &x, float&y);
 

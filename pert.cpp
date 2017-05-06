@@ -446,7 +446,35 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
       //relR = rewardSize * sign* pow(sign*errReduction,perfGradePower) * perfRwdMult; 
       //relR = sign * rewardSize * perfRwdMult;
       relR = errReduction/lastErr / ml.getCBLRate()  * rewardSize * perfRwdMult;
-      relR = sign * fmin (sign * relR, rewardSize);
+      relR = sign * fmin (sign * relR, perfRewardSize);
+    }
+
+    if(perfFromAC )
+    {
+      relR= 0.;
+      if(percept.getHistSz() > 1 )
+      { 
+        float real, expected;
+        float ach = ml.get_cbACHappiness(&real, &expected);
+
+        float tt = acUpdCoefThr;
+        bool b2 = ach < tt;   
+        bool b2neg = ach > tt * 2.;   
+        
+        float f = errReduction > 0 ? pow(errReduction,perfGradePower) : 0.;
+        if(b2)       // means succesful correction. Then correct more!
+        {
+          relR = perfRewardSize * f * perfRwdMult;
+        }
+        else if(b2neg)  // if we reduced error not due to CB
+        {
+          relR = perfRewardSize/4. * f * perfRwdMult;
+        }
+        else
+        {
+          relR = perfRewardSize/2. * f * perfRwdMult;
+        }
+      }
     }
 
     float R = 0.;
@@ -471,7 +499,6 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     numPhases         = stoi(params["numPhases"]);
     fake_prelearn     = stoi(params["fake_prelearn"]);
 
-    sector_reward = stoi(params["sector_reward"]);
 
     learn_cb = stoi(params["learn_cb"]); // it may look stupid to do so right after prev. line but note that the same parameters object are passed to MotorLearning
     learn_bg = stoi(params["learn_bg"]); 
@@ -546,6 +573,24 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
     s = params["defTgt_all"];
     float defTgt_all = s!="" ? stof(s) : 0.;
+ 
+    s = params["perfRewardSize"];
+    perfRewardSize = s!="" ? stof(s) : 3.;
+
+    s = params["perfFromAC"];
+    perfFromAC = s!="" ? stof(s) : 0.;
+ 
+    s = params["acUpdCoefThr"];
+    acUpdCoefThr = s!="" ? stof(s) : 0.01;
+
+    s = params["sector_reward"];
+    sector_reward = s!="" ? stoi(s) : 0;
+
+    s = params["sector_thickness"];
+    sector_thickness = s!="" ? stof(s) : 0.03;
+
+    s = params["sector_width"];
+    sector_width = s!="" ? stof(s) : 30;
 
     numTrials = 0;
     phaseParams.resize(numPhases);
@@ -795,8 +840,6 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
     // experiment phase params -- one of the pert (or several), name of the phase, numTrials
 
-    sector_thickness = stof(params["sector_thickness"]);
-    sector_width = stof(params["sector_width"]);
     wmmaxFP = stof(params["wmmaxFP"]);
     w2maxFP = stof(params["w2maxFP"]);
     armReachRadius = stof(params["armReachRadius"]);

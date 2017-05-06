@@ -389,7 +389,6 @@ def genCBMiscPlot(fig,ax,fname):
     pos = ax.get_position()
     
     mx = float(pp.paramsEnv["cbLRate"])
-    mux =float(pp.paramsEnv["cbLRateUpdSpdMax"])  
     cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
 
     ylmax = pp.cbMiscGraph_y_axis_max
@@ -439,7 +438,6 @@ def genCBMisc2Plot(fig,ax,fname):
     pos = ax.get_position()
     
     mx = float(pp.paramsEnv["cbLRate"])
-    mux =float(pp.paramsEnv["cbLRateUpdSpdMax"])  
     cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
 
     #ylmax = pp.cbMiscGraph_y_axis_max
@@ -476,7 +474,6 @@ def genRwdPlot(fig,ax,fname):
     
     ax.set_title('Reward plot',y=1.04)
     
-    mux =float(pp.paramsEnv["cbLRateUpdSpdMax"])  
     rsz = float(pp.paramsEnv["rewardSize"])     # need to do it here as we could have changed rewardSize by cmd params
     ylmax = pp.rwdPlot_ymax * rsz
     ylmin = pp.rwdPlot_ymin * rsz

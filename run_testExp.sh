@@ -85,17 +85,29 @@ if [ $# -ne 0 ]; then
   #addOptions=" --ini=$ini --perfRwdErrChange_threshold=0.001"
   #addOptions=" --ini=$ini --setRPre0=0.1 --setRPre1=0. --setRPre2=0.1 --perfRwdErrChange_threshold=0.001"
 
-  addOptionsLoc=" --perfRwdMult=0.01$addOptions"
+  addOptionsLoc=" $addOptions --perfRwdMult=9 --wmmaxFP=0.5"
   fullSim
 
-  addOptionsLoc=" --perfRwdMult=0.05$addOptions"
-  fullSim
+  #addOptionsLoc=" $addOptions --perfRwdMult=8 --wmmaxFP=0.4"
+  #fullSim
 
-  addOptionsLoc=" --perfRwdMult=0.1$addOptions"
-  fullSim
+  #addOptionsLoc=" $addOptions --perfRwdMult=8 --wmmaxFP=0.5"
+  #fullSim
 
-  addOptionsLoc=" --perfRwdMult=0.3$addOptions"
-  fullSim
+  #addOptionsLoc=" $addOptions --perfRwdMult=10 --wmmaxFP=0.4"
+  #fullSim
+
+  #addOptionsLoc=" --perfRwdMult=0.01$addOptions"
+  #fullSim
+
+  #addOptionsLoc=" --perfRwdMult=0.05$addOptions"
+  #fullSim
+
+  #addOptionsLoc=" --perfRwdMult=0.1$addOptions"
+  #fullSim
+
+  #addOptionsLoc=" --perfRwdMult=0.3$addOptions"
+  #fullSim
 
   #addOptionsLoc=" --perfRwdMult=1$addOptions"
   #fullSim
