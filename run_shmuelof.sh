@@ -18,20 +18,20 @@ seed=0     #makes <more or less> random seed
 doSim()
 {
   addOptionsLoc=""$addOptions
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
-  argsCBon=$pdfSuffix
-
-  addOptionsLoc=" $addTrials$addOptions"
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
-  argsCBonLong=$pdfSuffix
-
-  addOptionsLoc=""$addOptions
   perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData  
   args1=$pdfSuffix
 
   addOptionsLoc=" $addTrials$addOptions"
   perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData 
   args1Long=$pdfSuffix
+
+  addOptionsLoc=""$addOptions
+  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
+  argsCBon=$pdfSuffix
+
+  addOptionsLoc=" $addTrials$addOptions"
+  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
+  argsCBonLong=$pdfSuffix
 
   python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long"
 }
@@ -45,7 +45,7 @@ if [ $# -ne 0 ]; then
    
   addTrials="--numTrials4=100"
 
-  delay="4.0s"
+  delay="3.0s"
   if [ $useOldData == '0' ]; then
     echo "!!! ----- Really delete corresponding *.dat files?" 
     echo "!!! ----- You have $delay to stop the script"
@@ -63,17 +63,22 @@ if [ $# -ne 0 ]; then
 
   nsess=$1
 
-  addOptions=" --cbLRateUpdAbsErr_threshold=0.01"
+  ###########################
+
+  addOptions=" --wmmaxFP=0.08"
   doSim
 
-  addOptions=" --wmmaxFP=0.2 --cbLRateUpdAbsErr_threshold=0.01" 
+  addOptions=" --wmmaxFP=0.07"
   doSim
 
-  addOptions=" --cbLRateUpdAbsErr_threshold=0.05"
-  doSim
+  #addOptions=" --wmmaxFP=0.06"
+  #doSim
 
-  addOptions=" --wmmaxFP=0.2 --cbLRateUpdAbsErr_threshold=0.05" 
-  doSim
+  #addOptions=""
+  #doSim
+
+  #addOptions=" --wmmaxFP=0.2" 
+  #doSim
 
   # TODO: recalibrate arm to -30, 90
   # maybe will have to modify deg2action  function

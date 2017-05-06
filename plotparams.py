@@ -57,6 +57,7 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global rwdPlot_ymin
     global rwdPlot_step
     global multi_ncols
+    #global plotHandSpace
 
     #armFileSkiprows = int(params_["armFileSkiprows"])
     pdfForEachSession = int(params_["pdfForEachSession"])
@@ -66,6 +67,12 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     cbMiscErrMult = float(params_["cbMiscErrMult"])
     xtickSkip = int(params_["xtickSkip"])
     y_axis_step = float(params_["y_axis_step"])
+
+    #try:
+    #    plotHandSpace = int(params_["plotHandSpace"])
+    #except KeyError as e:
+    #    plotHandSpace = 0
+    #    print(str(e))
 
     try:
         multi_ncols = int(params_["multi_ncols"])

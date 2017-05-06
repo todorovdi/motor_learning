@@ -114,6 +114,7 @@ class phaseParamPrelearn
 {
   public:
   int action;
+  float ang;
   float wmmax;
   float tempWAmpl;
   vector<float> patPMC;
@@ -123,6 +124,7 @@ class phaseParamPrelearn
   phaseParamPrelearn()
   {
     action = -1000;
+    ang = -1000;
     wmmax = 0.0;
     tempWAmpl = 0.;
     tgt_x = 1000;

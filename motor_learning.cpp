@@ -154,7 +154,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         //    break;
         //  }
         //}
-        if(cb.trainNeeded(y) && cbRetrainSpeedup)
+        if(!cbRetrainSpeedup || cb.trainNeeded(y))
         {
           cb.trainCurPt(y,ffield,false,retrainCB_useCurW);  // flushW= false, useCurW = true
         }

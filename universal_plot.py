@@ -39,7 +39,7 @@ from stdplots import *
 from matplotlib.backends.backend_pdf import PdfPages
 import re
 
-def annotateGraph(ax):
+def annotateGraph(ax,bg=0):
     n = pp.phaseBegins[-1]
     ax.set_xticks(range(n)[::pp.xtickSkip] )
     ax.set_xlim([0,n])
@@ -47,8 +47,10 @@ def annotateGraph(ax):
     ax_.set_xlim([0, n])
     ax_.set_xticks(pp.phaseBegins[1:-1])
     ax_.set_xticklabels(pp.phaseNames)
-    ax_.xaxis.grid(True,color='k')
-
+    if bg != 0:
+        ax_.xaxis.grid(True,color='w')
+    else:
+        ax_.xaxis.grid(True,color='k')
 ###############################
 
 def genMainPlot(ax,fnames,nums):
@@ -129,7 +131,7 @@ def genFigurePert(fnames,outname):
 
     ax = axs[0,0]
     genBGActivityPlot(fig,ax,fileToPlot.replace('arm','var_dyn2'))
-    annotateGraph(ax)
+    annotateGraph(ax,bg=1)
 
     #lines = ax_.get_lines()
     #lines = ax.get_legend().get_lines()
@@ -138,14 +140,14 @@ def genFigurePert(fnames,outname):
 
     ax = axs[0,1]
     genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'))
-    annotateGraph(ax)
+    annotateGraph(ax,bg=1)
 
     #genReachPlot(fig,axs[1,0],xs,ys,nums,twoPhases=True)
 
     if(int(pp.paramsEnv["nc"]) > 1):
         ax = axs[1,0]
         genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),1)
-        annotateGraph(ax)
+        annotateGraph(ax,bg=1)
 
     ax = axs[1,1]
 
@@ -224,13 +226,18 @@ def genFigurePert(fnames,outname):
         #ax = plt.gca
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(30, 20))
         
-        mpl.rcParams.update({'font.size': 35})
+        params = {'font.size': 35}
+        backup = {key:plt.rcParams[key] for key in params}
+
+        mpl.rcParams.update(params)
         genMainPlot(ax,fnames,nums)
         ax.set_title(pp.paramsEnv["pdfSuffix"])
         #ax.set_title("")
 
         pdf.savefig()
         plt.close()
+
+        mpl.rcParams.update(backup)
 
     #plt.savefig(pp.out_dir_pdf+outname+".pdf")
     plt.close(fig)
@@ -332,21 +339,21 @@ def genFigurePertMulti(dat_basenames):
             rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
             #genReachPlot(fig,axs[1,ind],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],"Adapt1",tgt=zip(x_target,y_target))
 
-        if pp.multi_onlyMainPlots == 0:
-            ax = axs[1,ind]
-            genBGActivityPlot(fig,ax,fileToPlot.replace('arm','var_dyn2'))
-            annotateGraph(ax)
+            if pp.multi_onlyMainPlots == 0:
+                ax = axs[1,ind]
+                genBGActivityPlot(fig,ax,fileToPlot.replace('arm','var_dyn2'))
+                annotateGraph(ax,bg=1)
 
-            ax = axs[2,ind]
-            genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'))
-            annotateGraph(ax)
-            ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
+                ax = axs[2,ind]
+                genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'))
+                annotateGraph(ax)
+                ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
-            ax = axs[3,ind]
-            #genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
-            genRwdPlot(fig,ax,fileToPlot.replace('arm','output'))
-            annotateGraph(ax)
-            ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
+                ax = axs[3,ind]
+                #genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
+                genRwdPlot(fig,ax,fileToPlot.replace('arm','output'))
+                annotateGraph(ax)
+                ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
             #genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
 
@@ -591,4 +598,4 @@ if __name__ == '__main__':
             for i,filename in enumerate(fnames):
                 print("making graph # "+str(i) + " out of " + str(len(fnames)))
                 paramsInitFromArmFname(filename)
-                genFigurePert([filename],pp.paramsEnv["pdfSuffix"] + name);
+                genFigurePert([filename],pp.paramsEnv["pdfSuffix"] + "_sim_" + str(i));
