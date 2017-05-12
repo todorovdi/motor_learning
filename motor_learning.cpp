@@ -193,7 +193,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       { 
               //if( fzero(R) )
         float dx, dy;
-        percept->calcErr(&dx,&dy);
+        percept->calcErr(&dx,&dy,true);
         float mod_dx = dx*cos(rotateErr) - dy*sin(rotateErr);
         float mod_dy = dx*sin(rotateErr) + dy*cos(rotateErr);
         if(xreverseErr)

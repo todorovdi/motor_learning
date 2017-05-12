@@ -36,6 +36,25 @@ doSim()
   python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long"
 }
 
+doTest()
+{
+  ao=" --ini=shmuTest.ini --numPhases=3"$1
+
+  addOptionsLoc=" --learn_cb1=0 --setRPre1=3"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  test2=$pdfSuffix
+
+  addOptionsLoc=" --learn_cb2=0"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  test3=$pdfSuffix
+
+  addOptionsLoc=""$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  test1=$pdfSuffix
+
+  python "$plotfile" "$test1" "$test2" "$test3" 
+}
+
 if [ $# -ne 0 ]; then
   args1=""
   args2=""
@@ -65,30 +84,62 @@ if [ $# -ne 0 ]; then
 
   ###########################
 
-  addOptions=" --wmmaxFP=0.08"
+  #addOptions=" --wmmaxFP=0.2 --vectorErrTgtBorder=0"
+  #doSim
+
+  #addOptions=" --wmmaxFP=0.15 --vectorErrTgtBorder=0"
+  #doSim
+
+  addOptions=" --wmmaxFP=0.04"
   doSim
 
-  addOptions=" --wmmaxFP=0.07"
+  addOptions=" --wmmaxFP=0.04 --vectorErrTgtBorder=0"
   doSim
 
-  #addOptions=" --wmmaxFP=0.06"
+  addOptions=" --wmmaxFP=0.05"
+  doSim
+
+  addOptions=" --wmmaxFP=0.05 --vectorErrTgtBorder=0"
+  doSim
+
+  addOptions=" --wmmaxFP=0.06 --vectorErrTgtBorder=0"
+  doSim
+
+  addOptions=" --wmmaxFP=0.06"
+  doSim
+
+  #addOptions=" --wmmaxFP=0.07 --vectorErrTgtBorder=0"
   #doSim
 
-  #addOptions=""
+  #addOptions=" --wmmaxFP=0.08 --vectorErrTgtBorder=0"
   #doSim
 
-  #addOptions=" --wmmaxFP=0.2" 
+  #addOptions=" --wmmaxFP=0.09 --vectorErrTgtBorder=0"
   #doSim
 
-  # TODO: recalibrate arm to -30, 90
-  # maybe will have to modify deg2action  function
-  # or recalibration in arm_inv.cc
+  #addOptions=" --wmmaxFP=0.07"
+  #doSim
 
-#  python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long" 
-  # python "$plotfile" "$argsCBon" "$args1" 
-  # python "$plotfile" "$argsCBonLong" "$args1Long"
-#  python "$plotfile" "$argsCBon" "$args5" 
+  #addOptions=" --wmmaxFP=0.08"
+  #doSim
 
+  #addOptions=" --wmmaxFP=0.09"
+  #doSim
+
+
+  #addOptions=" --wmmaxFP=0.09"
+  #doSim
+
+  #addOptions=" --wmmaxFP=0.08"
+  #doSim
+
+  #addOptions=" --wmmaxFP=0.07"
+  #doSim
+
+  #########################################
+
+  #doTest " --wmmaxFP=0.4"
+  #doTest " --wmmaxFP=0.2"
 
   ./beep.sh
   sleep 0.1s

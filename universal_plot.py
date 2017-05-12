@@ -386,6 +386,11 @@ def genFigurePertMulti(dat_basenames):
 
         if pp.plotPubFile != "":
 
+            params = {'font.size': 25}
+            backup = {key:plt.rcParams[key] for key in params}
+
+            mpl.rcParams.update(params)
+
             import imp
             modName,_ = pp.plotPubFile.split('.')
             nicener_ = imp.load_source('nicener',pp.plotPubFile)
@@ -395,6 +400,8 @@ def genFigurePertMulti(dat_basenames):
 
             pdf.savefig()
             plt.close()
+        
+            mpl.rcParams.update(backup)
 
     #plt.savefig(pp.out_dir_pdf+outname+".pdf")
     plt.close(fig)
@@ -418,22 +425,37 @@ def genReachingByPhase(fname):
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
 
     rangePre1 = range(0,pp.phaseBegins[1])
-    figName = "Adapt1"
+    adaptFigName = "Adapt1"
     if pp.emphPhase != -1:
         ep = pp.emphPhase
         rangeAdapt1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
-        figName = pp.paramsEnv["name"+str(ep)]
+        adaptFigName = pp.paramsEnv["name"+str(ep)]
     else:
         rangeAdapt1 = range(pp.phaseBegins[1],pp.phaseBegins[-2])
-    rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
+
+    postFigName = "Post1"
+    if pp.emphPhase1 != -1:
+        ep = pp.emphPhase1
+        rangePost1 = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
+        postFigName = pp.paramsEnv["name"+str(ep)]
+    else:
+        rangePost1 = range(pp.phaseBegins[-2],pp.phaseBegins[-1])
 
     if(len(rangePre1)>0):
-        genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1")
-    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,tgt=list(zip(x_target[rangeAdapt1],y_target[rangeAdapt1])),cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
-    if(len(rangePost1)>0):
-        genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],"Post1")
+        genReachPlot(fig,axs[0,0],xs[rangePre1],ys[rangePre1],nums[rangePre1],"Pre1",tgt=list(zip(x_target[rangePre1],y_target[rangePre1])),cbtgt=list(zip(x_cbtgt[rangePre1],y_cbtgt[rangePre1])))
 
-    genReachPlot(fig,axs[1,1],x_actual[rangeAdapt1],y_actual[rangeAdapt1],nums[rangeAdapt1],figName+" actual pos")
+    genReachPlot(fig,axs[0,1],xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],adaptFigName,tgt=list(zip(x_target[rangeAdapt1],y_target[rangeAdapt1])),cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
+
+    if(len(rangePost1)>0):
+        genReachPlot(fig,axs[1,0],xs[rangePost1],ys[rangePost1],nums[rangePost1],postFigName,tgt=list(zip(x_target[rangePost1],y_target[rangePost1])),cbtgt=list(zip(x_cbtgt[rangePost1],y_cbtgt[rangePost1])))
+
+    if pp.emphPhase2 != -1:
+        ep = pp.emphPhase2
+        rangeCur = range(pp.phaseBegins[ep],pp.phaseBegins[ep+1])
+        figName = pp.paramsEnv["name"+str(ep)]
+        genReachPlot(fig,axs[1,1],xs[rangeCur],ys[rangeCur],nums[rangeCur],figName,tgt=list(zip(x_target[rangeCur],y_target[rangeCur])),cbtgt=list(zip(x_cbtgt[rangeCur],y_cbtgt[rangeCur])))
+    else:
+        genReachPlot(fig,axs[1,1],x_actual[rangeAdapt1],y_actual[rangeAdapt1],nums[rangeAdapt1],adaptFigName+" actual pos")
 
 def printParams(fig,pos):
     axlm= fig.add_axes(pos,frameon=False); 
@@ -510,6 +532,7 @@ def printParams(fig,pos):
 
     paramsToPlot.append("")
     paramsToPlot.append("rewardDist")
+    paramsToPlot.append("vectorErrTgtBorder")
     paramsToPlot.append("minActionAngDeg")
     paramsToPlot.append("maxActionAngDeg")
 

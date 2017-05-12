@@ -24,15 +24,124 @@ fullSim()
 
   # want to avoid AF here
   perturbSimple " --percept_xrev1=1$addOptionsLoc" $nsess  $useOldData
-  args_nonEB_control=$pdfSuffix
+  args_nonEB=$pdfSuffix
 
   # don't turn off CB too early
   #perturbSimple " --endpoint_rotation1=30 --endpoint_rotation2=30 --setRPre1=0 --cue1=0 --numTrials1=60 --numTrials2=80 --learn_cb2=0$addOptionsLoc" $nsess  $useOldData
   #args_enableBG=$pdfSuffix
 
-  python "$plotfile" "$args_EB" "$args_nonEB_control" "$args_enableBG"
+  python "$plotfile" "$args_EB" "$args_nonEB" 
 }
 
+gradedRwd()
+{
+  addOptionsLoc=" --ini=testExp_gradedRwd.ini$1"
+  fullSim 
+}
+
+perfErrDif()
+{
+  addOptionsLoc=" --ini=testExp_perfErrDif.ini$1"
+  fullSim 
+
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
+}
+
+perfErrDifNorm()
+{
+  addOptionsLoc=" --ini=testExp_perfErrDifNorm.ini$1"
+  fullSim 
+
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
+}
+
+perfFromLambda()
+{
+  addOptionsLoc=" --ini=testExp_perfFromLambda.ini$1"
+  fullSim 
+
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
+}
+
+gradedRwd_sweepPower()
+{
+  ao="$1"
+  gradedRwd " --rwdGradePower=0.4$ao"
+  a1EB=$args_EB
+  a1nonEB=$args_nonEB
+  gradedRwd " --rwdGradePower=0.6$ao"
+  a2EB=$args_EB
+  a2nonEB=$args_nonEB
+  gradedRwd " --rwdGradePower=0.8$ao"
+  a3EB=$args_EB
+  a3nonEB=$args_nonEB
+  gradedRwd " --rwdGradePower=1.0$ao"
+  a4EB=$args_EB
+  a4nonEB=$args_nonEB
+  gradedRwd " --rwdGradePower=1.2$ao"
+  a5EB=$args_EB
+  a5nonEB=$args_nonEB
+  gradedRwd " --rwdGradePower=1.4$ao"
+  a6EB=$args_EB
+  a6nonEB=$args_nonEB
+  gradedRwd " --rwdGradePower=1.6$ao"
+  a7EB=$args_EB
+  a7nonEB=$args_nonEB
+
+  python "$plotfile" "$a1EB" "$a1nonEB" \
+    "$a2EB" "$a2nonEB" \
+    "$a3EB" "$a3nonEB" \
+    "$a4EB" "$a4nonEB" \
+    "$a5EB" "$a5nonEB" \
+    "$a6EB" "$a6nonEB" \
+    "$a7EB" "$a7nonEB" 
+
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
+}
+
+gradedRwd_sweepCoef()
+{
+  ao="$1"
+  gradedRwd " --Rpre_coef=0.85$ao"
+  a1EB=$args_EB
+  a1nonEB=$args_nonEB
+  gradedRwd " --Rpre_coef=0.6$ao"
+  a2EB=$args_EB
+  a2nonEB=$args_nonEB
+  gradedRwd " --Rpre_coef=0.4$ao"
+  a3EB=$args_EB
+  a3nonEB=$args_nonEB
+  gradedRwd " --Rpre_coef=0.2$ao"
+  a4EB=$args_EB
+  a4nonEB=$args_nonEB
+
+  python "$plotfile" "$a1EB" "$a1nonEB" \
+    "$a2EB" "$a2nonEB" \
+    "$a3EB" "$a3nonEB" \
+    "$a4EB" "$a4nonEB" \
+
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
+}
+
+gradedRwd_sweepPowerRcoef()
+{
+  gradedRwd_sweepPower " --Rpre_coef=0.94$1"
+  gradedRwd_sweepPower " --Rpre_coef=0.91$1"
+  gradedRwd_sweepPower " --Rpre_coef=0.85$1"
+  gradedRwd_sweepPower " --Rpre_coef=0.6$1"
+  gradedRwd_sweepPower " --Rpre_coef=0.4$1"
+  gradedRwd_sweepPower " --Rpre_coef=0.2$1"
+}
 
 if [ $# -ne 0 ]; then
 
@@ -48,251 +157,174 @@ if [ $# -ne 0 ]; then
   useOldData=$2   # 9 means don't plot
 
   echo "Starting experiment "$experimentName
+ 
+  gradedRwd_sweepCoef " --rwdGradePower=0.63 --wmmaxFP=0.7"
 
-  #addOptions=" --ini=$ini --rwdGradePower=0.7 --cbLRate=1. --lam2=0.18 --lam1=0.18"
-  #addOptions=" --ini=$ini"
+  gradedRwd_sweepPowerRcoef " --wmmaxFP=0.5"
+  gradedRwd_sweepPowerRcoef " --wmmaxFP=0.7"
+  gradedRwd_sweepPowerRcoef " --wmmaxFP=0.3"
 
-  #addOptionsLoc=" --perfRwdMult=5$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=7$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=10$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=15$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=20$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=40$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=60$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=80$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=100$addOptions"
-  #fullSim
-
-  #######################################
-
-  addOptions=" --ini=$ini --cbLRate=0.8"
-  #addOptions=" --ini=$ini --perfRwdErrChange_threshold=0.001"
-  #addOptions=" --ini=$ini --setRPre0=0.1 --setRPre1=0. --setRPre2=0.1 --perfRwdErrChange_threshold=0.001"
-
-  addOptionsLoc=" $addOptions --perfRwdMult=9 --wmmaxFP=0.5"
-  fullSim
-
-  #addOptionsLoc=" $addOptions --perfRwdMult=8 --wmmaxFP=0.4"
-  #fullSim
-
-  #addOptionsLoc=" $addOptions --perfRwdMult=8 --wmmaxFP=0.5"
-  #fullSim
-
-  #addOptionsLoc=" $addOptions --perfRwdMult=10 --wmmaxFP=0.4"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=0.01$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=0.05$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=0.1$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=0.3$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=1$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=5$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=10$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=20$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=8$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=15$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=25$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=30$addOptions"
-  #fullSim
+  #ao=" --Rpre_coef=0.6$addOptions"
 
-  #addOptionsLoc=" --perfRwdMult=35$addOptions"
+  #addOptionsLoc=" --rwdGradePower=0.5$ao"
   #fullSim
 
-  #addOptionsLoc=" --perfRwdMult=5$addOptions"
+  #addOptionsLoc=" --rwdGradePower=1$ao"
   #fullSim
 
-  #addOptionsLoc=" --perfRwdMult=7$addOptions"
+  #addOptionsLoc=" --rwdGradePower=1.5$ao"
   #fullSim
 
-  #addOptionsLoc=" --perfRwdMult=10$addOptions"
+  #addOptionsLoc=" --rwdGradePower=2$ao"
   #fullSim
 
-  #addOptionsLoc=" --perfRwdMult=15$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=20$addOptions"
-  #fullSim
+  #  ao=" --Rpre_coef=0.6 --wmmaxFP=0.7$addOptions"
 
-  #addOptionsLoc=" --perfRwdMult=40$addOptions"
-  #fullSim
-
-  #addOptionsLoc=" --perfRwdMult=60$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rwdGradePower=0.5$ao"
+  #  fullSim
 
-  #addOptionsLoc=" --perfRwdMult=80$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rwdGradePower=0.6$ao"
+  #  fullSim
 
-  #addOptionsLoc=" --perfRwdMult=100$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rwdGradePower=0.63$ao"
+  #  fullSim
 
-  ########################################
+  #  addOptionsLoc=" --rwdGradePower=0.65$ao"
+  #  fullSim
 
-  #addOptionsLoc=" --rewardSize=0.5$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rwdGradePower=0.7$ao"
+  #  fullSim
 
-  #addOptionsLoc=" --rewardSize=1.$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rwdGradePower=0.8$ao"
+  #  fullSim
 
-  #addOptionsLoc=" --rewardSize=5.$addOptions"
-  #fullSim
+  ##########################
+  ao=" --Rpre_coef=0.4 --wmmaxFP=0.8$addOptions"
 
-  #addOptionsLoc=" --rewardSize=10.$addOptions"
+  #addOptionsLoc=" --rwdGradePower=0.5$ao"
   #fullSim
 
-  #addOptionsLoc=" --rewardSize=20.$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rwdGradePower=0.6$ao"
+  #  fullSim
 
-  #addOptionsLoc=" --rewardSize=40.$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rwdGradePower=0.63$ao"
+  #  fullSim
 
-  #addOptionsLoc=" --rewardSize=50.$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rwdGradePower=0.65$ao"
+  #  fullSim
 
-  #addOptionsLoc=" --rewardSize=60.$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rwdGradePower=0.67$ao"
+  #  fullSim
 
-  #addOptionsLoc=" --rewardSize=70.$addOptions"
+  #addOptionsLoc=" --rwdGradePower=0.8$ao"
   #fullSim
 
-  #addOptionsLoc=" --rewardSize=80.$addOptions"
+  #addOptionsLoc=" --rwdGradePower=0.9$ao"
   #fullSim
 
-  #addOptionsLoc=" --rewardSize=90.$addOptions"
+  #addOptionsLoc=" --rwdGradePower=1$ao"
   #fullSim
 
-  #addOptionsLoc=" --rewardSize=100.$addOptions"
+  #addOptionsLoc=" --rwdGradePower=1.5$ao"
   #fullSim
 
-  #addOptionsLoc=" --rewardSize=110.$addOptions"
+  #addOptionsLoc=" --rwdGradePower=2$ao"
   #fullSim
 
-  #addOptionsLoc=" --rewardSize=120.$addOptions"
-  #fullSim
+  ##########################
+    #ao=" --Rpre_coef=0.2$addOptions"
 
-  #addOptionsLoc=" --rewardSize=130.$addOptions"
-  #fullSim
+    #addOptionsLoc=" --rwdGradePower=0.5$ao"
+    #fullSim
 
-  #addOptionsLoc=" --rewardSize=150$addOptions"
-  #fullSim
+    #addOptionsLoc=" --rwdGradePower=1$ao"
+    #fullSim
 
-  #addOptionsLoc=" --rewardSize=180$addOptions"
-  #fullSim
+    #addOptionsLoc=" --rwdGradePower=1.5$ao"
+    #fullSim
 
-  #addOptionsLoc=" --rewardSize=150 --lam2=1.8$addOptions"
-  #fullSim
+    #addOptionsLoc=" --rwdGradePower=2$ao"
+    #fullSim
 
-  #addOptionsLoc=" --rewardSize=180 --lam2=1.6$addOptions"
-  #fullSim
+  ##########################
+  addOptions=" --ini=testExp_perfErrDif.ini"
 
-  #addOptionsLoc=" --rewardSize=120 --lam2=1.8$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rewardSize=3 --perfGradePower=0.6$addOptions"
+  #  fullSim                          
 
-  #addOptionsLoc=" --rewardSize=130 --lam2=1.8$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rewardSize=3 --perfGradePower=0.7$addOptions"
+  #  fullSim                          
 
-  #addOptionsLoc=" --rewardSize=120 --lam2=1.6$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rewardSize=3 --perfGradePower=0.8$addOptions"
+  #  fullSim                          
 
-  #addOptionsLoc=" --rewardSize=130 --lam2=1.6$addOptions"
-  #fullSim
+  #  addOptionsLoc=" --rewardSize=3 --perfGradePower=0.9$addOptions"
+  #  fullSim                          
 
-  #addOptionsLoc=" --rewardSize=110$addOptions"
+  #addOptionsLoc=" --rewardSize=3 --perfGradePower=0.5$addOptions"
+  #fullSim                          
+  #                                 
+  #addOptionsLoc=" --rewardSize=3 --perfGradePower=1$addOptions"
+  #fullSim                          
+  #                                 
+  #addOptionsLoc=" --rewardSize=3 --perfGradePower=1.5$addOptions"
+  #fullSim                          
+  #                                 
+  #addOptionsLoc=" --rewardSize=3 --perfGradePower=2$addOptions"
   #fullSim
-
 
-###
-# fdfdsfd  ()   []  fdsfdsfdname = 'fds'   d 
-
-  #addOptionsLoc=" --cbLRateUpdTwoErrThreshold=1$addOptions"
+  # if perfFromAC = 1 and perfBasedReward=1
+  #addOptionsLoc=" $addOptions --perfRwdMult=9"
   #fullSim
 
-  #addOptionsLoc=" --cbLRateUpdTwoErrThreshold=1 --perfRwdMult=12$addOptions"
-  #fullSim
+  ############################################
 
-  #addOptionsLoc=" --cbLRateUpdTwoErrThreshold=1 --perfRwdMult=16$addOptions"
-  #fullSim
+  #perfErrDifNorm " --perfGradePower=0.9"
 
-  #addOptionsLoc=" --cbLRateUpdTwoErrThreshold=1 --perfRwdMult=20$addOptions"
-  #fullSim
+  #  absRwd="1.5"
+  #  perfFromLambda " --rewardSize=$absRwd --setRPre0=$absRwd --setRPre1=$absRwd --perfRewardSize=$absRwd"
+  #  absRwd="1.5"
+  #  perfFromLambda " --rewardSize=$absRwd --setRPre0=$absRwd --setRPre1=$absRwd"
 
-  #addOptionsLoc=" --cbLRateUpdTwoErrThreshold=1 --perfRwdMult=24$addOptions"
-  #fullSim
+  #  perfFromLambda " --absRewardOn=0 --setRPre0=0 --setRPre1=0"
 
-#############################
+  #exit 1
 
-  #addOptionsLoc=" --cbLRateUpdSpdUp=2.5 --cbLRateUpdAbsErr_threshold=0.$addOptions"
-  #fullSim
+  ##
 
-  #addOptionsLoc=" --cbLRateUpdSpdUp=3 --cbLRateUpdAbsErr_threshold=0.$addOptions"
-  #fullSim
+  #addOptionsLoc=" --perfGradePower=0.2$addOptions"
+  #fullSim           
 
-  #addOptionsLoc=" --cbLRateUpdSpdDown=1.9 --cbLRateUpdAbsErr_threshold=0.$addOptions"
-  #fullSim
+  #addOptionsLoc=" --perfGradePower=0.3$addOptions"
+  #fullSim           
 
-  #addOptionsLoc=" --cbLRateUpdSpdDown=1.7 --cbLRateUpdAbsErr_threshold=0.$addOptions"
-  #fullSim
+  #addOptionsLoc=" --perfGradePower=0.4$addOptions"
+  #fullSim           
 
-  #addOptionsLoc=" --cbLRateUpdSpdDown=1.4 --cbLRateUpdAbsErr_threshold=0.$addOptions"
-  #fullSim
+  #addOptionsLoc=" --perfGradePower=0.5$addOptions"
+  #fullSim           
 
-###################################
+  #addOptionsLoc=" --perfGradePower=0.6$addOptions"
+  #fullSim           
 
-  #addOptionsLoc=" --wmmaxFP=0.1$addOptions"
-  #fullSim
+  #addOptionsLoc=" --perfGradePower=0.7$addOptions"
+  #fullSim           
 
-  #addOptionsLoc=" --wmmaxFP=0.2$addOptions"
-  #fullSim
+  #addOptionsLoc=" --perfGradePower=0.8$addOptions"
+  #fullSim           
 
-  #addOptionsLoc=" --wmmaxFP=0.3$addOptions"
-  #fullSim
+  #addOptionsLoc=" --perfGradePower=0.9$addOptions"
+  #fullSim                          
 
-  #addOptionsLoc=" --wmmaxFP=0.4$addOptions"
-  #fullSim
+  #addOptionsLoc=" --perfGradePower=1.2$addOptions"
+  #fullSim                          
 
-  #addOptionsLoc=" --wmmaxFP=0.8$addOptions"
-  #fullSim
+  #addOptionsLoc=" --perfGradePower=1.5$addOptions"
+  #fullSim                          
 
-#############################################
+  #addOptionsLoc=" --perfGradePower=1.8$addOptions"
+  #fullSim                          
 
-  
   ./beep.sh
   sleep 0.1s
   ./beep.sh

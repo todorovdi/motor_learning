@@ -77,49 +77,29 @@ if [ $# -ne 0 ]; then
 
   echo "Starting experiment "$experimentName
 
-  addOptionsLoc=" --trainCBEveryTrial=1 --perfRwdMult=10"$addOptions
+  #addOptionsLoc=" --trainCBEveryTrial=0 --rwdFromcbLRate_thr=0.08"$addOptions
+  #fullSim $1
+
+  addOptionsLoc=" --trainCBEveryTrial=1 --rwdFromcbLRate_thr=0.04"$addOptions
   fullSim $1
 
-  addOptionsLoc=" --trainCBEveryTrial=1 --perfRwdMult=11"$addOptions
-  fullSim $1
-
-  addOptionsLoc=" --trainCBEveryTrial=1 --perfRwdMult=15"$addOptions
-  fullSim $1
-
-  addOptionsLoc=" --trainCBEveryTrial=1 --perfRwdMult=12"$addOptions
-  fullSim $1
-
-  #addOptionsLoc=" --trainCBEveryTrial=1 --perfRwdMult=20"$addOptions
+  #addOptionsLoc=" --trainCBEveryTrial=0"$addOptions
   #fullSim $1
 
-  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=100"$addOptions
+  #addOptionsLoc=" --trainCBEveryTrial=1"$addOptions
   #fullSim $1
 
-  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=400"$addOptions
+  ####################
+
+  #addOptionsLoc=" --trainCBEveryTrial=1"$addOptions
   #fullSim $1
 
-  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=700"$addOptions
+  #addOptionsLoc=" --trainCBEveryTrial=1 --perfRwdMult=15"$addOptions
   #fullSim $1
 
-  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=1500"$addOptions
+  #addOptionsLoc=" --trainCBEveryTrial=1 --perfRwdMult=12"$addOptions
   #fullSim $1
 
-  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=1"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=0.5"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --rewardDist=0.04 --perfBasedReward=1 --perfRwdMult=3"$addOptions
-  #fullSim $1
-
-
-  #########
-  #addOptionsLoc=" --rewardDist=0.18 --cbLRate=0.4"$addOptions
-  #fullSim $1
   
   ./beep.sh
   sleep 0.1s

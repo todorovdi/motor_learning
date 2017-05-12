@@ -147,6 +147,11 @@ class perturbationExperimentEnv: public Environment
 
     bool fake_prelearn;
     bool sector_reward;
+    bool absRewardOn;
+    bool rwdNormalizeBycbLRate;
+    bool rwdFromcbLRate;
+ 
+    float cbLRateUpdAbsErr_threshold;
 
     vector<expPhaseParams> phaseParams;
 
@@ -169,12 +174,16 @@ class perturbationExperimentEnv: public Environment
     float perfRwdMult;
     float perfRwdErrChange_threshold;
     float acUpdCoefThr;
+    float rwdFromcbLRate_thr;
+
+    int rwdErrDepth;
 
     unsigned int sess_seed;
  
     int gradedReward;
     int perfBasedReward;
     bool perfFromAC;
+    bool vectorErrTgtBorder;
 
     vector<phaseParamPrelearn> cue2prelearnParam;
 

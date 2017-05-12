@@ -474,7 +474,12 @@ def genRwdPlot(fig,ax,fname):
     
     ax.set_title('Reward plot',y=1.04)
     
-    rsz = float(pp.paramsEnv["rewardSize"])     # need to do it here as we could have changed rewardSize by cmd params
+    try:
+        t = int(pp.plotParams["rwdPlotAbsLimits"] )
+        if t:
+            rsz=1.
+    except KeyError as e:
+        rsz = float(pp.paramsEnv["rewardSize"])     # need to do it here as we could have changed rewardSize by cmd params
     ylmax = pp.rwdPlot_ymax * rsz
     ylmin = pp.rwdPlot_ymin * rsz
     ax.set_ylim(ylmin,ylmax)

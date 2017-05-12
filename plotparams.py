@@ -43,6 +43,8 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global y_axis_signed
     global y_axis_step
     global emphPhase
+    global emphPhase1
+    global emphPhase2
     global showPointNumbers
     global multiSameGraph
     global plotPubFile
@@ -57,7 +59,10 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global rwdPlot_ymin
     global rwdPlot_step
     global multi_ncols
+    global plotParams
     #global plotHandSpace
+
+    plotParams = params_
 
     #armFileSkiprows = int(params_["armFileSkiprows"])
     pdfForEachSession = int(params_["pdfForEachSession"])
@@ -166,6 +171,16 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
         emphPhase = int(params_["emphPhase"])
     except KeyError as e:
         emphPhase = -1
+        print(str(e))
+    try:
+        emphPhase1 = int(params_["emphPhase1"])
+    except KeyError as e:
+        emphPhase1 = -1
+        print(str(e))
+    try:
+        emphPhase2 = int(params_["emphPhase2"])
+    except KeyError as e:
+        emphPhase2 = -1
         print(str(e))
 
     try:

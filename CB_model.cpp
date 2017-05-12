@@ -149,8 +149,8 @@ bool CB_model::trainNeeded(float * y_)
 float CB_model::get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb)
 {
   float dx,dy;
-  float errAbs = percept->calcErr(&dx,&dy);
-  float prevErrAbs = percept->getHistSz() > 1 ? percept->getErr(1) : -100;  
+  float errAbs = percept->calcErr(&dx,&dy,true);
+  float prevErrAbs = percept->getHistSz() > 1 ? percept->getErr(1,true) : -100;  
   float easq = errAbs*errAbs;
 
   *pupd_coef_real = prevErrAbs * prevErrAbs - easq;
@@ -165,13 +165,13 @@ float CB_model::get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb)
 void CB_model::learn()
 {      
   float dx,dy;
-  float errAbs = percept->calcErr(&dx,&dy);
-  float errToCompare = percept->getErr(cbErrDepth);      // if size of hist is less then cbErrDepth, the oldest possible error is returned
+  float errAbs = percept->calcErr(&dx,&dy,true);
+  float errToCompare = percept->getErr(cbErrDepth,true);      // if size of hist is less then cbErrDepth, the oldest possible error is returned
   float cblr_upd = 1.;
 
   // here we take into account that CB_model::learn() is called AFTER
   // the arm movement, so error history contains current error already
-  float prevErrAbs = percept->getHistSz() > 1 ? percept->getErr(1) : -100;  
+  float prevErrAbs = percept->getHistSz() > 1 ? percept->getErr(1,true) : -100;  
 
   bool b = errAbs > cbLRateUpdAbsErr_threshold;
   if(cbLRateUpdTwoErrThreshold)
@@ -234,8 +234,11 @@ void CB_model::learn()
 
     float m = errAbs/updateCBStateDist;
     
-    if(cbLRate > 0)
-      cbLRate = fmin( fmin( cbLRate, cbLRateMax/m), 40.);
+    if(cbLRate > 0 && !acUpdCoefThr)
+    {
+      cbLRate =  fmin( cbLRate, cbLRateMax/m);
+    }
+    cbLRate = fmin( cbLRate,  40.);
   }
   cblearn(dx, dy);
 

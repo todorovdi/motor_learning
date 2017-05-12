@@ -23,5 +23,7 @@ Environment::Environment(parmap & params_, int num_sess_)
     na = stof(params["na"]);
 
     num_sess = num_sess_;
+
+    percept.init(params);
 }
 

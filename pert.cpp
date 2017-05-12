@@ -418,21 +418,22 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
     float absR = 0;
     float relR = 0;
 
-    if(!sector_reward)
+    if(absRewardOn)
     { 
-      if(gradedReward)
-      {
-        absR = rewardSize * ( pow(armReachRadius,rwdGradePower) -  pow(curErr, rwdGradePower) );
-        // prev / cur
+      if(!sector_reward)
+      { 
+        if(gradedReward)
+        {
+          absR = rewardSize * 
+            ( -  pow(curErr, rwdGradePower) );
+        }
+        else if( fabs(curErr) < rewardDist) 
+        {
+          absR = rewardSize;
+        }
       }
-      else if( fabs(curErr) < rewardDist) 
+      else
       {
-        absR = rewardSize;
-      }
-
-    }
-    else
-    {
         if( fabs(curErr) < sector_width/2) 
         {
             absR = rewardSize;
@@ -442,24 +443,66 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
         //  R = ratio2rwdCoef * rewardSize * (ml.getErrRatio() - 1.) ;
         //  // prev / cur
         //}
-    } 
+      } 
+    }
     //R = fmax(0.,  R);
     //R = fmin(rewardSize,  R);
     
     
-    float lastErr =  percept.getErr(1);
-    if(percept.getHistSz() <= 1 )
-    {
-      lastErr = -1000;
+    float errToCompare = percept.getErr(rwdErrDepth,false);      // if size of hist is less then cbErrDepth, the oldest possible error is returned // here we really want distance to the center                           
+
+//float lastErr =  percept.getErr(1,false);   // here we really want distance to the center
+//
+    bool b = curErr > cbLRateUpdAbsErr_threshold;
+    if(cbLRateUpdAbsErr_threshold)
+    { 
+      b = b || errToCompare > cbLRateUpdAbsErr_threshold;
     }
-    float errReduction = lastErr - curErr;
-    if(perfBasedReward &&  fabs(lastErr) < 5. && fabs(errReduction) > perfRwdErrChange_threshold)
+
+    float errReduction = errToCompare - curErr;
+    if(perfBasedReward &&  percept.getHistSz() >= 1 && fabs(errReduction) > perfRwdErrChange_threshold && b)
     {
       float sign = errReduction > 0. ? 1 : -1;
-      //relR = rewardSize * sign* pow(sign*errReduction,perfGradePower) * perfRwdMult; 
+
+      relR = perfRewardSize * sign* pow(sign*errReduction,perfGradePower) * perfRwdMult; 
+
+      if(rwdNormalizeBycbLRate)
+      { 
+        float errSqReduction = 
+          (errToCompare*errToCompare - curErr*curErr) / ml.getCBLRate();
+        sign = errSqReduction > 0. ? 1 : -1;
+
+        relR = perfRewardSize * sign* pow(sign*errSqReduction,perfGradePower) *  perfRwdMult; 
+
+      //  cout<<" toComp "<<errToCompare<<" curErr "<<curErr
+      //    <<" errSqReduction "<< errSqReduction
+      //    <<" rate "<<ml.getCBLRate()<<" relR "<<relR<<endl;
+      }
+
+      if(rwdFromcbLRate)
+      {
+        float lambda = ml.getCBLRate(); 
+        if( lambda > rwdFromcbLRate_thr) 
+        {
+          relR = perfRewardSize;
+        }
+        else
+        {
+          // assuming we have only positive rewards (not Slava-like rwd grading)
+          // then we'd have positive rwd prediction from the baseline
+          if(absRewardOn) 
+          { 
+            relR = -perfRewardSize;
+          }
+          else
+          {
+            relR = -perfRewardSize;
+          }
+        }
+      }
       //relR = sign * rewardSize * perfRwdMult;
-      relR = errReduction/lastErr / ml.getCBLRate()  * rewardSize * perfRwdMult;
-      relR = sign * fmin (sign * relR, perfRewardSize);
+      //relR = errReduction/errToCompare / ml.getCBLRate()  * rewardSize * perfRwdMult;
+      //relR = sign * fmin (sign * relR, perfRewardSize);
     }
 
     if(perfFromAC )
@@ -489,6 +532,7 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
         }
       }
     }
+
 
     float R = 0.;
     if(p.error_clamp)
@@ -551,6 +595,9 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       endptRotAngleIncSess = 0.;
     }
 
+    s = params["absRewardOn"];
+    absRewardOn = s!="" ? stoi(s) : 1;
+
     s = params["gradedReward"];
     gradedReward = s!="" ? stoi(s) : 0;
 
@@ -568,6 +615,9 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
     s = params["perfRwdMult"];
     perfRwdMult = s!="" ? stof(s) : 1.;
+
+    s = params["rwdErrDepth"];
+    rwdErrDepth = s!="" ? stoi(s) : 1;
 
     s = params["defTgt_all"];
     float defTgt_all = s!="" ? stof(s) : 0.;
@@ -613,6 +663,21 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
     s = params["cbLRate"];
     cbLRate = s!="" ? stof(s) : 0.5;
+
+    s = params["vectorErrTgtBorder"];
+    vectorErrTgtBorder = s!="" ? stoi(s) : 0;
+
+    s = params["rwdNormalizeBycbLRate"];
+    rwdNormalizeBycbLRate = s!="" ? stoi(s) : 0;
+
+    s = params["rwdFromcbLRate"];
+    rwdFromcbLRate = s!="" ? stoi(s) : 0;
+
+    s = params["cbLRateUpdAbsErr_threshold"];
+    cbLRateUpdAbsErr_threshold = s!="" ? stof(s) : 0;
+
+    s = params["rwdFromcbLRate_thr"];
+    rwdFromcbLRate_thr = s!="" ? stof(s) : 0;
 
     numTrials = 0;
     phaseParams.resize(numPhases);

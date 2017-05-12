@@ -155,9 +155,9 @@ def makePubPlot(fnames2d):
     
     fig.suptitle("Average Endpoint Angles and SEMs", size=30, y=0.99)
 
-    fig.set_size_inches(20, 15, forward=True)
+    fig.set_size_inches(20, 19, forward=True)
+    #fig.savefig('./output_for_paper/Shmuelof (MODEL) Figure 2B.png')
 
-    fig.savefig('./output_for_paper/Shmuelof (MODEL) Figure 2B.png')
 
     # from textwrap import wrap
     # ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.08)

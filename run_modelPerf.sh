@@ -44,6 +44,19 @@ runAcTest()
     "$args_percept_cue_change_nobg" "$args_percept_small_rot_nobg" "$args_percept_large_rot_nobg"
 }
 
+#runBGTest()
+#{
+#  ao=" --ini=$ini --learn_cb=0"$1
+#  runtri "$ao"
+#  args_percept_cue_change_nocb=$args_cue_change
+#  args_percept_small_rot_nocb=$args_small_rot
+#  args_percept_large_rot_nocb=$args_large_rot
+#
+#  python $plotfile \
+#     "$args_percept_cue_change_nocb" "$args_percept_small_rot_nocb" \
+#     "$args_percept_large_rot_nocb"
+#}
+
 runTables()
 {
   runAcTest "$1"
@@ -126,27 +139,7 @@ if [ $# -ne 0 ]; then
   #runAcTest  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1" 
 
   runTables ""
-  #runTables  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1 --cbRetrainNeeded_thr=2.5" 
-  #runTables  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1" 
 
-  #runTables ""
-  #runTables " --acByUpdCoefThr=1 --acUpdCoefThr=1.2"
-  #runTables " --finalNoiseAmpl=0 --habit2PMCdirectly=1"
-  #runTables " --trainCBEveryTrial=1 --acByUpdCoefThr=1 --acUpdCoefThr=1.2"
-
-
-  #ao=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=1.5 --cbRateDepr=0 --numTrials1=150" 
-  #addOptionsLoc="--endpoint_rotation1=$rotLarge"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #args_percept_large_rot_nobg=$pdfSuffix
-
-
-  #addOptionsLoc="--force_field1=-2."$addOptions
-  #perturbSimple "$addOptionsLoc" $1 $useOldData
-  #args_force_field=$pdfSuffix
-
-
-  #python3 "$plotfile" "$args_force_field" "$args_endpoint_rotation" "$args_percept_xrev" "$args_percept_small_rot"
 
   ./beep.sh
   sleep 0.1s
