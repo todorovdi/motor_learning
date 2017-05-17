@@ -34,6 +34,7 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global pdfForEachSession
     global reachBoxXsz
     global reachBoxYsz
+    global reachBoxYmin
     global cbMiscGraph_y_axis_max
     global cbMiscErrMult
     global xtickSkip
@@ -61,6 +62,7 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global multi_ncols
     global plotParams
     #global plotHandSpace
+    global onlyPubPlot
 
     plotParams = params_
 
@@ -78,6 +80,18 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     #except KeyError as e:
     #    plotHandSpace = 0
     #    print(str(e))
+
+    try:
+        onlyPubPlot = int(params_["onlyPubPlot"])
+    except KeyError as e:
+        onlyPubPlot = 0
+        print(str(e))
+
+    try:
+        reachBoxYmin = float(params_["reachBoxYmin"])
+    except KeyError as e:
+        reachBoxYmin = 0.2
+        print(str(e))
 
     try:
         multi_ncols = int(params_["multi_ncols"])

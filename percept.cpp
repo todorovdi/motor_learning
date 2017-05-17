@@ -58,8 +58,17 @@ float Percept::calcErr(float * pdx, float * pdy, bool toBorder)
 { 
  // vectorErrTgtBorder
 
-    *pdx = reach_x - tgt_x;
-    *pdy = reach_y - tgt_y;
+    float dx = reach_x - tgt_x;
+    float dy = reach_y - tgt_y;
+
+    float mod_dx = dx*cos(rotateErr) - dy*sin(rotateErr);
+    float mod_dy = dx*sin(rotateErr) + dy*cos(rotateErr);
+    if(xreverseErr)
+      mod_dx = -mod_dx;
+
+   *pdx = mod_dx;
+   *pdy = mod_dy;
+
     float errAbs = sqrt( (*pdx)*(*pdx) +(*pdy)*(*pdy));
     float err = errAbs;
     if(error_clamp_mode)
@@ -101,4 +110,10 @@ void Percept::init(parmap & params)
 
     s = params["vectorErrTgtBorderMult"];
     vectorErrTgtBorderMult = s!="" ? stof(s) : 0.8;
+
+    s = params["xreverseErr"];
+    xreverseErr = s!="" ? stoi(s) : 0;
+
+    s = params["rotateErr"];
+    rotateErr = s!="" ? stoi(s) : 0;
 }

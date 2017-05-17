@@ -46,6 +46,7 @@ class MotorLearning
     int trainCBEveryTrial;
 
     float ffield;
+    float bgStepsizeIntStopThr;
 
     public:
     

@@ -104,7 +104,7 @@ void Arm::init(parmap & p) //, bool oldverIni)
     p["y_center"]=to_string(yc);
 }
 
-void Arm::move(float * y, float* out, float wcb[][6], float ffield)   
+void Arm::move(float * y, float* out, float wcb[][6], float ffield, bool noiseOn)   
 { 
     float Y[na];
     float th=0.;
@@ -121,8 +121,12 @@ void Arm::move(float * y, float* out, float wcb[][6], float ffield)
     float xcur_tmp=(-L1*sin(phi[0])+-L2*sin(phi[1])); // V*(1.-2.*rnd())*5.;   
     float ycur_tmp=(L1*cos(phi[0])+L2*cos(phi[1]));
 
-    float noisex = finalNoiseAmpl*gauss();
-    float noisey = finalNoiseAmpl*gauss();
+    float noisex=0., noisey=0.;
+    if(noiseOn)
+    { 
+      noisex = finalNoiseAmpl*gauss();
+      noisey = finalNoiseAmpl*gauss();
+    }
 
     out[0] = xcur_tmp + noisex;
     out[1] = ycur_tmp + noisey;

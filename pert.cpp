@@ -399,7 +399,7 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
   addInfo[1] = xcur;
   addInfo[2] = ycur;
 
-  percept.setEndpt(xcur,ycur);
+  percept.setEndpt(xcur,ycur);   // this is endpoint including all perception perturbations
 
   float xcbt,ycbt;
   ml.getCBtarget(xcbt,ycbt); // pass params as references
@@ -460,7 +460,30 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
     }
 
     float errReduction = errToCompare - curErr;
-    if(perfBasedReward &&  percept.getHistSz() >= 1 && fabs(errReduction) > perfRwdErrChange_threshold && b)
+
+    if(rwdFromcbLRate)
+    {
+      float lambda = ml.getCBLRate(); 
+      relR = rwdFromcbLRate_mult*lambda + rwdFromcbLRate_add;
+      //if( lambda > rwdFromcbLRate_thr) 
+      //{
+      //  relR = perfRewardSize;
+      //}
+      //else
+      //{
+      //  // assuming we have only positive rewards (not Slava-like rwd grading)
+      //  // then we'd have positive rwd prediction from the baseline
+      //  if(absRewardOn) 
+      //  { 
+      //    relR = 0;
+      //  }
+      //  else
+      //  {
+      //    relR = -perfRewardSize;
+      //  }
+      //}
+    }
+    else if(perfBasedReward &&  percept.getHistSz() >= 1 && fabs(errReduction) > perfRwdErrChange_threshold && b)
     {
       float sign = errReduction > 0. ? 1 : -1;
 
@@ -479,27 +502,6 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
       //    <<" rate "<<ml.getCBLRate()<<" relR "<<relR<<endl;
       }
 
-      if(rwdFromcbLRate)
-      {
-        float lambda = ml.getCBLRate(); 
-        if( lambda > rwdFromcbLRate_thr) 
-        {
-          relR = perfRewardSize;
-        }
-        else
-        {
-          // assuming we have only positive rewards (not Slava-like rwd grading)
-          // then we'd have positive rwd prediction from the baseline
-          if(absRewardOn) 
-          { 
-            relR = -perfRewardSize;
-          }
-          else
-          {
-            relR = -perfRewardSize;
-          }
-        }
-      }
       //relR = sign * rewardSize * perfRwdMult;
       //relR = errReduction/errToCompare / ml.getCBLRate()  * rewardSize * perfRwdMult;
       //relR = sign * fmin (sign * relR, perfRewardSize);
@@ -646,8 +648,8 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     s = params["wmmaxFP"];
     wmmaxFP = s!="" ? stof(s) : 0.5;
 
-    s = params["w2maxFP"];
-    w2maxFP = s!="" ? stof(s) : 0.7;
+    s = params["w1maxFP"];
+    w1maxFP = s!="" ? stof(s) : 0.7;
 
     s = params["armReachRadius"];
     armReachRadius = s!="" ? stof(s) : 0.2;
@@ -678,6 +680,12 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
     s = params["rwdFromcbLRate_thr"];
     rwdFromcbLRate_thr = s!="" ? stof(s) : 0;
+
+    s = params["rwdFromcbLRate_mult"];
+    rwdFromcbLRate_mult = s!="" ? stof(s) : 0;
+
+    s = params["rwdFromcbLRate_add"];
+    rwdFromcbLRate_add = s!="" ? stof(s) : 0;
 
     numTrials = 0;
     phaseParams.resize(numPhases);
@@ -956,6 +964,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
         float val = stof(iter->second);
         c2p.tgt_x = val;
       }
+
       key = string("tgt_yPrelearn") + to_string(i);
       iter = params.find(key);
       if(iter != params.end() )
@@ -964,8 +973,17 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
         c2p.tgt_y = val;
       }
 
-      s = params[string("angPrelearn") + to_string(i)];
-      c2p.ang = s!="" ? stof(s) : -1000;
+      key = string("angPrelearn") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stof(iter->second);
+        c2p.ang = val;
+      }
+      else
+      {
+        c2p.ang = -1000;
+      }
 
       if( fabs(c2p.ang) < 360 && fabs(c2p.tgt_x) > 900 )
       { 
@@ -980,7 +998,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       c2p.patPMC.resize(na);
       fill(c2p.patPMC.begin(),c2p.patPMC.end(),0.);
       c2p.wmmax = wmmaxFP;
-      c2p.tempWAmpl = w2maxFP;
+      c2p.tempWAmpl = w1maxFP;
     }
 }
 

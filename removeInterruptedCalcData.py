@@ -13,6 +13,21 @@ import fnmatch
 #
 #dat_basename = sys.argv[1]
 
+def killFileFromArm(fname):
+    ree = '(.*).dat'
+    basename = os.path.basename(fname)
+    name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
+    fnamePatToRemove = fname.replace("_arm","*")
+    #print "------- about to delete ",fnamePatToRemove
+    for filename in os.listdir(pp.out_dir):
+        filename = pp.out_dir + filename
+        if fnmatch.fnmatch(filename, fnamePatToRemove):
+            try:
+                os.remove(filename)
+                print("------- deleting",filename)
+            except OSError as e:
+                print(str(e))
+
 pp.paramsInit('shmuelof.ini')
 
 #matchStr = '*' + dat_basename + '*_arm*.dat'
@@ -28,25 +43,20 @@ if len(fnames) == 0:
 for fname in fnames:
     try:
         up.paramsInitFromArmFname(fname)
-    except IOError:
-        os.remove(fname)
+    except (IOError,KeyError):
+        killFileFromArm(fname)
         continue
 
     n = pp.phaseBegins[-1]
     armData = stdp.armFileRead(fname)
-    nrows,ncols = np.shape(armData) 
+    if len(armData) <= 1:
+        killFileFromArm(fname)
+    try:
+        nrows,ncols = np.shape(armData) 
+    except ValueError:
+        killFileFromArm(fname)
+        continue
+
     if nrows != n:
         print("------- Warning: wrong length of data file table, maybe calc was terminated too early -> ",fname)
-        ree = '(.*).dat'
-        basename = os.path.basename(fname)
-        name = re.match(ree,basename).group(1)  #re.search(ree,fnames[0])
-        fnamePatToRemove = fname.replace("_arm","*")
-        #print "------- about to delete ",fnamePatToRemove
-        for filename in os.listdir(pp.out_dir):
-            filename = pp.out_dir + filename
-            if fnmatch.fnmatch(filename, fnamePatToRemove):
-                try:
-                    os.remove(filename)
-                    print("------- deleting",filename)
-                except OSError as e:
-                    print(str(e))
+        killFileFromArm(fname)

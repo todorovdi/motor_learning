@@ -16,6 +16,19 @@ fi
 
 . ./run_dif_perturb.sh    # . means to source a script, so that it can use variables from the current script
 
+runPair()
+{
+  ao="$1$addOptions"
+  perturbSimple "--ini=$ini$ao" $nsess $useOldData
+  args_EBL=$pdfSuffix
+  
+  ao=" --learn_cb=0$addOptions"
+  perturbSimple "--ini=$ini$ao" $nsess $useOldData 
+  args_NEBL=$pdfSuffix
+
+  python "$plotfile" "$args_EBL" "$args_NEBL"
+}
+
 if [ $# -ne 0 ]; then
   delay="3.0s"
   if [ $useOldData == '0' ]; then
@@ -27,39 +40,14 @@ if [ $# -ne 0 ]; then
 
   nsess=$1
 
-  addOptions=" --cbLRateUpdAbsErr_threshold=0.004"
+  #addOptions=" --cbLRateUpdAbsErr_threshold=0.004 --finalNoiseAmpl=0.005"
+  #addOptions=" --cbLRateUpdAbsErr_threshold=0.004"
 
-  addOptionsLoc=" --rewardDist=0.03$addOptions"
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
-  args0=$pdfSuffix
+  runPair ""
+  a_EBL=$args_EBL
+  a_NEBL=$args_NEBL
 
-  addOptionsLoc="$addOptions"
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
-  args1=$pdfSuffix
-  
-  addOptionsLoc=" --learn_cb=0$addOptions"
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData 
-  args2=$pdfSuffix
-
-  #python "$plotfile" "$args1" "$args2"
-
-  addOptions=" --cbLRateUpdAbsErr_threshold=0.004 --finalNoiseAmpl=0.005"
-
-  addOptionsLoc="$addOptions"
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
-  args3=$pdfSuffix
-
-  addOptionsLoc=" --learn_cb=0$addOptions"
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData 
-  args5=$pdfSuffix
-
-  addOptions=" --cbLRateUpdAbsErr_threshold=0.004 --finalNoiseAmpl=0.002"
-
-  addOptionsLoc="$addOptions"
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
-  args4=$pdfSuffix
-
-  python "$plotfile" "$args0" "$args1" "$args3" "$args4" "$args2" "$args5"
+  #python "$plotfile" "$a_EBL" "$a_NEBL"
 
   ./beep.sh
   sleep 0.1s

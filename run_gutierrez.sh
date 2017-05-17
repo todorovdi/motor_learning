@@ -80,7 +80,13 @@ if [ $# -ne 0 ]; then
   #addOptionsLoc=" --trainCBEveryTrial=0 --rwdFromcbLRate_thr=0.08"$addOptions
   #fullSim $1
 
-  addOptionsLoc=" --trainCBEveryTrial=1 --rwdFromcbLRate_thr=0.04"$addOptions
+  #addOptionsLoc=""$addOptions
+  #fullSim $1
+
+  addOptionsLoc=" --acThrMult=1.5"$addOptions
+  fullSim $1
+
+  addOptionsLoc=" --acThrMult=2"$addOptions
   fullSim $1
 
   #addOptionsLoc=" --trainCBEveryTrial=0"$addOptions

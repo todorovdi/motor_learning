@@ -41,7 +41,29 @@ runAcTest()
   args_percept_large_rot_nobg=$args_large_rot
 
   python $plotfile \
-    "$args_percept_cue_change_nobg" "$args_percept_small_rot_nobg" "$args_percept_large_rot_nobg"
+    "$args_percept_cue_change_nobg" "$args_percept_small_rot_nobg" "$args_percept_large_rot_nobg" \
+    "---plotfname=ACTest_$1"
+}
+
+runCBfault()
+{
+  ao=" --ini=$ini --numTrials1=100$1" 
+
+  addOptionsLoc="--endpoint_rotation1=$rotLarge --learn_cb=0"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  args_large_rot_nocb=$pdfSuffix
+
+  addOptionsLoc="--endpoint_rotation1=$rotLarge --cbLRateIsConst=1 --cbLRate=${cblc}"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  args_large_rot=$pdfSuffix
+
+  addOptionsLoc="--percept_xrev1=1 --cbLRateIsConst=1 --cbLRate=${cblc}"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  args_rev=$pdfSuffix
+
+  python $plotfile \
+    "$args_large_rot_nocb" "$args_large_rot" "$args_rev" \
+    "---plotfname=CBfault_rot${rotLarge}_cblc${cblc}_$1"
 }
 
 #runBGTest()
@@ -62,13 +84,13 @@ runTables()
   runAcTest "$1"
   ################################  only CB
   ################################  only CB, no adapttive critique
-  ao=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=1.5"$1 
+  ao=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=$cblc"$1 
   runtri "$ao"
   args_percept_cue_change_nobg_noac=$args_cue_change
   args_percept_small_rot_nobg_noac=$args_small_rot
   args_percept_large_rot_nobg_noac=$args_large_rot
   ################################  only CB, no adapttive critique, no degradation
-  ao=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=1.5 --cbRateDepr=0"$1 
+  ao=" --ini=$ini --learn_bg=0 --cbLRateIsConst=1 --cbLRate=$cblc --cbRateDepr=0"$1 
   runtri "$ao"
   args_percept_cue_change_nobg_noac_nodepr=$args_cue_change
   args_percept_small_rot_nobg_noac_nodepr=$args_small_rot
@@ -80,7 +102,7 @@ runTables()
   args_percept_small_rot_nocb=$args_small_rot
   args_percept_large_rot_nocb=$args_large_rot
   ################################    CB and BG, no adaptive critic, binary RWD
-  ao=" --ini=$ini --cbLRateIsConst=1 --cbLRate=1.5"$1 
+  ao=" --ini=$ini --cbLRateIsConst=1 --cbLRate=$cblc"$1 
   runtri "$ao"
   args_percept_cue_change_noac=$args_cue_change
   args_percept_small_rot_noac=$args_small_rot
@@ -99,7 +121,9 @@ runTables()
     "$args_percept_cue_change_nobg_noac_nodepr" "$args_percept_small_rot_nobg_noac_nodepr" "$args_percept_large_rot_nobg_noac_nodepr" \
     "$args_percept_cue_change_nocb" "$args_percept_small_rot_nocb" "$args_percept_large_rot_nocb" \
     "$args_percept_cue_change" "$args_percept_small_rot" "$args_percept_large_rot"  \
-    "$args_percept_cue_change_noac" "$args_percept_small_rot_noac" "$args_percept_large_rot_noac" 
+    "$args_percept_cue_change_noac" "$args_percept_small_rot_noac" "$args_percept_large_rot_noac" \
+  "---plotfname=perfTable_${rotLarge}_$1" \
+  "---onlyMainPlots"
 
   ./beep.sh
   sleep 0.1s
@@ -135,10 +159,83 @@ if [ $# -ne 0 ]; then
   tgt=45
   rotSmall=30
   rotLarge=70
+  cblc=1.5
 
-  #runAcTest  " --acByUpdCoefThr=1 --acUpdCoefThr=0.001 --trainCBEveryTrial=1" 
+  #runAcTest ""
+  #runCBfault ""
 
+  cblc=5
+  #runCBfault ""
+
+  cblc=1.5
   runTables ""
+
+  cblc=5
+  #runCBfault " --wmmaxFP=0.7 --cbRateDepr=0.16"
+  #runCBfault ""
+
+  cblc=10
+  #runCBfault " --numTrials1=150"
+
+  cblc=5
+  rotLarge=85
+  #runCBfault " --numTrials1=150"
+
+  cblc=1.5
+  rotLarge=85
+  #runCBfault " --numTrials1=150"
+
+  #runCBfault ""
+  #runTables ""
+  rotLarge=80
+
+  #runCBfault ""
+
+  rotLarge=85
+  #runCBfault ""
+  #runTables ""
+  
+  #runCBfault " --rewardDist=0.07 --cbRateDepr = 0"
+  #runCBfault " --rewardDist=0.07 --wmmaxFP=0.7"
+  #runCBfault " --rewardDist=0.07"
+
+  #runCBfault " --rewardDist=0.07"
+  #runCBfault " --rewardDist=0.05"
+  #runCBfault ""
+
+
+  #runAcTest ""
+
+  #runAcTest " --cbInitShiftSz=0.65"
+  #runAcTest " --cbInitShiftSz=0.05"
+  #runAcTest " --cbInitShiftSz=0.35"
+
+
+  #runTables ""
+
+  # works bad as after begin reset to small value, lambda cannot rise back
+  #runTables " --acInstantUpd=1 --acThrMult=1."  
+
+  # same thing, even worse -- the diff between expected correction and the real one is bigger (as expected is lower)
+  #runTables " --acInstantUpd=1 --acThrMult=1. --cbLRate=0.04 --acUpdCoefThr=0.002"  
+  #runTables " --acInstantUpd=1 --acThrMult=1. --cbLRate=0.04"  
+  #runTables " --acInstantUpd=1 --acThrMult=1. --acUpdCoefThr=0.002"  
+  #runTables " --acInstantUpd=1 --acThrMult=1. --acUpdCoefThr=0.004"  
+
+  #runTables " --acInstantUpd=1 --acThrMult=1. --acUpdCoefThr=0.002 --cbLRate=0.42"  
+
+  #runTables " --acThrMult=1."
+  #  --cbLRateUpdTwoErrThreshold=0
+
+  # works but with more noise
+  #runTables " --acThrMult=1."
+
+  # small pert ok, large -- to small CB turn off 
+  #runTables " --acThrMult=1. --cbLRateUpdSpdUp=20000."
+
+
+  #perturbSimple "--ini=modelPerf.ini --learn_bg=0 --acUpdCoefThr=0.0013 --cue1=1 --acInstantUpd=1 --acThrMult=1 --cbLRate=0.02" $nsess $useOldData
+  #Pyclewn gdb --args pert_dbg --ini=modelPerf.ini --learn_bg=0 --cue1=1 --acInstantUpd=1 --acThrMult=1 --cbLRate=0.42 --seed=1
 
 
   ./beep.sh

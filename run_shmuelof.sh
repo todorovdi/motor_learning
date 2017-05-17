@@ -17,13 +17,15 @@ seed=0     #makes <more or less> random seed
 
 doSim()
 {
-  addOptionsLoc=""$addOptions
-  perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData  
-  args1=$pdfSuffix
+  if [ $runall == '1' ];then
+    addOptionsLoc=""$addOptions
+    perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData  
+    args1=$pdfSuffix
 
-  addOptionsLoc=" $addTrials$addOptions"
-  perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData 
-  args1Long=$pdfSuffix
+    addOptionsLoc=" $addTrials$addOptions"
+    perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData 
+    args1Long=$pdfSuffix
+  fi
 
   addOptionsLoc=""$addOptions
   perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
@@ -33,7 +35,8 @@ doSim()
   perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
   argsCBonLong=$pdfSuffix
 
-  python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long"
+  python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long" \
+    "---plotfile=shmu_$addOptions"
 }
 
 doTest()
@@ -82,7 +85,21 @@ if [ $# -ne 0 ]; then
 
   nsess=$1
 
+  runall=1
+
   ###########################
+
+  addOptions=" --cbRateDepr=0.018"
+  doSim
+
+  #addOptions=" --cbRateDepr=0.02"
+  #doSim
+
+  #addOptions=" --cbRateDepr=0.01"
+  #doSim
+
+  #addOptions=" --cbRateDepr=0.03"
+  #doSim
 
   #addOptions=" --wmmaxFP=0.2 --vectorErrTgtBorder=0"
   #doSim
@@ -90,23 +107,21 @@ if [ $# -ne 0 ]; then
   #addOptions=" --wmmaxFP=0.15 --vectorErrTgtBorder=0"
   #doSim
 
-  addOptions=" --wmmaxFP=0.04"
-  doSim
 
-  addOptions=" --wmmaxFP=0.04 --vectorErrTgtBorder=0"
-  doSim
+  #addOptions=" --wmmaxFP=0.04 --vectorErrTgtBorder=0"
+  #doSim
 
-  addOptions=" --wmmaxFP=0.05"
-  doSim
+  #addOptions=" --wmmaxFP=0.05"
+  #doSim
 
-  addOptions=" --wmmaxFP=0.05 --vectorErrTgtBorder=0"
-  doSim
+  #addOptions=" --wmmaxFP=0.05 --vectorErrTgtBorder=0"
+  #doSim
 
-  addOptions=" --wmmaxFP=0.06 --vectorErrTgtBorder=0"
-  doSim
+  #addOptions=" --wmmaxFP=0.06 --vectorErrTgtBorder=0"
+  #doSim
 
-  addOptions=" --wmmaxFP=0.06"
-  doSim
+  #addOptions=" --wmmaxFP=0.06"
+  #doSim
 
   #addOptions=" --wmmaxFP=0.07 --vectorErrTgtBorder=0"
   #doSim

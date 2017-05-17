@@ -129,7 +129,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
             if (CONT_OUT) {bg.exportContState(t);}
                         nsteps++;
                         t+= dt;
-                        if(dt >= 1.)
+                        if(dt >= bgStepsizeIntStopThr)
               break;
           };
         if (CONT_OUT) {bg.exportContClose();}
@@ -191,17 +191,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
 
       if(learn_cb && feedbackGiven)
       { 
-              //if( fzero(R) )
-        float dx, dy;
-        percept->calcErr(&dx,&dy,true);
-        float mod_dx = dx*cos(rotateErr) - dy*sin(rotateErr);
-        float mod_dy = dx*sin(rotateErr) + dy*cos(rotateErr);
-        if(xreverseErr)
-          mod_dx = -mod_dx;
-
         cb.learn();
-        // else
-        // { x_cb_target = endpt_x; y_cb_target = endpt_y;  }
       }
       else
       {
@@ -294,6 +284,9 @@ void MotorLearning::initParams(parmap & params)
  
     string s = params["cbRetrainSpeedup"];
     cbRetrainSpeedup = s != "" ? stoi(s) : 0; 
+
+    s = params["bgStepsizeIntStopThr"];
+    bgStepsizeIntStopThr = s != "" ? stof(s) : 10; 
 
     nc=stoi(params["nc"]);
     na=stoi(params["na"]);

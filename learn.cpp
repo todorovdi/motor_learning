@@ -81,13 +81,29 @@ int main(int argc, char** argv)
 
     parmap::iterator i;
     
+    bool notfound = false;
     i = params_pre.find("ini");
-    string paramsEnvFile;
+    string paramsEnvFile = "";
     if (i != params_pre.end())
     { 
         paramsEnvFile =i->second;
         if(!paramsEnvFile.length())
-            paramsEnvFile = defParamFile;
+        {
+            // I want to get exception
+            //paramsEnvFile = defParamFile;
+            notfound = true;
+        }
+    }
+    else
+    {
+      // I want to get exception
+      //paramsEnvFile = defParamFile;
+      notfound = true;
+    }
+
+    if(notfound)
+    {
+      cout<<" INI FILE ARGUMENT NOT PRESENT! "<<endl;
     }
 
     parmap params;

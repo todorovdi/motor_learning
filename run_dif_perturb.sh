@@ -1,3 +1,5 @@
+
+
 # $1 -additional args, $2 bg state, $3 cb state
 genPdfSuffix()
 {
@@ -26,7 +28,7 @@ runSimulationSimple()
 
 rmOldData()
 {
-  if [ $1 == "0" ]; then
+  if [ $1 == "0" ] || [ $1 == "3" ]; then
     tt="${calc_dir}/${pdfSuffix}_seed_"
     echo ".sh deleting $tt"
     #rm "$tt"
@@ -47,7 +49,7 @@ perturb()
 
   echo ".sh pdfSuffix ="$pdfSuffix
   runSimulation  "$1" "$2" "$3" "$4" $uod
-  if [ $uod -ne 9 ]; then
+  if [ $uod -ne 9 ] && [ $uod -ne 3 ] && [ $uod -ne 4 ]; then
     python "$plotfile" "$pdfSuffix"
   fi
   
@@ -66,7 +68,7 @@ perturbSimple()
 
   echo ".sh pdfSuffix ="$pdfSuffix
   runSimulationSimple  "$1" "$2" $uod
-  if [ $uod -ne 9 ]; then
+  if [ $uod -ne 9 ] && [ $uod -ne 3 ] && [ $uod -ne 4 ]; then
     python "$plotfile" "$pdfSuffix"
   fi
   
@@ -105,7 +107,8 @@ if [ $# -eq 0 ]; then
 fi
 
 if [ $# -eq 1 ]; then
-  echo "Please tell, to erase existing dat files (0), to plot existing data (1), or to add more sessions (2), or to generate only multi plots (9), or to recalibrate arm (10)"
+  echo "Please tell, to calc, erasing existing dat files (0), to plot existing data (1), or to add more sessions (2), or to generate only multi plots (9), or to recalibrate arm (10)"
+  echo "One can also calc without plotting, erasing existing dat files (3), or to do the same but keeping existing dat files (4)"
   exit 1
 fi
 
@@ -131,6 +134,14 @@ fi
 
 if [ $useOldData == "2" ]; then
   echo "#####################  Adding sessions to plot"
+fi
+
+if [ $useOldData == "3" ]; then
+  echo "#####################  Only generating data and final/multi plots, replace existing"
+fi
+
+if [ $useOldData == "4" ]; then
+  echo "#####################  Only generating data and final/multi plots, add to existing"
 fi
 
 if [ $useOldData == "9" ]; then

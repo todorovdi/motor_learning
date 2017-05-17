@@ -103,32 +103,36 @@ def getErrs(armData):
         errs[int(j)] = d
     return errs
 
-def doStats(fnames):
+def doStats(fnames,ind=-1):
     n = pp.phaseBegins[-1] 
     nsess = len(fnames)
-    errs = np.zeros(shape=(nsess,n))
+    dat = np.zeros(shape=(nsess,n))
     for i,fname in enumerate(fnames):
-        armData = np.loadtxt(fnames[i])
-        if pp.plotReachAngles != 0 :
-            dat = getReachAngles(armData)
+        rawData = np.loadtxt(fnames[i])
+        if ind == -1:
+            if pp.plotReachAngles != 0 :
+                tdat = getReachAngles(rawData)
+            else:
+                tdat = getErrs(rawData) 
         else:
-            dat = getErrs(armData) 
-        if len(dat) != n:
+            tdat = rawData[:,ind]
+            #
+        if len(tdat) != n:
             print("------- doStats Warning: wrong length of data file table, maybe calc was terminated too early")
         else:
-            errs[i,:] = dat * pp.datMult
+            dat[i,:] = tdat * pp.datMult
     #print math.isnan(t)
     means = np.zeros(n)
     SEMs = np.zeros(n)
     for i in range(n):
-        means[i] = np.mean(errs[:,i])
+        means[i] = np.mean(dat[:,i])
     #tt = errs[:,-1]
     #print tt
     #print sum(tt)
 
     if nsess>1:
         for i in range(n):
-            SEMs[i] = stats.sem(errs[:,i])
+            SEMs[i] = stats.sem(dat[:,i])
         
     #print max(SEMs)
     return means,SEMs
@@ -143,11 +147,12 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
     xlim = pp.reachBoxXsz
     yadd = pp.reachBoxYsz
     ylim = yadd + yc
+    ylim_min = pp.reachBoxYmin
 
-    ax.set_ylim([0.2,ylim]) # set ymin
+    ax.set_ylim([ylim_min,ylim]) # set ymin
     ax.set_xlim([-xlim,xlim])
     ax.set_xticks(np.arange(-xlim,xlim,0.1))
-    ax.set_yticks(np.arange(0.0,ylim,0.1))
+    ax.set_yticks(np.arange(ylim_min,ylim,0.1))
 
     if(twoPhases and int(pp.paramsEnv["numPhases"]) > 3 ):
         ax.scatter(xs[pp.trials1],ys[pp.trials1],c=nums[pp.trials1],lw=0.0,cmap='inferno',s=45)
@@ -338,7 +343,7 @@ def genCBStatePlot(fig,ax,fname):
     ax.set_ylabel('wcb[0 1 2 3 4 5][*]',rotation=90)
     ax.set_ylim(0,36)
 
-def genCBStateMaxPlot(fig,ax,fname):
+def genCBStateMaxPlot(fig,ax,fname,avg=False):
     data = np.loadtxt(fname)
     state = data[:,range(1,6*6+1)]
     (nrows, ncols) = state.shape
@@ -376,13 +381,13 @@ def genCBMiscPlot(fig,ax,fname):
     rates = misc[:,0]
     errAbsLarge = errMult * misc[:,1]
     #errAbsSmall = errMultSmall * misc[:,1]
-    ratios = misc[:,2]
+    #ratios = misc[:,2]
     #prevErrAbs = errMult * misc[:,3]
     #(nrows, ncols) = misc.shape
 
     ax.plot(rates,label='rate',c='blue')
     ax.plot(errAbsLarge,label=str(errMult)+'*cur_errAbs',c='green')
-    ax.plot(ratios,label='errToCompare/errAbs',c='red',alpha=0.5)
+    #ax.plot(ratios,label='errToCompare/errAbs',c='red',alpha=0.5)
     #ax.plot(ratios,label='errAbs/errToCompare',c='red')
     #ax.plot(prevErrAbs,label=str(errMult)+'*prevErrAbs')
     #ax.plot(errAbsSmall,label=str(errMultSmall)+'*cur_errAbs')
@@ -395,7 +400,7 @@ def genCBMiscPlot(fig,ax,fname):
     ylmin = 0
     #ylmin = 1.2*math.log(1/float(pp.paramsEnv["cbLRateUpdSpdDown"]))
     ax.set_ylim(ylmin,ylmax)
-    ax.set_yticks(np.append(np.arange(ylmin,0,0.2),np.arange(0,ylmax,0.2) ) )
+    ax.set_yticks(np.append(np.arange(ylmin,0,0.2),np.arange(0,ylmax,1) ) )
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
     ax.set_title('CB misc plot',y=1.04)
 
@@ -407,9 +412,9 @@ def genCBMiscPlot(fig,ax,fname):
     ax.axhline(y=float(pp.paramsEnv["cbLRateUpdAbsErr_threshold"])*errMult,c=myell2,linewidth=1,
             zorder=0,label=str(errMult)+'*errThreshold')
 
-    myDarkRed = [109./255, 33./255, 33./255]
-    ax.axhline(y=float(pp.paramsEnv["cbLRateUpdErrRatio_threshold"]),c=myDarkRed,linewidth=1,
-            zorder=0,label='ratioThreshold')
+    #myDarkRed = [109./255, 33./255, 33./255]
+    #ax.axhline(y=float(pp.paramsEnv["cbLRateUpdErrRatio_threshold"]),c=myDarkRed,linewidth=1,
+    #        zorder=0,label='ratioThreshold')
     
     ax.legend(loc='upper right')
 

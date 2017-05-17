@@ -15,6 +15,9 @@ class Percept
   bool vectorErrTgtBorder;
   float vectorErrTgtBorderMult;
 
+  bool rotateErr;
+  bool xreverseErr;
+
     public:
   float getErr(int ind, bool toBorder);   // ind>=0, returns errHist[-1-ind]
   int getHistSz();

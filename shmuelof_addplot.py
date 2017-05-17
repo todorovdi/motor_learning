@@ -119,7 +119,7 @@ def makePubPlot(fnames2d):
             ax_ = plt.twiny(ax)
             ax_.set_xlim([0, 350])
             ax_.set_xticks(phases)
-            ax_.set_xticklabels(pp.phaseNames + ["WASHOUT 2"])
+            #ax_.set_xticklabels(pp.phaseNames + ["WASHOUT 2"])
             # ax_.xaxis.set(ticks=[int(ph+15) for ph in phases[:-1]], ticklabels=pp.phaseNames) # to offset like in the paper
             ax_.tick_params(axis='both', which='both', size=26)
 

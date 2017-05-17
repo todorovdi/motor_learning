@@ -19,7 +19,7 @@ class CB_model
   float cbLRateMax;  
   float cbLRate_init;  
 
-  float cb_init_shift_size; // stepsize used for computation of DF in cerebellum
+  float cbInitShiftSz; // stepsize used for computation of DF in cerebellum
   float x_cb_target, y_cb_target;  // current CB target
   float updateCBStateDist;
 
@@ -46,6 +46,10 @@ class CB_model
 
   int cbLRateUpdTwoErrThreshold;
   bool cbLRateUpdVariableSpd;
+
+  float acOptimalRateMult;
+  float acThrMult;
+  bool acInstantUpd;
 
   vector<float> errHist;
 

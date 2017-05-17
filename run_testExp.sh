@@ -61,7 +61,7 @@ perfErrDifNorm()
 
 perfFromLambda()
 {
-  addOptionsLoc=" --ini=testExp_perfFromLambda.ini$1"
+  addOptionsLoc=" --ini=tepl.ini$1"
   fullSim 
 
   ./beep.sh
@@ -143,6 +143,57 @@ gradedRwd_sweepPowerRcoef()
   gradedRwd_sweepPower " --Rpre_coef=0.2$1"
 }
 
+# makes rwd = -3 for first adaptation trial
+gradeAndReward()
+{
+  pow=$2
+  dist=0.1368
+  distpow=`echo "scale=4;e(l($dist)*$pow)" | bc -l`
+  rwd=`echo "scale=4;$desiredRwd/$distpow" | bc -l`
+  # bc -l
+
+  ao="$1"
+  perfFromLambda " --rwdGradePower=$pow --rewardSize=$rwd$ao"
+}
+
+fromLambda_sweepPower()
+{
+  gradeAndReward "$1" "0.5"
+  a1EB=$args_EB
+  a1nonEB=$args_nonEB
+  gradeAndReward "$1" "1.0"             
+  a2EB=$args_EB
+  a2nonEB=$args_nonEB
+  gradeAndReward "$1" "1.5"
+  a3EB=$args_EB
+  a3nonEB=$args_nonEB
+  gradeAndReward "$1" "2"
+  a4EB=$args_EB
+  a4nonEB=$args_nonEB
+  gradeAndReward "$1" "2.5"
+  a5EB=$args_EB
+  a5nonEB=$args_nonEB
+  gradeAndReward "$1" "3"
+  a6EB=$args_EB
+  a6nonEB=$args_nonEB
+  #gradeAndReward "$1" "0.1"
+  #a7EB=$args_EB
+  #a7nonEB=$args_nonEB
+
+  python "$plotfile" \
+    "$a2EB" "$a2nonEB" \
+    "$a3EB" "$a3nonEB" \
+    "$a4EB" "$a4nonEB" \
+    "$a5EB" "$a5nonEB" \
+    "$a6EB" "$a6nonEB" \
+    "---plotfname=${1}_sweepPow"
+
+  ./beep.sh
+  sleep 0.1s
+  ./beep.sh
+}
+
+
 if [ $# -ne 0 ]; then
 
   delay="3.0s"
@@ -157,12 +208,67 @@ if [ $# -ne 0 ]; then
   useOldData=$2   # 9 means don't plot
 
   echo "Starting experiment "$experimentName
- 
-  gradedRwd_sweepCoef " --rwdGradePower=0.63 --wmmaxFP=0.7"
+      
+  desiredRwd=1.5
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=5 --rwdFromcbLRate_add=-1"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=4 --rwdFromcbLRate_add=-1"
 
-  gradedRwd_sweepPowerRcoef " --wmmaxFP=0.5"
-  gradedRwd_sweepPowerRcoef " --wmmaxFP=0.7"
-  gradedRwd_sweepPowerRcoef " --wmmaxFP=0.3"
+  fromLambda_sweepPower " --rwdFromcbLRate_mult=1.5"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2"
+  fromLambda_sweepPower " --rwdFromcbLRate_mult=2.5"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3"
+
+  fromLambda_sweepPower " --rwdFromcbLRate_mult=1.5 --rwdFromcbLRate_add=-2"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2 --rwdFromcbLRate_add=-2.5"
+  fromLambda_sweepPower " --rwdFromcbLRate_mult=2.5 --rwdFromcbLRate_add=-3"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3 --rwdFromcbLRate_add=-3.5"
+
+
+  #gradeAndReward " --rwdFromcbLRate_mult=4" "1.5"
+  #gradeAndReward " --rwdFromcbLRate_mult=5" "1.5"
+
+
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3 --acThrMult=2.5"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3.5 --acThrMult=2.5"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=4 --acThrMult=2.5"
+
+  # worsens EBL because CB works worse
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3 --acThrMult=2.5 --cbInitShiftSz=0.35"
+
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3 --acThrMult=2.5 --cbInitShiftSz=0.15"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2 --acThrMult=2.5"
+
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=1.5"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2.5"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3"
+  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2"
+
+
+  #fromLambda_sweepPower " --perfRewardSize=3"
+  #fromLambda_sweepPower " --perfRewardSize=2.75"
+    #fromLambda_sweepPower " --perfRewardSize=2.5"
+  #fromLambda_sweepPower " --perfRewardSize=2.25"
+  #fromLambda_sweepPower " --perfRewardSize=2"
+  #fromLambda_sweepPower " --perfRewardSize=1"
+
+  #desiredRwd=4
+  #fromLambda_sweepPower " --perfRewardSize=3"
+  #fromLambda_sweepPower " --perfRewardSize=2.5"
+  #fromLambda_sweepPower " --perfRewardSize=2"
+  #fromLambda_sweepPower " --perfRewardSize=1"
+  #fromLambda_sweepPower " --perfRewardSize=1"
+
+  #desiredRwd=5
+  #fromLambda_sweepPower " --perfRewardSize=3"
+  #fromLambda_sweepPower " --perfRewardSize=2.5"
+  #fromLambda_sweepPower " --perfRewardSize=2"
+  #fromLambda_sweepPower " --perfRewardSize=1"
+
+  #gradedRwd_sweepCoef " --rwdGradePower=0.63 --wmmaxFP=0.7"
+
+  #gradedRwd_sweepPowerRcoef " --wmmaxFP=0.5"
+  #gradedRwd_sweepPowerRcoef " --wmmaxFP=0.7"
+  #gradedRwd_sweepPowerRcoef " --wmmaxFP=0.3"
 
   #ao=" --Rpre_coef=0.6$addOptions"
 

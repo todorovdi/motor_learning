@@ -341,8 +341,8 @@ void BG_model::init(parmap & params,Exporter *exporter_)
     Q = stof(params["Q"]);
     A_exp = stof(params["A_exp"]);
 
-    na = stof(params["na"]);
-    nc = stof(params["nc"]);
+    na = stoi(params["na"]);
+    nc = stoi(params["nc"]);
 
     HD_D2activity_reduction = 50.;
     PD_LTP_reduction = 80.;

@@ -30,19 +30,19 @@ void CB_model::train(float x0, float y0, float * yy, bool flushW, bool useCurW, 
             //    wcb[l][l] = 1.;
 
             // set only current weight nonzero
-            wcb[i][j]+=cb_init_shift_size;
+            wcb[i][j]+=cbInitShiftSz;
 
             //x[0]=a; x[1]=b;
             
             // it influences update of DR which is basically some precalc * neuron activity
-            arm->move(yy,endpt,wcb,ffield);
+            arm->move(yy,endpt,wcb,ffield,false);
 
             // compute error vector
-            dfwx[i][j]= (endpt[0]-x_cb_target)/cb_init_shift_size; 
-            dfwy[i][j]= (endpt[1]-y_cb_target)/cb_init_shift_size;
+            dfwx[i][j]= (endpt[0]-x_cb_target)/cbInitShiftSz; 
+            dfwy[i][j]= (endpt[1]-y_cb_target)/cbInitShiftSz;
 
             // restore
-            wcb[i][j]-=cb_init_shift_size;
+            wcb[i][j]-=cbInitShiftSz;
         }
 
     // flush cb weights so that they do not influence normal movements
@@ -200,18 +200,33 @@ void CB_model::learn()
       
       float tt = acUpdCoefThr;
       b2 = fabs( upd_coef_real - upd_coef_cb) < tt;   
-      b2neg = fabs( upd_coef_real - upd_coef_cb) > tt * 2.;   
+      b2neg = fabs( upd_coef_real - upd_coef_cb) >= tt * acThrMult;   
 
-      if(b2)       // means succesful correction. Then correct more!
+      float optimalLambda =  prevErrAbs * prevErrAbs / last_errDFmod;
+      if(!acInstantUpd)
       {
-        cblr_upd = 0.6 * prevErrAbs * prevErrAbs / last_errDFmod;
-        cbLRate = fmin( cbLRate * cbLRateUpdSpdUp , cblr_upd);
+        if(b2)       // means succesful correction. Then correct more!
+        {
+          cblr_upd = acOptimalRateMult * optimalLambda;
+          cbLRate = fmin( cbLRate * cbLRateUpdSpdUp , cblr_upd);
+        }
+        else if(b2neg)
+        {
+          cblr_upd = 1/(cbLRateUpdSpdDown);
+          cbLRate *= cblr_upd;
+          //cbLRate = 0;
+        }
       }
-      else if(b2neg)
+      else
       {
-        cblr_upd = 1/(cbLRateUpdSpdDown);
-        cbLRate *= cblr_upd;
-        //cbLRate = 0;
+        if(b2)       // means succesful correction. Then correct more!
+        {
+          cbLRate = cbLRate * acOptimalRateMult;
+        }
+        else if(b2neg)
+        {
+          cbLRate = 0;
+        }
       }
     }
     else
@@ -314,7 +329,6 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * p
   cbLRate = stof(params["cbLRate"]);
   cbLRateMax = stof(params["cbLRateMax"]);
   cbLRate_init = cbLRate;
-  cb_init_shift_size = stof(params["cb_init_shift_size"]);
   updateCBStateDist = stof(params["updateCBStateDist"]);
   cbLRateUpdSpdUp = stof(params["cbLRateUpdSpdUp"]);
   cbLRateUpdSpdDown = stof(params["cbLRateUpdSpdDown"]);
@@ -325,6 +339,9 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * p
   string s;
   s = params["cbLRateUpd_errDiffBased"];
   cbLRateUpd_errDiffBased = s != "" ? stoi(s) : 0;
+
+  s = params["cbInitShiftSz"];
+  cbInitShiftSz = s != "" ? stof(s) : 0.5;
 
   s = params["cbErrDepth"];
   cbErrDepth = s != "" ? stoi(s) : 0;  ;
@@ -351,9 +368,18 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * p
   cbLRateIsConst = s != "" ? stoi(s) : 0; 
 
   def_updateCBStateDist = updateCBStateDist;
- 
+
   s = params["cbRetrainNeeded_thr"];
-  cbRetrainNeeded_thr = s != "" ? stof(s) : 0; 
+  cbRetrainNeeded_thr = s != "" ? stof(s) : 0.4; 
+
+  s = params["acOptimalRateMult"];
+  acOptimalRateMult = s != "" ? stof(s) : 0.6; 
+
+  s = params["acThrMult"];
+  acThrMult = s != "" ? stof(s) : 2; 
+
+  s = params["acInstantUpd"];
+  acInstantUpd = s != "" ? stoi(s) : 0; 
 
   arm = arm_;
   exporter = exporter_;

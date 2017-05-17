@@ -63,7 +63,7 @@ def genMainPlot(ax,fnames,nums):
     annotateGraph(ax)
     ax.yaxis.grid(True)
 
-    print("last nums ",nums[-1], " last phase ",pp.phaseBegins[-1])
+    #print("last nums ",nums[-1], " last phase ",pp.phaseBegins[-1])
 
     if (pp.plotReachAngles  != 0 ) :
         ax.set_title("Average Endpoint Angles and SEMs", y=1.04)
@@ -255,7 +255,7 @@ def basename2armDatList(basename):
             fnames.append(pp.out_dir+filename)
     return fnames
 
-def genFigurePertMulti(dat_basenames):
+def genFigurePertMulti(dat_basenames,plotfname=""):
     dat_basenames_nonempty = []
     for ind,dat_basename in enumerate(dat_basenames):
         if dat_basename=="":
@@ -268,7 +268,7 @@ def genFigurePertMulti(dat_basenames):
         nr = 1
         nc = 1
     else:
-        nr = 4
+        nr = 5
         nc = l
 
     if pp.multi_onlyMainPlots:
@@ -350,10 +350,15 @@ def genFigurePertMulti(dat_basenames):
                 ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
                 ax = axs[3,ind]
-                #genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
+                genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
+                annotateGraph(ax)
+                ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
+
+                ax = axs[4,ind]
                 genRwdPlot(fig,ax,fileToPlot.replace('arm','output'))
                 annotateGraph(ax)
                 ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
+
 
             #genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
 
@@ -374,10 +379,16 @@ def genFigurePertMulti(dat_basenames):
     bb = pp.paramsEnv["pdfSuffix"]
     bb = re.sub('bg._cb.', '', bb)
     
-    if(len(fnames) == 1):
-        pdfname = pp.out_dir_pdf+bb+"_multi.pdf"
+    pdfname=""
+    if plotfname == "":
+        pdfname = pp.out_dir_pdf+bb
     else:
-        pdfname = pp.out_dir_pdf+bb+"_stats_n_="+str(len(fnames))+"_multi.pdf"
+        pdfname = pp.out_dir_pdf+plotfname
+
+    if(len(fnames) == 1):
+        pdfname = pdfname +"_multi.pdf"
+    else:
+        pdfname = pdfname+"__n_="+str(len(fnames))+"_multi.pdf"
 
     print('multi',pdfname)
     with PdfPages(pdfname) as pdf:
@@ -479,7 +490,7 @@ def printParams(fig,pos):
     paramsToPlot.append("cbLRateMax")
     #paramsToPlot.append("randomCBStateInit")
     #paramsToPlot.append("randomCBStateInitAmpl")
-    #paramsToPlot.append("trainCBEveryTrial")
+    paramsToPlot.append("trainCBEveryTrial")
     #paramsToPlot.append("retrainCB_useCurW")
     paramsToPlot.append("updateCBStateDist")
     paramsToPlot.append("cbRateDepr")
@@ -490,7 +501,8 @@ def printParams(fig,pos):
     paramsToPlot.append("cbErrDepth")
     paramsToPlot.append("cbLRateUpdAbsErr_threshold")
     paramsToPlot.append("cbLRateUpdErrRatio_threshold")
-
+    paramsToPlot.append("cbLRateUpdTwoErrThreshold")
+    paramsToPlot.append("acThrMult")
 
     paramsToPlot.append("")
     paramsToPlot.append("fake_prelearn")
@@ -513,13 +525,18 @@ def printParams(fig,pos):
 
     paramsToPlot.append("gradedReward")
     paramsToPlot.append("rwdGradePower")
+    paramsToPlot.append("rwdFromcbLRate_thr")
 
+    paramsToPlot.append("")
     paramsToPlot.append("perfBasedReward")
     paramsToPlot.append("perfRwdMult")
     paramsToPlot.append("perfFromAC")
     paramsToPlot.append("perfRewardSize")
     paramsToPlot.append("perfRwdErrChange_threshold")
-     
+
+    paramsToPlot.append("")
+    paramsToPlot.append("rwdFromcbLRate_add")
+    paramsToPlot.append("rwdFromcbLRate_mult")
 
     paramsToPlot.append("")
     paramsToPlot.append("learn_cb2")
@@ -544,7 +561,7 @@ def printParams(fig,pos):
     i = 0
     for param in paramsToPlot:
         if (param != ""):
-            if param in pp.paramsEnv:
+            if param in pp.paramsEnv and pp.paramsEnv[param] != "":
                 axlm.text(initX,initY-ysubtr*i,param+" = "+ pp.paramsEnv[param],fontsize=fsz)                # count from left top
                 i = i+1
             #else:
@@ -570,27 +587,43 @@ if __name__ == '__main__':
         print('Plotting argument ',ind,' is '+arg+'$')
 
     val = ""
+    plotfname= ""
+    onlyMainPlots=0
     iniParamFound = 0
+    dat_basenames=[]
     for farg in sys.argv:
         ree = '.*--ini=(.*\.ini).*'
-        #ree = '(.*).dat'
-        s = re.match(ree,farg)  #re.search(ree,fnames[0])
+        s = re.match(ree,farg)  
         if s!= None:
             val = s.group(1)
+            dat_basenames.append(farg)
+
+        ree = '.*---plotfname=(.*).*'
+        s = re.match(ree,farg)  
+        if s!= None:
+            plotfname = s.group(1)
+
+        ree = '.*---onlyMainPlots.*'
+        s = re.match(ree,farg)  
+        if s!= None:
+            onlyMainPlots=1
 
     if val == "":
-        paramFileName = 'shmuelof.ini'
+        #paramFileName = 'shmuelof.ini'
+        paramFileName=""
+        print " param file name not found :("
     else:
         paramFileName = val
 
     pp.paramsInit(paramFileName)
     pp.exportVarsInit(pp.paramsEnv)
+    pp.multi_onlyMainPlots=onlyMainPlots
 
-    dat_basenames = sys.argv[1:]
+    #dat_basenames = sys.argv[1:]
 
     if(len(dat_basenames) >  1):
         print("Plot single session")
-        genFigurePertMulti(dat_basenames)
+        genFigurePertMulti(dat_basenames,plotfname)
     elif(len(dat_basenames) == 1):
         fnames = basename2armDatList(dat_basenames[0]) 
         #matchStr = dat_basenames[0] + '_seed_*_arm*.dat'

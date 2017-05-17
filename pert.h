@@ -141,7 +141,7 @@ class perturbationExperimentEnv: public Environment
     float sector_thickness;
     float sector_width;
     float wmmaxFP;
-    float w2maxFP;
+    float w1maxFP;
     float armReachRadius;
     int  numPhases;
 
@@ -175,6 +175,8 @@ class perturbationExperimentEnv: public Environment
     float perfRwdErrChange_threshold;
     float acUpdCoefThr;
     float rwdFromcbLRate_thr;
+    float rwdFromcbLRate_mult;
+    float rwdFromcbLRate_add;
 
     int rwdErrDepth;
 
