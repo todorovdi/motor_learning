@@ -25,6 +25,9 @@ class MotorLearning
     bool retrainCB_useCurW;
     vector<float> Rpre;
     float Rpre_coef;              // how much of current reward we use for the new reward prediction error
+ 
+    float rewardSize;
+    bool exploreAlways;
 
     float T;                      // integration duration max limit
     float rotateErr;

@@ -22,9 +22,9 @@ import plotparams as pp
 # returns a1-a2
 def angleDegDif(a1,a2):    # suppose 0 <= a1,a2 < 360
     r = a1 - a2
-    if (math.fabs(r) > 180):
-        if a1 < 180:
-            r = a1 + (180*2 - a2)
+    if (math.fabs(r) > 180.):
+        if a1 < 180.:
+            r = a1 + (180.*2. - a2)
         else:
             r = -angleDegDif(a2,a1)
     return r
@@ -34,8 +34,8 @@ def coord2AngleDeg(x,y):    # returns -180 to 180
     yc = float(pp.paramsEnv["y_center"])
     baseAng = pp.baseAng_reachAngDisp  # relative to EAST direction
 
-    xd = x-xc
-    yd = y-yc
+    xd = float(x)-xc
+    yd = float(y)-yc
 
     if(xd >= 0):
         angleRad = ( math.atan( yd / xd )  ) 
@@ -49,13 +49,14 @@ def coord2AngleDeg(x,y):    # returns -180 to 180
             angleRad = -math.pi/2. - (math.pi/2.+angleRad)
 
     angleDeg = angleRad / (math.pi) * 180.
+    #print(angleDeg)
 
     # here angleDeg between -180. and 180.
     if angleDeg < 0.:
-        angleDeg = 360 + angleDeg;
+        angleDeg = 360. + angleDeg;
     angleDeg= angleDegDif(angleDeg,baseAng)
     if angleDeg > 180.:
-        angleDeg = 360 - angleDeg;
+        angleDeg = angleDeg - 360.;
 
     return angleDeg
 
@@ -72,7 +73,8 @@ def getReachAngles(armData):
     angs = np.zeros(n)
     for (x,y,j) in zip(x_actual,y_actual,nums):
         angleDeg = coord2AngleDeg(x,y)
-    #print int(j),x,y,xt,yt, d
+        #if(j>=39 and j<= 43):
+        #    print(angleDeg,x,y)
         angs[int(j)] = angleDeg
     return angs
 
@@ -94,10 +96,41 @@ def getErrs(armData):
         else:
             tgtAngleDeg = coord2AngleDeg(xt,yt) 
             angleCurDeg = coord2AngleDeg(x,y) 
-            dif = angleCurDeg - tgtAngleDeg;
-            dif1 = dif
-            if(dif > 180.):
-                dif1 = dif-360.
+            #if(j>=39 and j<= 43):
+            #    print(j,'tgtAngleDeg', tgtAngleDeg)
+            #    print(j,'angleCurDeg', angleCurDeg)
+            #    print('')
+            dif1 = angleDegDif(angleCurDeg,tgtAngleDeg)
+            #dif = angleCurDeg - tgtAngleDeg;
+            #dif1 = dif
+            #if(dif > 180.):
+            #    dif1 = dif-360.
+            d = dif1
+        #print int(j),x,y,xt,yt, d
+        errs[int(j)] = d
+    return errs
+
+def getErrsHandSpace(armData):
+    nums = armData[:,0]
+    xs = armData[:,1]          #
+    ys = armData[:,2]          # percieved reach
+    xs_target = armData[:,3]
+    ys_target = armData[:,4]   # percieved target
+    xs_actual = armData[:,8]
+    ys_actual = armData[:,9]   # hand space reach corrd
+    n = len(xs)
+
+    errs = np.zeros(n)
+    for (x,y,xt,yt,j) in zip(xs_actual,ys_actual,xs_target,ys_target,nums):
+        if(pp.plotAngleErrs == 0):
+            if(pp.signed_dist_err):
+                d =  -(x-xt)
+            else:
+                d = math.sqrt( (x-xt)**2 + (y-yt)**2 )
+        else:
+            tgtAngleDeg = coord2AngleDeg(xt,yt) 
+            angleCurDeg = coord2AngleDeg(x,y) 
+            dif1 = angleDegDif(angleCurDeg,tgtAngleDeg)
             d = dif1
         #print int(j),x,y,xt,yt, d
         errs[int(j)] = d
@@ -113,7 +146,10 @@ def doStats(fnames,ind=-1):
             if pp.plotReachAngles != 0 :
                 tdat = getReachAngles(rawData)
             else:
-                tdat = getErrs(rawData) 
+                if pp.reachCoordsHandSpace == 0:
+                    tdat = getErrs(rawData) 
+                else:
+                    tdat = getErrsHandSpace(rawData) 
         else:
             tdat = rawData[:,ind]
             #
@@ -166,7 +202,7 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
     #ax.scatter(x2, y2, color='b', s=s/2, alpha=.4)
 
     ax.grid()
-    ax.set_title('Reaching points '+title, y=1.03)
+    ax.set_title('Reaching endpoints '+title, y=1.03)
 
     lastx=0
     lasty=0
@@ -250,18 +286,14 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
             xr2 = tgt_actual[0][0]
             yr2 = tgt_actual[0][1]
 
-    if(tgt1_defined):
+    if(tgt1_defined and int(pp.paramsEnv['learn_bg']) != 0 ):
         rewardSpot1 = plt.Circle((xr1, yr1), pp.rewardDist, color='b', fill=False)
-    if(tgt2_defined):
+        ax.add_artist(rewardSpot1)
+    if(tgt2_defined and int(pp.paramsEnv['learn_bg']) != 0 ):
         rewardSpot2 = plt.Circle((xr2, yr2), pp.rewardDist, color='r', fill=False)
+        ax.add_artist(rewardSpot2)
 
     #learn_bg = int(pp.paramsEnv["learn_bg"] )
-    if(tgt1_defined):
-        ax.add_artist(rewardSpot1)
-    if(tgt2_defined):
-        ax.add_artist(rewardSpot2)
-#        ax.add_artist(rewardSpot2)
-
 
     addColorBar(fig,ax,vals=nums)
     #cax = ax.imshow(nums, interpolation='nearest', cmap=cm.coolwarm)
@@ -293,13 +325,13 @@ def addColorBar(fig,ax_,vals=0,tickSkip=10,dat=0,wd=0.01):
 
     ax1= fig.add_axes(pos2); # from left, from down, width, height
 
-    if dat==0:
+    if dat==0 and len(vals)>0:
         mult = max(1,int((vals[-1]+1)/tickSkip) )
         colorTicks = [i for i in vals if i%mult == 0]  
 
         norm = mpl.colors.Normalize(vmin=vals[0], vmax=vals[-1])
         cbar = mpl.colorbar.ColorbarBase(ax=ax1,norm=norm,ticks=colorTicks,orientation='vertical',cmap='inferno')
-    else:
+    elif dat != 0:
         cbar = fig.colorbar(dat,cax=ax1,orientation='vertical',cmap='inferno')
 
 def genBGActivityPlot(fig,ax,fname,cols=range(0,300)):
@@ -311,8 +343,9 @@ def genBGActivityPlot(fig,ax,fname,cols=range(0,300)):
     pcol.set_edgecolor('face')
     ax.set_aspect('auto')
     ax.grid(False)
-    ax.set_title('BG populations activity plot',y=1.04)
     ax.yaxis.grid(True,color='w')
+
+    ax.set_title('BG populations activity plot',y=1.04)
     ax.set_yticks(range(0,301,100))
     #ax.set_ylabel('y   d1   d2   gpe   gpi',rotation=90)
     ax.set_ylabel('y   d1   d2',rotation=90)
@@ -331,6 +364,19 @@ def genBGActivityPlot(fig,ax,fname,cols=range(0,300)):
 def genBGWeightsPlot(fig,ax,fname,cue=0):
     # 300 -- w1 + w2 + wm
     pcol = genBGActivityPlot(fig,ax,fname,range(cue*300,(cue+1)*300))
+    #cols=range(cue*300,(cue+1)*300)
+
+    #weights = np.loadtxt(fname)
+    #wm=10.*weights[:,range(0,100)]
+    #(nrows, ncols) = weights.shape
+    #weights2 = np.concatenate( (wm,weights[:,range(100,300)]), axis=1)
+
+    #pcol = ax.pcolor(weights.transpose(), cmap='inferno',lw=0,rasterized=True)
+    #pcol.set_edgecolor('face')
+    #ax.set_aspect('auto')
+    #ax.grid(False)
+    #ax.yaxis.grid(True,color='w')
+
     ax.set_title('BG weights plot, cue='+str(cue),y=1.04)
     ax.set_yticks(range(0,301,100))
     ax.set_ylabel('w1    w2    wm',rotation=90)
@@ -343,17 +389,32 @@ def genCBStatePlot(fig,ax,fname):
     ax.set_ylabel('wcb[0 1 2 3 4 5][*]',rotation=90)
     ax.set_ylim(0,36)
 
-def genCBStateMaxPlot(fig,ax,fname,avg=False):
-    data = np.loadtxt(fname)
-    state = data[:,range(1,6*6+1)]
-    (nrows, ncols) = state.shape
+def genCBStateMaxPlot(fig,ax,fnames,avg=False):
+    if avg==False:
+        fnames=[fnames]
+    nfiles=len(fnames)
+    n = pp.phaseBegins[-1]
+    allmaxs = np.zeros(shape=(nfiles,n) )
+    for i,fname in enumerate(fnames):
+        data = np.loadtxt(fname)
+        state = data[:,range(1,6*6+1)]
+        (nrows, ncols) = state.shape
 
-    maxs = []
+        for r in range(nrows):
+            s = state[r,:]
+            allmaxs[i,r] =   math.fabs( max(s.min(), s.max(), key=abs) )   
+
+    maxs = np.zeros(n)
     for r in range(nrows):
-        s = state[r,:]
-        maxs.append(  math.fabs( max(s.min(), s.max(), key=abs) )   )
+        maxs[r] = np.mean(allmaxs[:,r])
 
-    ax.plot(maxs)
+    if nfiles>1 and avg==True:
+        SEMs = np.zeros(n)
+        for i in range(nrows):
+            SEMs[i] = stats.sem(allmaxs[:,i])
+        ax.errorbar(range(n),maxs, yerr=SEMs)
+    else:
+        ax.plot(maxs)
     
     ax.xaxis.grid(True)
 
@@ -372,13 +433,31 @@ def genCBTuningPlot(fig,ax,fname):
     ax.set_ylabel('dfwx dfwy',rotation=90)
     ax.set_ylim(0,36*2)
 
-def genCBMiscPlot(fig,ax,fname):
-    #errMultSmall = 5.
+def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False):
+    if avg==False:
+        fnames=[fnames]
+    nfiles=len(fnames)
 
     errMult = pp.cbMiscErrMult
 
-    misc = np.loadtxt(fname)
-    rates = misc[:,0]
+    n = pp.phaseBegins[-1]
+    allRates = np.zeros(shape=(nfiles,n) )
+    for i,fname in enumerate(fnames):
+        misc = np.loadtxt(fname)
+        allRates[i,:] = misc[:,0]
+
+    rates = np.zeros(n)
+    for r in range(n):
+        rates[r] = np.mean(allRates[:,r])
+
+    if nfiles>1 and avg==True:
+        SEMs = np.zeros(n)
+        for i in range(n):
+            SEMs[i] = stats.sem(allRates[:,i])
+        ax.errorbar(range(n),rates, yerr=SEMs)
+    else:
+        ax.plot(rates)
+
     errAbsLarge = errMult * misc[:,1]
     #errAbsSmall = errMultSmall * misc[:,1]
     #ratios = misc[:,2]
@@ -386,37 +465,37 @@ def genCBMiscPlot(fig,ax,fname):
     #(nrows, ncols) = misc.shape
 
     ax.plot(rates,label='rate',c='blue')
-    ax.plot(errAbsLarge,label=str(errMult)+'*cur_errAbs',c='green')
+    if rateOnly == False:
+        ax.plot(errAbsLarge,label=str(errMult)+'*cur_errAbs',c='green')
     #ax.plot(ratios,label='errToCompare/errAbs',c='red',alpha=0.5)
     #ax.plot(ratios,label='errAbs/errToCompare',c='red')
     #ax.plot(prevErrAbs,label=str(errMult)+'*prevErrAbs')
     #ax.plot(errAbsSmall,label=str(errMultSmall)+'*cur_errAbs')
-    pos = ax.get_position()
-    
-    mx = float(pp.paramsEnv["cbLRate"])
-    cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
+        pos = ax.get_position()
+        
+        #mx = float(pp.paramsEnv["cbLRate"])
+
+        myell = [1,167./255.,66./255.]
+        ax.axhline(y=float(pp.paramsEnv["finalNoiseAmpl"])*errMult,c=myell,linewidth=1,zorder=0,
+                label=str(errMult)+'*noise')
+
+        myell2 = [1,110./255.,66./255.]
+        ax.axhline(y=float(pp.paramsEnv["cbLRateUpdAbsErr_threshold"])*errMult,c=myell2,linewidth=1,
+                zorder=0,label=str(errMult)+'*errThreshold')
+
+        #myDarkRed = [109./255, 33./255, 33./255]
+        #ax.axhline(y=float(pp.paramsEnv["cbLRateUpdErrRatio_threshold"]),c=myDarkRed,linewidth=1,
+        #        zorder=0,label='ratioThreshold')
+        
+        ax.legend(loc='upper right')
 
     ylmax = pp.cbMiscGraph_y_axis_max
     ylmin = 0
     #ylmin = 1.2*math.log(1/float(pp.paramsEnv["cbLRateUpdSpdDown"]))
     ax.set_ylim(ylmin,ylmax)
-    ax.set_yticks(np.append(np.arange(ylmin,0,0.2),np.arange(0,ylmax,1) ) )
+    ax.set_yticks(np.append(np.arange(ylmin,0,0.2),np.arange(0,ylmax,0.5) ) )
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
     ax.set_title('CB misc plot',y=1.04)
-
-    myell = [1,167./255.,66./255.]
-    ax.axhline(y=float(pp.paramsEnv["finalNoiseAmpl"])*errMult,c=myell,linewidth=1,zorder=0,
-            label=str(errMult)+'*noise')
-
-    myell2 = [1,110./255.,66./255.]
-    ax.axhline(y=float(pp.paramsEnv["cbLRateUpdAbsErr_threshold"])*errMult,c=myell2,linewidth=1,
-            zorder=0,label=str(errMult)+'*errThreshold')
-
-    #myDarkRed = [109./255, 33./255, 33./255]
-    #ax.axhline(y=float(pp.paramsEnv["cbLRateUpdErrRatio_threshold"]),c=myDarkRed,linewidth=1,
-    #        zorder=0,label='ratioThreshold')
-    
-    ax.legend(loc='upper right')
 
     ax.xaxis.grid(True, which='minor')
     ax.yaxis.grid(True)

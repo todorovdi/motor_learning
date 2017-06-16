@@ -1,12 +1,20 @@
 #ifndef SUPPL_H
 #define SUPPL_H
 
-#include "BG_model.h"
+#define _USE_MATH_DEFINES
+
 #include <string>
 #include <map>
 #include <iostream>
+#include <fstream>
 #include <sstream>
+#include <math.h>
+#include <stdlib.h>
+
+#include <vector>
+#include <cmath>
 // suppl.h 
+using namespace std;
 
 void movingAverageFilter(float * input, unsigned int len, unsigned int windowSize, float * output);
 inline float weightRpre(unsigned int tau,float expCoefRpre, float normFactor) // number of steps back. Should be positive
@@ -15,12 +23,11 @@ inline float weightRpre(unsigned int tau,float expCoefRpre, float normFactor) //
 
 std::string trim_spaces(std::string& str);
 
+typedef map<string,string> parmap;
 
-//typedef std::map<std::string, std::string> parmap;
+#ifndef RECALIB
 
-void readIni(string fname, parmap & configValues);
-
-
+#include "BG_model.h"
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/generator_iterator.hpp>
@@ -41,7 +48,14 @@ typedef std::mt19937 rng_type;
 extern boost::variate_generator<rng_type&, boost::uniform_real<> > uni;
 extern thread_local rng_type rng;   // thread-specific RNG
 
+//extern boost::variate_generator<rng_type&, boost::uniform_real<> > uniInt;
+//extern thread_local rng_type rng;   // thread-specific RNG
+
+// boost::random::uniform_int_distribution<> six(1,6);
+
 #define RND_BOOST
+
+#endif
 
 #ifdef RND_BOOST
 inline float rnd() { 
@@ -92,10 +106,24 @@ void parseCMDargs(int argc, char ** argv, parmap & params);
 //  return res;
 //}
 
+void readIni(string fname, parmap & configValues);
+
 int genCortcalData(parmap & params);
 
 void shuffle(vector<int> & elements);
 
 void parseCueList(std::string str, vector<int> & cues, vector<int> & numShows, vector<int> & feedbackOn);
+
+inline int getActiveCueInd(float * x, int nc)
+{
+  for(int i=0; i<nc; i++)
+  {
+    if(x[i]>0.01)
+    {
+      return i;
+    } 
+  }
+  return -1;
+}
 
 #endif

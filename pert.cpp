@@ -89,7 +89,7 @@ void perturbationExperimentEnv::runSession()
         //ml.flushWeights(false); 
         //ml.flushRpre(); // flush all data except wm (we set them from prelearn)
         // it may be overriden for each particular phase below (only important for the very first phase)
-        ml.setRpreSame(rewardSize);   
+        ml.setRpreSame(phaseParams[0].absRwdSz);   
 
         float cues[nc];
         int cue;
@@ -170,7 +170,7 @@ void perturbationExperimentEnv::prelearn(int n, float * addInfo)
         ml.fakePrelearnReaching(i,p.action,p.wmmax,p.tempWAmpl);
         fill(p.patPMC.begin(),p.patPMC.end(), 0.);
         p.patPMC[p.action] = p.wmmax;
-        //cout<<"prlearn action  "<<p.action<<endl;
+        //cout<<"cue "<<i<<" ang "<<p.ang<<" prlearn action  "<<p.action<<endl;
 
         wmmax = p.wmmax;
         // or deg2action
@@ -259,7 +259,14 @@ int perturbationExperimentEnv::turnOnCues(int k, float * cues, int * addInfo)
       auto p = phaseParams[experimentPhase];
       if(p.cueSeq.size() == 0)
       { 
-        cueInd = p.cue;
+        if(p.randomCue)
+        {
+          cueInd = rand() % nc;
+        }
+        else
+        {
+          cueInd = p.cue;
+        }
         if(addInfo)
           addInfo[0] = 1; // give full feedback (corresponding to current feedback regime)
       }
@@ -267,7 +274,9 @@ int perturbationExperimentEnv::turnOnCues(int k, float * cues, int * addInfo)
       {
         cueInd = p.cueSeq[ k % p.cueSeq.size() ];
         if(addInfo)
-          addInfo[0] = 0; // give no feedback
+        {
+          addInfo[0] = p.feedbackOn[k % p.cueSeq.size()]; // give no feedback
+        }
       }
     }
     else // we do true prelearn here
@@ -305,12 +314,26 @@ void perturbationExperimentEnv::getCurTgt(float * x, float & x0, float & y0, flo
 
   //float A=.2;
   tgtAngleDeg = target;   
+
+  if(p.randomTgt)
+  {
+    tgtAngleDeg += p.randomTgtRange * (2.* rnd() - 1.);
+  }
+
+  // if we have random cue mode active, we assume that we reach to the target set by random habit
+  // not that this function is called after turnOnCues
+  if(p.randomCue)
+  {
+    tgtAngleDeg = cue2prelearnParam[getActiveCueInd(x,nc)].ang;
+    //cout<<"cue N "<<getActiveCueInd(x,nc)<<endl;
+  }
+
   float tgtAngleRad = M_PI*tgtAngleDeg/180.;   // in radians
 
   x0=xc+armReachRadius*cos(tgtAngleRad) + tgt_xshift;
   y0=yc+armReachRadius*sin(tgtAngleRad) + tgt_yshift;
 
-  //cout<<" rangle rad "<<tgtAngleRad<<" tgt_yshift "<<tgt_yshift<<endl;
+  //cout<<"tgt angle deg "<<tgtAngleDeg<<endl;
   //cout<<" xc,yc is "<<xc<<" "<<yc<<endl;
   //cout<<" x0,y0 is "<<x0<<" "<<y0<<endl;
 }
@@ -355,6 +378,9 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
   float xcur_real, ycur_real;
   xcur_real = out[0], ycur_real = out[1];
 
+  //if(experimentPhase==1)
+  //  cout<<"hand coords "<<xcur_real<<" "<<ycur_real<<endl;
+
   // save "table" point coordinates
   addInfo[3] = xcur_real;
   addInfo[4] = ycur_real;
@@ -362,7 +388,7 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
   ycur = ycur_real;
 
   float xtmp = xcur_real - xc, ytmp = ycur_real -yc;
-  float angle = 2.*M_PI/360.*rot;
+  float angle = M_PI/180.*rot;
   xcur = xtmp*cos(angle) - ytmp*sin(angle) + xc;
   ycur = xtmp*sin(angle) + ytmp*cos(angle) + yc;
 
@@ -374,9 +400,9 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
   { 
       float xd = (xcur-xc);  
       float yd = (ycur-yc);  
-      float angleCur0 = atan( yd/xd) / (2*M_PI) * 360;
+      float angleCur0 = atan( yd/xd) / (M_PI) * 180;
       if(xd<0)
-          angleCur0 = atan(-xd/yd)/ (2*M_PI) * 360  + (yd>0?90:-90) ;
+          angleCur0 = atan(-xd/yd)/ (M_PI) * 180  + (yd>0?90:-90) ;
       //float angleCur = angleCur1 < 180 ? angleCur1 : angleCur0 - 180;
       float angleCur = angleCur0 > 0 ? angleCur0 : angleCur0+360.;
       float dif = angleCur - tgtAngleDeg;
@@ -400,6 +426,8 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
   addInfo[2] = ycur;
 
   percept.setEndpt(xcur,ycur);   // this is endpoint including all perception perturbations
+  //if(experimentPhase==1)
+  //  cout<<"perceived endpt "<<xcur<<" "<<ycur<<"  error "<<addInfo[0]<<endl;
 
   float xcbt,ycbt;
   ml.getCBtarget(xcbt,ycbt); // pass params as references
@@ -424,29 +452,29 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
       { 
         if(gradedReward)
         {
-          absR = rewardSize * 
+          absR = p.absRwdSz * 
             ( -  pow(curErr, rwdGradePower) );
         }
         else if( fabs(curErr) < rewardDist) 
         {
-          absR = rewardSize;
+          absR = p.absRwdSz;
         }
       }
       else
       {
         if( fabs(curErr) < sector_width/2) 
         {
-            absR = rewardSize;
+            absR = p.absRwdSz;
         }
         //else if(ratioBasedReward)
         //{
-        //  R = ratio2rwdCoef * rewardSize * (ml.getErrRatio() - 1.) ;
+        //  R = ratio2rwdCoef * p.absRwdSz * (ml.getErrRatio() - 1.) ;
         //  // prev / cur
         //}
       } 
     }
     //R = fmax(0.,  R);
-    //R = fmin(rewardSize,  R);
+    //R = fmin(p.absRwdSz,  R);
     
     
     float errToCompare = percept.getErr(rwdErrDepth,false);      // if size of hist is less then cbErrDepth, the oldest possible error is returned // here we really want distance to the center                           
@@ -461,10 +489,11 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
 
     float errReduction = errToCompare - curErr;
 
-    if(rwdFromcbLRate)
+    // if visual feedback is off -- no reward from performance
+    if(rwdFromcbLRate && p.learn_cb)
     {
       float lambda = ml.getCBLRate(); 
-      relR = rwdFromcbLRate_mult*lambda + rwdFromcbLRate_add;
+      relR = perfRewardSize*lambda + rwdFromcbLRate_add;
       //if( lambda > rwdFromcbLRate_thr) 
       //{
       //  relR = perfRewardSize;
@@ -502,8 +531,8 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
       //    <<" rate "<<ml.getCBLRate()<<" relR "<<relR<<endl;
       }
 
-      //relR = sign * rewardSize * perfRwdMult;
-      //relR = errReduction/errToCompare / ml.getCBLRate()  * rewardSize * perfRwdMult;
+      //relR = sign * p.absRwdSz * perfRwdMult;
+      //relR = errReduction/errToCompare / ml.getCBLRate()  * p.absRwdSz * perfRwdMult;
       //relR = sign * fmin (sign * relR, perfRewardSize);
     }
 
@@ -539,12 +568,15 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
     float R = 0.;
     if(p.error_clamp)
     {
-      R = rewardSize;
+      //R = p.absRwdSz;
+      absR = p.absRwdSz; 
     }
-    else
-    {
-      R = absR + relR; 
-    }
+    //else
+    //{
+    //  R = absR + relR; 
+    //}
+    
+    R = absR + relR; 
 
     return R;
 }  
@@ -681,11 +713,20 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     s = params["rwdFromcbLRate_thr"];
     rwdFromcbLRate_thr = s!="" ? stof(s) : 0;
 
-    s = params["rwdFromcbLRate_mult"];
-    rwdFromcbLRate_mult = s!="" ? stof(s) : 0;
+    //s = params["rwdFromcbLRate_mult"];
+    //rwdFromcbLRate_mult = s!="" ? stof(s) : 0;
 
     s = params["rwdFromcbLRate_add"];
     rwdFromcbLRate_add = s!="" ? stof(s) : 0;
+
+    s = params["randomCue_all"];
+    bool randomCue_all = s!="" ? stoi(s) : 0;
+
+    s = params["randomTgt_all"];
+    bool randomTgt_all = s!="" ? stoi(s) : 0;
+
+    s = params["randomTgtRange_all"];
+    float randomTgtRange_all = s!="" ? stof(s) : 0;
 
     numTrials = 0;
     phaseParams.resize(numPhases);
@@ -874,7 +915,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       iter = params.find(key);
       if(iter != params.end() )
       { 
-        float val = stoi(iter->second);
+        bool val = stoi(iter->second);
         p.cbLRateReset = val;
       }
 
@@ -882,7 +923,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       iter = params.find(key);
       if(iter != params.end() )
       { 
-        float val = stoi(iter->second);
+        bool val = stoi(iter->second);
         p.resetCBState = val;
       }
 
@@ -890,7 +931,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       iter = params.find(key);
       if(iter != params.end() )
       { 
-        float val = stoi(iter->second);
+        bool val = stoi(iter->second);
         p.setRPre = val;
       }
 
@@ -898,7 +939,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       iter = params.find(key);
       if(iter != params.end() )
       { 
-        float val = stoi(iter->second);
+        bool val = stoi(iter->second);
         p.CBtCDS = val;
       }
 
@@ -906,7 +947,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       iter = params.find(key);
       if(iter != params.end() )
       { 
-        float val = stoi(iter->second);
+        bool val = stoi(iter->second);
         p.resetRPre = val;
       }
 
@@ -920,6 +961,54 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       else
       {
         p.cbLRate = cbLRate;
+      }
+
+      key = string("randomCue") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        bool val = stoi(iter->second);
+        p.randomCue = val;
+      }
+      else
+      {
+        p.randomCue = randomCue_all;
+      }
+
+      key = string("randomTgt") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        bool val = stoi(iter->second);
+        p.randomTgt = val;
+      }
+      else
+      {
+        p.randomTgt = randomTgt_all;
+      }
+
+      key = string("randomTgtRange") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stof(iter->second);
+        p.randomTgtRange = val;
+      }
+      else
+      {
+        p.randomTgtRange = randomTgtRange_all;
+      }
+
+      key = string("absRwdSz") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stof(iter->second);
+        p.absRwdSz = val;
+      }
+      else
+      {
+        p.absRwdSz = rewardSize;
       }
     }
 
@@ -947,6 +1036,18 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
         int action = stoi(iter->second);
         c2p.action = action;
       }
+
+      key = string("angPrelearn") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float val = stof(iter->second);
+        c2p.ang = val;
+      }
+      else
+      {
+        c2p.ang = -1000;
+      }
       
       key = string("actPrelearnAng") + to_string(i);
       iter = params.find(key);
@@ -954,7 +1055,11 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       { 
         float angDeg = stof(iter->second);
         angDeg = fmodAng(angDeg); 
+        c2p.ang = angDeg;
         c2p.action = deg2action(angDeg);
+        //cout<<"init: cue "<<i<<" ang "<<c2p.ang<<" action  "<<c2p.action<<
+        //    " angreconv "<<float(c2p.action)/100.*((maxActionAngDeg - minActionAngDeg)) +
+        //   minActionAngDeg<<endl;
       }
 
       key = string("tgt_xPrelearn") + to_string(i);
@@ -973,17 +1078,6 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
         c2p.tgt_y = val;
       }
 
-      key = string("angPrelearn") + to_string(i);
-      iter = params.find(key);
-      if(iter != params.end() )
-      { 
-        float val = stof(iter->second);
-        c2p.ang = val;
-      }
-      else
-      {
-        c2p.ang = -1000;
-      }
 
       if( fabs(c2p.ang) < 360 && fabs(c2p.tgt_x) > 900 )
       { 

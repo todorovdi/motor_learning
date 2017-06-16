@@ -19,7 +19,7 @@ def makeNicerMulti(fig,ax):
    #     line.set_color(c)
     return
 
-def makePubPlot(fnames2d):
+def makePubPlot(fnames2d,pdf):
     # shiny plotting code goes here
 
     fig = plt.figure()

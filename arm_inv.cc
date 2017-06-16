@@ -1,6 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <iostream>
 #include <fstream>
 #include "par.h"
@@ -25,7 +25,7 @@ int genCortcalData(parmap & params) //int argc,char** argv)
   iter = params.find(key);
   if(iter!=params.end())
   {
-    minAngDeg = stof(iter->second);   
+    minAngDeg = atof(iter->second.c_str());   
   }
   else
   {
@@ -36,7 +36,7 @@ int genCortcalData(parmap & params) //int argc,char** argv)
   iter = params.find(key);
   if(iter!=params.end())
   {
-    maxAngDeg = stof(iter->second);   
+    maxAngDeg = atof(iter->second.c_str());   
   }
   else
   {
@@ -47,7 +47,7 @@ int genCortcalData(parmap & params) //int argc,char** argv)
   iter = params.find(key);
   if(iter!=params.end())
   {
-    N = stoi(iter->second);   
+    N = atoi(iter->second.c_str());   
   }
   else
   {
@@ -86,7 +86,7 @@ int genCortcalData(parmap & params) //int argc,char** argv)
     cortDataFname = iter->second;   
   }
  
-  ofstream AllD_CorticalData(cortDataFname);
+  ofstream AllD_CorticalData(cortDataFname.c_str());
   
   AllD_CorticalData<<minAngDeg<<'\t'<<maxAngDeg<<'\t'<<N<<endl;
 
@@ -104,7 +104,7 @@ int genCortcalData(parmap & params) //int argc,char** argv)
   cout<<"------- recalibrating arm -- minAngDeg="<<minAngDeg<<" maxAngDeg="<<maxAngDeg<<" na="<<N<<endl;
   cout<<"------- recalibrating may take up to several minutes, please wait"<<endl;
 
-  float arr = stof(params["armReachRadius"]);
+  float arr = atof(params["armReachRadius"].c_str());
 
  for (int TD=0;TD<N;TD++)
  {
@@ -123,10 +123,10 @@ int genCortcalData(parmap & params) //int argc,char** argv)
 	float t1a[n]={0}, t2a[n]={0};
 // to calculate Angles, velocities and accelarations 
  AnglesVelocityAcceleration(  x1, x2,  y1, y2,  T, n,  t1,t2,  t1v, t2v, t1a, t2a);
-	 ofstream(fname)<<t1[0]<<'\t'<<t2[0]<<endl;
+	 ofstream(fname.c_str())<<t1[0]<<'\t'<<t2[0]<<endl;
 
-   params["phi_0"] = to_string(t1[0]);
-   params["phi_1"] = to_string(t2[0]);
+  // params["phi_0"] = to_string(t1[0]);
+  // params["phi_1"] = to_string(t2[0]);
 
  
 	for(int i=0;i<n;i++)

@@ -47,7 +47,7 @@ fullSim()
   perturbSimple "--ini=$ini --percept_xrev1=1 --PD=1$addOptionsLoc" $1  $useOldData
   args_nonEB_PD=$pdfSuffix
 
-  python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" 
+  python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" "---plotfname=guti_$addOptionsLoc" 
 }
 
 
@@ -77,17 +77,49 @@ if [ $# -ne 0 ]; then
 
   echo "Starting experiment "$experimentName
 
-  #addOptionsLoc=" --trainCBEveryTrial=0 --rwdFromcbLRate_thr=0.08"$addOptions
-  #fullSim $1
 
-  #addOptionsLoc=""$addOptions
-  #fullSim $1
-
-  addOptionsLoc=" --acThrMult=1.5"$addOptions
+  addOptionsLoc=" --gradedReward=1"$addOptions
   fullSim $1
 
-  addOptionsLoc=" --acThrMult=2"$addOptions
+  addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
   fullSim $1
+
+  addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
+  fullSim $1
+
+  #addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
+  #fullSim $1
+
+  ############################
+  addOptions=" --cbStateDepr=0.02"
+
+  addOptionsLoc=" --gradedReward=1"$addOptions
+  fullSim $1
+
+  addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
+  fullSim $1
+
+  addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
+  fullSim $1
+
+  #addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
+  #fullSim $1
+
+  addOptions=" --cbStateDepr=0.01"
+
+  addOptionsLoc=" --gradedReward=1"$addOptions
+  fullSim $1
+
+  addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
+  fullSim $1
+
+  addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
+  fullSim $1
+
+  #addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
+  #fullSim $1
+
+  #######################
 
   #addOptionsLoc=" --trainCBEveryTrial=0"$addOptions
   #fullSim $1

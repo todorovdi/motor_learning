@@ -27,7 +27,7 @@ class CB_model
 
   float cbLRateUpdSpdUp;
   float cbLRateUpdSpdDown;
-  float cbRateDepr;
+  float cbStateDepr;
 
   float cbRetrainNeeded_thr;
 
@@ -95,7 +95,7 @@ class CB_model
         //float errDFmod(float dx, float dy);
         float get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb);
 
-        bool trainNeeded(float * y_); 
+        bool trainNeeded(float * y_, float newx=-1000, float newy=-1000); 
 
         CB_model();
         CB_model(Arm * arm_);

@@ -21,21 +21,26 @@ class expPhaseParams{
   float force_field;
   float endpt_xshift;
   float endpt_yshift;
+  float absRwdSz;
   bool error_clamp;
   bool  learn_bg;
   bool  learn_cb;
   bool cbLRateReset;
   bool resetCBState;
+  bool randomTgt;
 
   bool resetRPre;
   float setRPre;
   float cbLRate;
   float CBtCDS;
+  float randomTgtRange;
 
   float target_rotation;
   bool target_xreverse;
   float tgt_xshift;
   float tgt_yshift;
+
+  bool randomCue;
 
   // only makes sense for a special parameter called cueList in the ini file
   // done for Izawa-Shadmehr paper to generate generalization graph
@@ -71,6 +76,9 @@ class expPhaseParams{
     resetRPre = 0;
   
     CBtCDS = 0.;
+    randomCue=false;
+ 
+    randomTgtRange=0.;
   }
 
   // generate a random seq of cues demonstrations. 
@@ -175,7 +183,7 @@ class perturbationExperimentEnv: public Environment
     float perfRwdErrChange_threshold;
     float acUpdCoefThr;
     float rwdFromcbLRate_thr;
-    float rwdFromcbLRate_mult;
+    //float rwdFromcbLRate_mult;
     float rwdFromcbLRate_add;
 
     int rwdErrDepth;

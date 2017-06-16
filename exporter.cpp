@@ -79,7 +79,10 @@ void Exporter::exportParams(parmap & params)
     parmap::iterator it= params.begin();
     for(;it!=params.end();it++)
     {
+      if(it->second != "")
+      {
         foutModParams<<it->first<<"="<<it->second<<"\n";
+      }
     }
 //#ifdef PARALLEL
 //    cout<<"exporter thread Num "<<omp_get_thread_num()<<"  dirShift "<<params["dirShift"]<<" for prefix "<<prefix<<endl;

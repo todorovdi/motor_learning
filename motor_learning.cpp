@@ -141,6 +141,9 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
 
       bg.getPMC(y);
 
+      float cbTgt_x, cbTgt_y, ang;
+      env->getCurTgt(x,cbTgt_x, cbTgt_y,ang);
+      //cb.setCBtarget(cbTgt_x,cbTgt_y);
       if(learn_cb && trainCBEveryTrial)
       {
         // no! even if the program is unchanged, the W may have changed
@@ -154,9 +157,14 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         //    break;
         //  }
         //}
-        if(!cbRetrainSpeedup || cb.trainNeeded(y))
+        if(!cbRetrainSpeedup || cb.trainNeeded(y,cbTgt_x,cbTgt_y))
         {
-          cb.trainCurPt(y,ffield,false,retrainCB_useCurW);  // flushW= false, useCurW = true
+          cb.train(cbTgt_x, cbTgt_y, y,false,retrainCB_useCurW,ffield);  // flushW= false, useCurW = true
+        }
+        else
+        {
+          cb.setCBtarget(cbTgt_x,cbTgt_y);
+          //cout<<"cbTgt_x "<<cbTgt_x<<" cbTgt_y "<<cbTgt_y<<endl;
         }
       }
 
@@ -186,7 +194,13 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
           //rnd();  // just to follow same seed as Slava's code
       if(learn_bg && feedbackGiven)
       { 
-        bg.learn(R- Rpre[cueActive]);
+        float RPE = R- Rpre[cueActive];
+        if( exploreAlways )
+        {
+          RPE = -rewardSize;
+          //bg.flushWeights(false);
+        }
+        bg.learn(RPE);
       } 
 
       if(learn_cb && feedbackGiven)
@@ -275,8 +289,6 @@ void MotorLearning::initParams(parmap & params)
     retrainCB_useCurW = stoi(params["retrainCB_useCurW"]);
     textExport=stoi(params["textExport"]);
 
-    rotateErr=stof(params["rotateErr"]); ;
-    xreverseErr=stoi(params["xreverseErr"]); ;
  
     habit2PMCdirectly=stoi(params["habit2PMCdirectly"]);
     if(habit2PMCdirectly)
@@ -287,6 +299,18 @@ void MotorLearning::initParams(parmap & params)
 
     s = params["bgStepsizeIntStopThr"];
     bgStepsizeIntStopThr = s != "" ? stof(s) : 10; 
+
+    s = params["rotateErr"];
+    rotateErr = s != "" ? stoi(s) : 0; 
+
+    s = params["xreverseErr"];
+    xreverseErr = s != "" ? stoi(s) : 0; 
+
+    s = params["exploreAlways"];
+    exploreAlways = s != "" ? stoi(s) : 0; 
+
+    s = params["rewardSize"];
+    rewardSize = s != "" ? stof(s) : 3; 
 
     nc=stoi(params["nc"]);
     na=stoi(params["na"]);

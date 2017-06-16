@@ -63,6 +63,9 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global plotParams
     #global plotHandSpace
     global onlyPubPlot
+    global averageDataOnly
+    global reachCoordsHandSpace
+    global plotfname
 
     plotParams = params_
 
@@ -82,9 +85,21 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     #    print(str(e))
 
     try:
+        reachCoordsHandSpace = int(params_["reachCoordsHandSpace"])
+    except KeyError as e:
+        reachCoordsHandSpace = 0
+        print(str(e))
+
+    try:
         onlyPubPlot = int(params_["onlyPubPlot"])
     except KeyError as e:
         onlyPubPlot = 0
+        print(str(e))
+
+    try:
+        averageDataOnly = int(params_["averageDataOnly"])
+    except KeyError as e:
+        averageDataOnly = 0
         print(str(e))
 
     try:
@@ -170,12 +185,18 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
         plotReachAngles = 0
         print(str(e))
     y_axis_max = float(params_["y_axis_max"])
-    y_axis_step = float(params_["y_axis_step"])
+
+    try:
+        y_axis_step = float(params_["y_axis_step"])
+    except KeyError as e:
+        y_axis_step=0.1
+
     try:
         y_axis_signed = int(params_["y_axis_signed"])
     except KeyError as e:
         y_axis_signed = 1
         print(str(e))
+
     try:
         y_axis_min = float(params_["y_axis_min"])
     except KeyError as e:

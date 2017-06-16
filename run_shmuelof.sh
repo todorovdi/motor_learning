@@ -17,41 +17,44 @@ seed=0     #makes <more or less> random seed
 
 doSim()
 {
-  if [ $runall == '1' ];then
-    addOptionsLoc=""$addOptions
-    perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData  
-    args1=$pdfSuffix
+  ao="$addOptions$1"
 
-    addOptionsLoc=" $addTrials$addOptions"
-    perturbSimple "--ini=shmuelof.ini$onlyBE$addOptionsLoc" $nsess $useOldData 
-    args1Long=$pdfSuffix
-  fi
+  addOptionsLoc="$ao"
 
-  addOptionsLoc=""$addOptions
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
   argsCBon=$pdfSuffix
 
-  addOptionsLoc=" $addTrials$addOptions"
-  perturbSimple "--ini=$ini$addOptionsLoc" $nsess $useOldData
-  argsCBonLong=$pdfSuffix
+  perturbSimple "$onlyBE$addOptionsLoc" $nsess $useOldData  
+  argsCBoff=$pdfSuffix
 
-  python "$plotfile" "$argsCBon" "$args1" "$argsCBonLong" "$args1Long" \
-    "---plotfile=shmu_$addOptions"
+  if [ $runall == '1' ];then
+    addOptionsLoc="$addTrials$ao"
+
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    argsCBonLong=$pdfSuffix
+
+    perturbSimple "$onlyBE$addOptionsLoc" $nsess $useOldData 
+    argsCBoffLong=$pdfSuffix
+  fi
+
+  python "$plotfile" "$argsCBon" "$argsCBoff" "$argsCBonLong" "$argsCBoffLong" \
+    "---plotfile=shmu_$1"
 }
 
 doTest()
 {
-  ao=" --ini=shmuTest.ini --numPhases=3"$1
+  ao="$addOptions --numPhases=4"$1
 
-  addOptionsLoc=" --learn_cb1=0 --setRPre1=3"$ao
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  test2=$pdfSuffix
+  test2=""
+  #addOptionsLoc=" --learn_cb1=0 --setRPre1=3"$ao
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #test2=$pdfSuffix
 
-  addOptionsLoc=" --learn_cb2=0"$ao
+  addOptionsLoc="$onlyBE$ao"
   perturbSimple "$addOptionsLoc" $nsess $useOldData
   test3=$pdfSuffix
 
-  addOptionsLoc=""$ao
+  addOptionsLoc="$ao"
   perturbSimple "$addOptionsLoc" $nsess $useOldData
   test1=$pdfSuffix
 
@@ -64,10 +67,9 @@ if [ $# -ne 0 ]; then
   args3=""
   args4=""
   args5=""
-   
-  addTrials="--numTrials4=100"
 
   delay="3.0s"
+  delay="0.01s"
   if [ $useOldData == '0' ]; then
     echo "!!! ----- Really delete corresponding *.dat files?" 
     echo "!!! ----- You have $delay to stop the script"
@@ -75,11 +77,12 @@ if [ $# -ne 0 ]; then
   fi
   echo "Starting experiment "$experimentName
 
+  addTrials=" --numTrials4=100"
   onlyBE=" --learn_cb2=0"
 
   addOptions="" 
 
-  addOptionsLoc=""$addOptions
+  addOptionsLoc="$addOptions"
   #useOldData="1"
   useOldData=$2
 
@@ -89,16 +92,120 @@ if [ $# -ne 0 ]; then
 
   ###########################
 
-  addOptions=" --cbRateDepr=0.018"
-  doSim
+  addOptions=" --ini=$ini"
 
-  #addOptions=" --cbRateDepr=0.02"
+  # works ok for runall=0
+  #addOptions=" --ini=shmuAC.ini --cbLRateUpdSpdDown=1.5"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1"
+
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=0.5"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=1"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=2"
+
+  #addOptions=" --ini=shmuAC.ini --cbLRateUpdSpdDown=1.5 --gradedReward=0"
+
+
+  #  --absRwdSz2=3
+
+  #addOptions=" --ini=shmuAC.ini --cbLRateUpdSpdDown=1.5 --absRwdSz2=5"
+  #doSim " --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=1.5"
+  #doSim " --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=2.5"
+  #doSim " --wmmaxFP=0.1 --perfRewardSize=1   --rewardSize=3"
+
+  #addOptions=" --ini=shmuAC.ini --cbLRateUpdSpdDown=1.5 --absRwdSz2=3"
+  #doSim " --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=1.5"
+  #doSim " --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=2.5"
+  #doSim " --wmmaxFP=0.1 --perfRewardSize=1   --rewardSize=3"
+
+  addOptions=" --ini=shmuAC.ini --cbStateDepr=0.08"
+  # the best ones
+  # we do give rwd for performance in error clamp
+  doSim " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1"
+  doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=2"
+
+  # somewhat worse
+  doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=0.5"
+  doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=1"
+
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=2.5"
+
+  #addOptions=" --ini=shmuAC.ini --cbLRateUpdSpdDown=1.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=0.5 --rewardSize=0.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=0.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1.5 --rewardSize=0.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=0.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=0.5"
+  #                     
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=0.5 --rewardSize=1"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1.5 --rewardSize=1"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=1"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=1"
+  #                     
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=0.5 --rewardSize=1.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1.5 --rewardSize=1.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=1.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=1.5"
+  #                     
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=0.5 --rewardSize=2"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=2"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1.5 --rewardSize=2"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=2"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=2"
+  #                     
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=0.5 --rewardSize=2.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=2.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1.5 --rewardSize=2.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=2.5"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=2.5"
+  #                     
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=0.5 --rewardSize=3"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=3"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=1.5 --rewardSize=3"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=3"
+  #doTest " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=3"
+
+  #doSim " --wmmaxFP=0.1 --perfRewardSize=1.3 --rewardSize=1"
+
+  #doTest " --gradedReward=0 --wmmaxFP=0.1 --perfRewardSize=0.1 --rewardSize=2"   
+  #doTest " --gradedReward=0 --wmmaxFP=0.1 --perfRewardSize=0.3 --rewardSize=2"   
+
+  #doTest " --gradedReward=0 --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=1"
+  #doTest " --gradedReward=0 --wmmaxFP=0.1 --perfRewardSize=1 --rewardSize=1"
+  #doTest " --gradedReward=0 --wmmaxFP=0.1 --perfRewardSize=2 --rewardSize=1"
+
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=0.1 --rewardSize=2"   
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=0.3 --rewardSize=2"   
+
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=0.5 --rewardSize=1"
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=1 --rewardSize=1"
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=2 --rewardSize=1"
+
+  #doSim " --cbStateDepr=0.018"
+  #doSim " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=0.1 --rewardSize=2"   -- better but explore for BE only group during 45 deg -- thus wrong level in error clamp
+
+  #doSim " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=0.3 --rewardSize=2"
+  #doSim " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=0.7 --rewardSize=2"
+  #doSim " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=0.3 --rewardSize=2"
+
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=1 --rewardSize=2"
+  #doSim " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=1 --rewardSize=2"
+
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=2 --rewardSize=3"
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=3 --rewardSize=3"
+
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=2 --rewardSize=2"
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=3 --rewardSize=2"
+  #doTest " --gradedReward=0 --cbStateDepr=0.1 --perfRewardSize=4 --rewardSize=2"
+
+  #addOptions=" --cbStateDepr=0.02"
   #doSim
 
-  #addOptions=" --cbRateDepr=0.01"
+  #addOptions=" --cbStateDepr=0.01"
   #doSim
 
-  #addOptions=" --cbRateDepr=0.03"
+  #addOptions=" --cbStateDepr=0.03"
   #doSim
 
   #addOptions=" --wmmaxFP=0.2 --vectorErrTgtBorder=0"

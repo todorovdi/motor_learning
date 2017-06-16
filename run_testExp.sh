@@ -210,38 +210,38 @@ if [ $# -ne 0 ]; then
   echo "Starting experiment "$experimentName
       
   desiredRwd=1.5
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=5 --rwdFromcbLRate_add=-1"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=4 --rwdFromcbLRate_add=-1"
+  #fromLambda_sweepPower " --perfRewardSize=5 --rwdFromcbLRate_add=-1"
+  #fromLambda_sweepPower " --perfRewardSize=4 --rwdFromcbLRate_add=-1"
 
-  fromLambda_sweepPower " --rwdFromcbLRate_mult=1.5"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2"
-  fromLambda_sweepPower " --rwdFromcbLRate_mult=2.5"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3"
+  fromLambda_sweepPower " --perfRewardSize=1.5"
+  #fromLambda_sweepPower " --perfRewardSize=2"
+  fromLambda_sweepPower " --perfRewardSize=2.5"
+  #fromLambda_sweepPower " --perfRewardSize=3"
 
-  fromLambda_sweepPower " --rwdFromcbLRate_mult=1.5 --rwdFromcbLRate_add=-2"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2 --rwdFromcbLRate_add=-2.5"
-  fromLambda_sweepPower " --rwdFromcbLRate_mult=2.5 --rwdFromcbLRate_add=-3"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3 --rwdFromcbLRate_add=-3.5"
-
-
-  #gradeAndReward " --rwdFromcbLRate_mult=4" "1.5"
-  #gradeAndReward " --rwdFromcbLRate_mult=5" "1.5"
+  fromLambda_sweepPower " --perfRewardSize=1.5 --rwdFromcbLRate_add=-2"
+  #fromLambda_sweepPower " --perfRewardSize=2 --rwdFromcbLRate_add=-2.5"
+  fromLambda_sweepPower " --perfRewardSize=2.5 --rwdFromcbLRate_add=-3"
+  #fromLambda_sweepPower " --perfRewardSize=3 --rwdFromcbLRate_add=-3.5"
 
 
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3 --acThrMult=2.5"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3.5 --acThrMult=2.5"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=4 --acThrMult=2.5"
+  #gradeAndReward " --perfRewardSize=4" "1.5"
+  #gradeAndReward " --perfRewardSize=5" "1.5"
+
+
+  #fromLambda_sweepPower " --perfRewardSize=3 --acThrMult=2.5"
+  #fromLambda_sweepPower " --perfRewardSize=3.5 --acThrMult=2.5"
+  #fromLambda_sweepPower " --perfRewardSize=4 --acThrMult=2.5"
 
   # worsens EBL because CB works worse
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3 --acThrMult=2.5 --cbInitShiftSz=0.35"
+  #fromLambda_sweepPower " --perfRewardSize=3 --acThrMult=2.5 --cbInitShiftSz=0.35"
 
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3 --acThrMult=2.5 --cbInitShiftSz=0.15"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2 --acThrMult=2.5"
+  #fromLambda_sweepPower " --perfRewardSize=3 --acThrMult=2.5 --cbInitShiftSz=0.15"
+  #fromLambda_sweepPower " --perfRewardSize=2 --acThrMult=2.5"
 
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=1.5"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2.5"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=3"
-  #fromLambda_sweepPower " --rwdFromcbLRate_mult=2"
+  #fromLambda_sweepPower " --perfRewardSize=1.5"
+  #fromLambda_sweepPower " --perfRewardSize=2.5"
+  #fromLambda_sweepPower " --perfRewardSize=3"
+  #fromLambda_sweepPower " --perfRewardSize=2"
 
 
   #fromLambda_sweepPower " --perfRewardSize=3"

@@ -247,13 +247,19 @@ void BG_model::restoreWeights(bool w12too)
 
 void BG_model::habit2PMCdirectly(int cueActive)
 { 
-    for(int j =0;j<na; j++)
+  //cout<<" start PMC assign "<<endl;
+  for(int j =0;j<na; j++)
+  {
+    if(wm[cueActive][j] > 0.1)
     {
-        if(wm[cueActive][j] > EPS)
-            y[j] = 1.;
-        else
-            y[j] = 0.;
+      y[j] = 1.;
+      //cout<<" habit found "<<j<<endl;
     }
+    else
+    {
+      y[j] = 0.;
+    }
+  }
 } 
 
 void BG_model::flushWeights(bool wmToo)

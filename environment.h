@@ -51,6 +51,7 @@ class Environment
 //  Functions to implement in your experiment
 ///////////////////////////////////////
         virtual int turnOnCues(int trialNum, float * cues, int * addInfo) = 0;
+        virtual void getCurTgt(float * x, float & x0, float & y0, float & tgtAngleDeg) = 0;
         virtual float getSuccess(float * x,float * y,unsigned int k,float *addInfo) = 0;  // precise meaning of success differs from experiment to experiment
         virtual float getReward(float success, float * x,float * y, float & param) = 0;  
         virtual void runSession() = 0;

@@ -70,7 +70,7 @@ void CB_model::stateDegradeStep()
   {
     for(int j=0;j<6;j++) 
     { 
-      float t =  cbRateDepr * wcb[i][j];
+      float t =  cbStateDepr * wcb[i][j];
       wcb[i][j]-= t;
     } 
   }
@@ -109,23 +109,33 @@ void CB_model::cblearn(float dx,float dy)
 //}
 
 // should be called before cb learning is done
-bool CB_model::trainNeeded(float * y_)
+bool CB_model::trainNeeded(float * y_,float newx, float newy)
 {
-  bool ychanged = false;
-  for(int i = 0; i<train_patPMC.size();i++)
+  bool ptchanged = false;
+  if(newx > -100 && newy > -100)
   {
-    if(fabs(y_[i]-train_patPMC[i]) > 0.1)
-    { 
-      ychanged = true;
-      break;
+    ptchanged = ( fabs(newx - x_cb_target) > 0.05 ) || ( fabs(newy-y_cb_target) > 0.05 );
+  }
+
+  bool ychanged = false;
+  bool Wchanged = false;
+
+  if(!ptchanged)
+  {
+    for(int i = 0; i<train_patPMC.size();i++)
+    {
+      if(fabs(y_[i]-train_patPMC[i]) > 0.1)
+      { 
+        ychanged = true;
+        break;
+      }
     }
   }
 
-  bool Wchanged = false;
   float tt = 0;
   float ttt = 0;
 
-  if(!ychanged)
+  if(!ychanged && !ptchanged)
   {
     for(int k=0;k<6;k++) 
       for(int l=0;l<6;l++) 
@@ -141,7 +151,7 @@ bool CB_model::trainNeeded(float * y_)
   }
   Wchanged = ttt > cbRetrainNeeded_thr ? true : false;
 
-  bool needed = ychanged || Wchanged;
+  bool needed = ychanged || Wchanged || ptchanged;
   //cout<<" trainNeeded "<<needed<<" W change (L1 norm) "<<ttt<<endl;
   return needed;
 } 
@@ -198,7 +208,8 @@ void CB_model::learn()
       // if true we assume that CB did last correction. And it did it using
       // correct visual feedback (more or less)
       
-      float tt = acUpdCoefThr;
+      //float tt = acUpdCoefThr;
+      float tt = 3 * cbLRateUpdAbsErr_threshold * cbLRateUpdAbsErr_threshold;
       b2 = fabs( upd_coef_real - upd_coef_cb) < tt;   
       b2neg = fabs( upd_coef_real - upd_coef_cb) >= tt * acThrMult;   
 
@@ -333,8 +344,7 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * p
   cbLRateUpdSpdUp = stof(params["cbLRateUpdSpdUp"]);
   cbLRateUpdSpdDown = stof(params["cbLRateUpdSpdDown"]);
   //cbLRateUpdSpdMax = stof(params["cbLRateUpdSpdMax"]);
-  cbRateDepr = stof(params["cbRateDepr"]);
-  cbRateDepr = stof(params["cbRateDepr"]);
+  cbStateDepr = stof(params["cbStateDepr"]);
 
   string s;
   s = params["cbLRateUpd_errDiffBased"];
@@ -388,6 +398,9 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * p
   train_patPMC.resize(stoi(params["na"]));
 
   last_errDFmod = 0; 
+
+  // set inital correction to 0.
+  setRandomState(0.);
 }
 
 void CB_model::CBExport(int k)

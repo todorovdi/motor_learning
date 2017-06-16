@@ -1,41 +1,21 @@
 // learn.cpp
 
+#define _USE_MATH_DEFINES
+
+//#include <boost/program_options.hpp>
+#include <time.h>
+#include "suppl.h"
+
+#ifndef RECALIB
 #include "CB_model.h"
 #include "motor_learning.h"
 #include "suppl.h"
 #include "exporter.h"
 #include "environment.h"
-//#include <boost/program_options.hpp>
-
-#ifdef  BUILD_PIRON_ARM
-#include "piron_arm.h"
-#endif
-
-#ifdef  BUILD_FORCE_FIELD
-#include "force_field.h"
-#endif
-
-#ifdef  BUILD_GUTIERREZ
-#define TWO_CUES
-#include "gutierrez.h"
-#endif
-
-#ifdef  BUILD_GALEA
-#include "galea.h"
-#endif
-
-#ifdef  BUILD_PERT
 #include "pert.h"
 #endif
 
-#if defined(BUILD_IZSHAD) or defined(BUILD_SHMUELOF)
-#include "izshad.h"
-#endif
-
-#include <time.h>
-
-
-using namespace std;
+//using namespace std;
 
 ////////////////
 
@@ -61,14 +41,6 @@ int main(int argc, char** argv)
 
     clock_t start = clock();
     cout<<"Calc started"<<endl;
-
-#ifdef BUILD_PERT
-  string defParamFile = "pert.ini";
-#elif defined(BUILD_IZSHAD)
-  string defParamFile = "izshad.ini";
-#elif defined(BUILD_SHMUELOF)
-  string defParamFile = "shmuelof.ini";
-#endif
 
     cout<<"cmd line args are "<<endl;
     for(int i=0;i<argc;i++)
@@ -146,14 +118,16 @@ int main(int argc, char** argv)
 
     key = string("recalibrateArmCortControl");
     iter = params.find(key);
-    if(iter!=params.end() && stoi(iter->second))
+    if(iter!=params.end() && atoi(iter->second.c_str()))
     {
       genCortcalData(params);
     }
+#ifndef RECALIB
     else
     { 
       runExperiment(params);
     }
+#endif // RECALIB
 
     clock_t end = clock();
     cout<<"Calc finished, clock time (in sec) passed is "<<(end-start)/CLOCKS_PER_SEC<<endl;

@@ -1,5 +1,4 @@
 #include "suppl.h"
-#include "BG_model.h"
 
 #ifdef RND_BOOST
 thread_local std::random_device rd;    // used once only per thread to initialise RNG
@@ -62,7 +61,7 @@ std::string trim_spaces(std::string& str)
 
 void readIni(std::string fname, parmap & configValues)
 {
-    std::ifstream fileStream(fname);
+    std::ifstream fileStream(fname.c_str());
 
     std::string line;
     while (std::getline(fileStream, line))
@@ -117,9 +116,13 @@ void parseCMDargs(int argc, char ** argv, parmap & configValues)
   }
 }
 
-// standard Fisher-Yates modern shuffle algorithm
+#ifndef RECALIB
+
+// standard Fisher-Yates shuffle algorithm
 void shuffle(vector<int> & elements)
 {
+//  rng.seed(0);
+
   // the counter to be used to generate the random number
   int currentIndexCounter = elements.size();
   for (auto currentIndex = elements.rbegin(); currentIndex != elements.rend() - 1;
@@ -182,3 +185,5 @@ void parseCueList(std::string str, vector<int> & cues, vector<int> & numShows, v
   //  feedbackOn.push_back(sublist[2]);
   //}
 }
+
+#endif

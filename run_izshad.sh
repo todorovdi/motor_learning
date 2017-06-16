@@ -26,7 +26,7 @@ runPair()
   perturbSimple "--ini=$ini$ao" $nsess $useOldData 
   args_NEBL=$pdfSuffix
 
-  python "$plotfile" "$args_EBL" "$args_NEBL"
+  python "$plotfile" "$args_EBL" "$args_NEBL" "---plotfname=izhad_multi_$1"
 }
 
 if [ $# -ne 0 ]; then
@@ -46,6 +46,11 @@ if [ $# -ne 0 ]; then
   runPair ""
   a_EBL=$args_EBL
   a_NEBL=$args_NEBL
+
+  runPair " --finalNoiseAmpl=0"
+  runPair " --cbStateDepr=0"
+  runPair " --cbStateDepr=0 --finalNoiseAmpl=0"
+
 
   #python "$plotfile" "$a_EBL" "$a_NEBL"
 

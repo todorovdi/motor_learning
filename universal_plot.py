@@ -56,7 +56,7 @@ def annotateGraph(ax,bg=0):
 def genMainPlot(ax,fnames,nums):
     angs,SEMs = doStats(fnames)
 
-    if(len(fnames) == 1):
+    if(len(fnames) == 1 or pp.averageDataOnly):
         ax.plot(nums, angs)
     else:
         ax.errorbar(nums, angs, yerr=SEMs)
@@ -76,9 +76,7 @@ def genMainPlot(ax,fnames,nums):
     ymin = 0.
     ymax = pp.y_axis_max 
     ymin = pp.y_axis_min
-    step = (ymax-ymin) / 10.
-    if "y_axis_step" in pp.paramsEnv:
-        step = (float(pp.paramsEnv["y_axis_step"]) ) 
+    step = pp.y_axis_step
     ax.set_ylim([ymin,ymax])
     ax.set_yticks(np.arange(ymin,ymax,step))
 
@@ -407,7 +405,7 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
             nicener_ = imp.load_source('nicener',pp.plotPubFile)
             #nicener.makeNicerMulti(fig,ax)
             import nicener
-            nicener.makePubPlot(fnames2d)
+            nicener.makePubPlot(fnames2d,pdf)
 
             pdf.savefig()
             plt.close()
@@ -476,6 +474,8 @@ def printParams(fig,pos):
     paramsToPlot = []
     paramsToPlot.append("learn_bg")
     paramsToPlot.append("learn_cb")
+    paramsToPlot.append("cbLRateIsConst")
+
     paramsToPlot.append("learn_cb2")
     paramsToPlot.append("setRPre0")
     paramsToPlot.append("setRPre1")
@@ -487,6 +487,7 @@ def printParams(fig,pos):
 
     paramsToPlot.append("")
     paramsToPlot.append("cbLRate")
+    paramsToPlot.append("cbStateDepr")
     paramsToPlot.append("cbLRateMax")
     #paramsToPlot.append("randomCBStateInit")
     #paramsToPlot.append("randomCBStateInitAmpl")
@@ -513,6 +514,8 @@ def printParams(fig,pos):
     paramsToPlot.append("A_exp")
     paramsToPlot.append("Q")
     paramsToPlot.append("finalNoiseAmpl")
+    paramsToPlot.append("randomTgt_all")
+    paramsToPlot.append("randomTgtRange_all")
 
     paramsToPlot.append("")
     paramsToPlot.append("cue1")
@@ -607,6 +610,8 @@ if __name__ == '__main__':
         s = re.match(ree,farg)  
         if s!= None:
             onlyMainPlots=1
+
+    pp.plotfname = plotfname
 
     if val == "":
         #paramFileName = 'shmuelof.ini'

@@ -113,8 +113,8 @@ if [ $# -eq 1 ]; then
 fi
 
 if [ $2 == "10" ]; then
-  make pert
-  ./pert --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
+  make pert_recalib
+  ./pert_recalib --ini=$ini --recalibrateArmCortControl=1 --nsessions=1
   exit 0
 fi
 
@@ -171,10 +171,10 @@ fi
 #perturbAllConfig $1 "--endpoint_xreverse1=1 --cue_change1=1 --action_change1=1 --dirShift=180 --target_xreverse1=1 --updateCBStateDist=10" 
 
 ###############
-#perturbAllConfig $1 "--endpoint_rotation1=1 --cue_change1=1 --action_change1=1 --dirShift=90 --target_rotation1=1  cbRateDepr=0.05 cbLRateUpdSpd=0.1"
+#perturbAllConfig $1 "--endpoint_rotation1=1 --cue_change1=1 --action_change1=1 --dirShift=90 --target_rotation1=1  cbStateDepr=0.05 cbLRateUpdSpd=0.1"
 #perturbAllConfig $1 "--percept_rot1=1 --dirShift=90" 
 
-#p="--cbLRate=2 --cbRateDepr=0.03 --cbLRateUpdSpdUp=0.8 --cbLRateUpdSpdDown=1  --cbLRateUpdSpdMax=3 --Q=0.05" 
+#p="--cbLRate=2 --cbStateDepr=0.03 --cbLRateUpdSpdUp=0.8 --cbLRateUpdSpdDown=1  --cbLRateUpdSpdMax=3 --Q=0.05" 
 
 #p="--Q=0.05" 
 #ud="--updateCBStateDist=0.12"
