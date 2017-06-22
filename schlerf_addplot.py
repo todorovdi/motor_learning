@@ -20,9 +20,8 @@ def makeNicerMulti(fig,ax):
     return
 
 def plotInds(ax,fnames2d,inds):
-
-    eopacity = 0.25
-    colors = [ [0, 0, 0, 1.0], [0,0,0,0.5] ]
+    shadeSecond=0.45
+    colors = [ [0, 0, 0, 1.0], [shadeSecond,shadeSecond,shadeSecond,1] ]
     labels = ['controls', 'patients'] 
 
     for fnames,label,color in zip(fnames2d,labels,colors):
@@ -41,8 +40,10 @@ def plotInds(ax,fnames2d,inds):
         nums = armData[:,0]
         nums = nums.astype(np.int)
 
-        ax.fill_between(nums[inds], angs[inds]-SEMs[inds], angs[inds]+SEMs[inds], facecolor=(0.3, 0.3, 0.3, eopacity),edgecolor=(0,0,0,0))
-        angs_handle, = ax.plot(nums[inds], angs[inds], color=color, lw=3.0, label=label)
+        numsind=nums[inds]
+        shadedErrorbar(ax,numsind,angs[inds],SEMs[inds])
+        angs_handle, = ax.plot(nums[inds], angs[inds], color=color, lw=1, label=label)
+        #ax.fill_between(nums[inds], angs[inds]-SEMs[inds], angs[inds]+SEMs[inds], facecolor=(0.3, 0.3, 0.3, eopacity),edgecolor=(0,0,0,0))
 
 def annotateG(ax,inds,xtickstep,twinyxtick=False):
     ax.set_xticks(range(inds[0],inds[-1])[::xtickstep] )
@@ -63,6 +64,13 @@ def annotateG(ax,inds,xtickstep,twinyxtick=False):
 
 
 def makePubPlot(fnames2d,pdf):
+
+    globalFontSz=10
+    mpl.rcParams.update({'font.size': globalFontSz})
+
+    wordTextWidth=6.78
+    wordSingleFigHeight=3.38
+
     # shiny plotting code goes here
     fig = plt.gcf()
     ax = plt.gca()
@@ -102,13 +110,15 @@ def makePubPlot(fnames2d,pdf):
     indGradual=range(xrots[indGradualAux[0] ] , xrots[ indGradualAux[-1] ]) 
     indAbrupt=range( xrots[indAbruptAux[0] ], xrots[ indAbruptAux[-1] ]) 
 
-    print('--------------indGradual',indGradual)
-    print('--------------indAbrupt',indAbrupt)
+    #print('--------------indGradual',indGradual)
+    #print('--------------indAbrupt',indAbrupt)
 
     ########################
 
-    fig.set_size_inches(40, 19, forward=True)
+    fig.set_size_inches(wordTextWidth, wordSingleFigHeight, 
+            forward=True)
 
+    plt.subplots_adjust(left=0.10, right=0.98, bottom=0.18, top=0.82)
 
     inds = range(pp.phaseBegins[0],pp.phaseBegins[-1])
     plotInds(ax,fnames2d,inds)
@@ -122,11 +132,10 @@ def makePubPlot(fnames2d,pdf):
     ax.plot(xrots,yrots, color='black')
 
     annotateG(ax,inds,50,True)
+    ax.set_ylabel(r"Error in degrees",labelpad=8)
+    ax.set_xlabel("Movement Number", labelpad=8)
 
-    #from textwrap import wrap
-    #ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.08)
-
-    fig.suptitle("Reach angle hand space minus target location", size=30, y=0.99)
+    #fig.suptitle("Reach angle hand space minus target location",size=1.5*globalFontSz)#, y=0.99)
 
     pdf.savefig()
     plt.close()
@@ -135,8 +144,13 @@ def makePubPlot(fnames2d,pdf):
     fig = plt.gcf()
     ax = plt.gca()
 
-    fig, axs = plt.subplots(ncols=1, nrows=3, figsize=(10, 30), sharex=False, sharey=False)
+    fig, axs = plt.subplots(ncols=1, nrows=3, 
+            figsize=(wordTextWidth, wordSingleFigHeight*3), 
+            sharex=False, sharey=False)
 
+    plt.subplots_adjust(left=0.12, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.3)
+
+    #plt.subplots_adjust(left=0.11, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.4)
 
     # plot rotations
     #rot0 = 0.0
@@ -147,20 +161,45 @@ def makePubPlot(fnames2d,pdf):
     ffirst = [ [fnames[0]] for fnames in fnames2d]
     #print('-----------------ffirst',ffirst)
     plotInds(ax,ffirst,inds)
-    ax.plot(xrots,yrots, color='black')
+    ax.plot(xrots,yrots, color='black',lw=0.8)
     annotateG(ax,inds,100,True)
+    ax.set_ylabel(r"Error in degrees",labelpad=8)
+    ax.set_xlabel("Movement Number", labelpad=8)
+    
+    ax.text(-0.14, 1.06, 'A', transform=ax.transAxes,
+      fontsize=16, fontweight='bold', va='top', ha='right')
 
     ax = axs[1]
     inds = indGradual
     plotInds(ax,fnames2d,inds)
-    ax.plot(xrots[indGradualAux],yrots[indGradualAux], color='black')
+    ax.plot(xrots[indGradualAux],yrots[indGradualAux], color='black',lw=0.8)
     annotateG(ax,inds,50)
+    ax.set_ylabel(r"Error in degrees",labelpad=8)
+    ax.set_xlabel("Movement Number", labelpad=8)
+
+    ax.text(-0.14, 1.06, 'B', transform=ax.transAxes,
+      fontsize=16, fontweight='bold', va='top', ha='right')
 
     ax = axs[2]
     inds = indAbrupt
     plotInds(ax,fnames2d,inds)
     ax.plot(xrots[indAbruptAux],yrots[indAbruptAux], color='black')
     annotateG(ax,inds,50)
+    ax.set_ylabel(r"Error in degrees",labelpad=8)
+    ax.set_xlabel("Movement Number", labelpad=8)
 
-    fig.suptitle("Reach angle hand space minus target location", size=30, y=0.99)
+    ax.text(-0.14, 1.06, 'C', transform=ax.transAxes,
+      fontsize=16, fontweight='bold', va='top', ha='right')
+
+    fig.suptitle("Reach angle hand space minus target location",size=globalFontSz*1.5)#, y=0.99)
+
+    noExt=pp.out_dir_pdf + pp.plotfname
+    svgname=noExt+'.svg'
+    print svgname
+    plt.savefig(svgname)#,bbox_inches='tight')
+
+    import os
+    inkscapeArgs ='inkscape --without-gui --export-emf="'+noExt+'.emf" "'+svgname+'"'
+    print inkscapeArgs
+    os.system(inkscapeArgs)
 

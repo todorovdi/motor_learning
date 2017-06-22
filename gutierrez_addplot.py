@@ -61,7 +61,7 @@ def annotateCommon(ax):
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
 
-def makePubPlot(fnames2d):
+def makePubPlot(fnames2d,pdf):
     # shiny plotting code goes here
     if(len(fnames2d) != 6):
         print("---Error -- not enough data to plot, exiting! ")
@@ -126,6 +126,19 @@ def makePubPlot(fnames2d):
     annotateCommon(ax)
 
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
+
+
+    noExt=pp.out_dir_pdf + pp.plotfname
+    svgname=noExt+'.svg'
+    print svgname
+    plt.savefig(svgname)#,bbox_inches='tight')
+
+    import os
+    inkscapeArgs ='inkscape --without-gui --export-emf="'+noExt+'.emf" "'+svgname+'"'
+    print inkscapeArgs
+    os.system(inkscapeArgs)
+
+
     # plt.plot([1,2,3], label="test1")
     #plt.plot([3,2,1], label="test2")
     ## Place a legend to the right of this smaller subplot.

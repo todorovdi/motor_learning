@@ -74,9 +74,9 @@ if [ $# -ne 0 ]; then
   # minAngDeg  is start of the sector
   # maxAngDeg  is end of the sector
 
-
   echo "Starting experiment "$experimentName
 
+  addOptions=" acOptimalRateMult=0.2"
 
   addOptionsLoc=" --gradedReward=1"$addOptions
   fullSim $1

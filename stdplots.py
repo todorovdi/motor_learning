@@ -78,6 +78,10 @@ def getReachAngles(armData):
         angs[int(j)] = angleDeg
     return angs
 
+def namePanel(ax,name):
+    ax.text(-0.1, 1.15, name, transform=ax.transAxes,    
+      fontsize=16, fontweight='bold', va='top', ha='right')
+
 def getErrs(armData):
     nums = armData[:,0]
     xs = armData[:,1]
@@ -177,7 +181,7 @@ def armFileRead(fname):
     armData = np.loadtxt(fname)#,skiprows=pp.armFileSkiprows)
     return armData
 
-def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=list(),tgt_actual=list(),cbtgt_actual=list()):
+def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=list(),tgt_actual=list(),cbtgt_actual=list(),ptlabels=True):
 
     yc = 0.4
     xlim = pp.reachBoxXsz
@@ -221,11 +225,11 @@ def genReachPlot(fig,ax,xs,ys,nums,title="",twoPhases=False,tgt=list(),cbtgt=lis
 
     learn_cb = int(pp.paramsEnv["learn_cb"] )
 
-    if (len(cbtgt) > 0) and learn_cb:
+    if (len(cbtgt) > 0) and learn_cb and ptlabels:
         addxs.append(cbtgt[0][0])
         addys.append(cbtgt[0][1])
         addlabel.append("CBtgt_p")
-    if(len(cbtgt_actual) > 0 and learn_cb):
+    if(len(cbtgt_actual) > 0 and learn_cb and ptlabels):
         addxs.append(cbtgt_actual[0][0])
         addys.append(cbtgt_actual[0][1])
         addlabel.append("CBtgt_a")
@@ -326,8 +330,9 @@ def addColorBar(fig,ax_,vals=0,tickSkip=10,dat=0,wd=0.01):
     ax1= fig.add_axes(pos2); # from left, from down, width, height
 
     if dat==0 and len(vals)>0:
-        mult = max(1,int((vals[-1]+1)/tickSkip) )
-        colorTicks = [i for i in vals if i%mult == 0]  
+        #mult = max(1,int(float(vals[-1]+1)/float(tickSkip)) )
+        #colorTicks = [i for i in vals if i%mult == 0]  
+        colorTicks = range(vals[0],vals[-1],tickSkip)
 
         norm = mpl.colors.Normalize(vmin=vals[0], vmax=vals[-1])
         cbar = mpl.colorbar.ColorbarBase(ax=ax1,norm=norm,ticks=colorTicks,orientation='vertical',cmap='inferno')
@@ -389,7 +394,7 @@ def genCBStatePlot(fig,ax,fname):
     ax.set_ylabel('wcb[0 1 2 3 4 5][*]',rotation=90)
     ax.set_ylim(0,36)
 
-def genCBStateMaxPlot(fig,ax,fnames,avg=False):
+def genCBStateMaxPlot(fig,ax,fnames,avg=False,capsize=1):
     if avg==False:
         fnames=[fnames]
     nfiles=len(fnames)
@@ -412,7 +417,8 @@ def genCBStateMaxPlot(fig,ax,fnames,avg=False):
         SEMs = np.zeros(n)
         for i in range(nrows):
             SEMs[i] = stats.sem(allmaxs[:,i])
-        ax.errorbar(range(n),maxs, yerr=SEMs)
+        #ax.errorbar(range(n),maxs, yerr=SEMs,capsize=capsize)
+        shadedErrorbar(ax,range(n),maxs,SEMs)
     else:
         ax.plot(maxs)
     
@@ -433,7 +439,14 @@ def genCBTuningPlot(fig,ax,fname):
     ax.set_ylabel('dfwx dfwy',rotation=90)
     ax.set_ylim(0,36*2)
 
-def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False):
+def shadedErrorbar(ax,nums,errs,SEMs): 
+    #eopacity=0.45   # emf files don't support opacity
+    eopacity=1
+    shade=0.7
+    ax.fill_between(nums, errs-SEMs, errs+SEMs, facecolor=(shade, shade, shade, eopacity),edgecolor=(0,0,0,1),lw=0 )
+    ax.plot(nums, errs, color=pp.mainColor)
+
+def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
     if avg==False:
         fnames=[fnames]
     nfiles=len(fnames)
@@ -454,9 +467,10 @@ def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False):
         SEMs = np.zeros(n)
         for i in range(n):
             SEMs[i] = stats.sem(allRates[:,i])
-        ax.errorbar(range(n),rates, yerr=SEMs)
+        #ax.errorbar(range(n),rates, yerr=SEMs,capsize=capsize)
+        shadedErrorbar(ax,range(n),rates,SEMs)
     else:
-        ax.plot(rates)
+        ax.plot(rates,label='rate')
 
     errAbsLarge = errMult * misc[:,1]
     #errAbsSmall = errMultSmall * misc[:,1]
@@ -464,7 +478,7 @@ def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False):
     #prevErrAbs = errMult * misc[:,3]
     #(nrows, ncols) = misc.shape
 
-    ax.plot(rates,label='rate',c='blue')
+    #ax.plot(rates,label='rate',c='blue')
     if rateOnly == False:
         ax.plot(errAbsLarge,label=str(errMult)+'*cur_errAbs',c='green')
     #ax.plot(ratios,label='errToCompare/errAbs',c='red',alpha=0.5)

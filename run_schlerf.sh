@@ -45,14 +45,14 @@ runAll()
 
   ################################
 
-  runSim "$ao --cbLRate=$redRate --finalNoiseAmpl=$controlNoise"  $uodPatients
-  patientsRedRate=$argSim
+  #runSim "$ao --cbLRate=$redRate --finalNoiseAmpl=$controlNoise"  $uodPatients
+  #patientsRedRate=$argSim
 
   runSim "$ao --cbLRate=$normRate --cbStateDepr=$incDepr --finalNoiseAmpl=$controlNoise" $uodPatients
   patientsIncDepr=$argSim
 
-  runSim "$ao --cbLRate=$normRate --finalNoiseAmpl=$cbNoise" $uodPatients
-  patientsIncNoise=$argSim
+  #runSim "$ao --cbLRate=$normRate --finalNoiseAmpl=$cbNoise" $uodPatients
+  #patientsIncNoise=$argSim
 
   #runSim "$ao --cbLRate=$incRate --cbStateDepr=$incDepr --cbLRate=$incRate --finalNoiseAmpl=$controlNoise" \
   #  $uodPatients
@@ -64,11 +64,11 @@ runAll()
 
   ################
 
-  runSim "$ao --acOptimalRateMult=$redMult --cbLRateIsConst=0 --finalNoiseAmpl=$controlNoise" $uodPatientsAC
-  patientsACredRate=$argSim
+  #runSim "$ao --acOptimalRateMult=$redMult --cbLRateIsConst=0 --finalNoiseAmpl=$controlNoise" $uodPatientsAC
+  #patientsACredRate=$argSim
 
-  runSim "$ao --cbLRateUpdSpdUp=$redRateUpdSpd --cbLRateIsConst=0 --finalNoiseAmpl=$controlNoise" $uodPatientsAC
-  patientsACredRate2=$argSim
+  #runSim "$ao --cbLRateUpdSpdUp=$redRateUpdSpd --cbLRateIsConst=0 --finalNoiseAmpl=$controlNoise" $uodPatientsAC
+  #patientsACredRate2=$argSim
 
   #runSim "$ao --cbLRateUpdSpdUp=$incRateUpdSpd --cbLRateIsConst=0 --finalNoiseAmpl=$controlNoise" $uodPatientsAC
   #patientsACincRate2=$argSim
@@ -76,8 +76,8 @@ runAll()
   runSim "$ao --cbStateDepr=$incDepr  --cbLRateIsConst=0 --finalNoiseAmpl=$controlNoise" $uodPatientsAC
   patientsACincDepr=$argSim
 
-  runSim "$ao --cbLRateIsConst=0 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
-  patientsACincNoise=$argSim
+  #runSim "$ao --cbLRateIsConst=0 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
+  #patientsACincNoise=$argSim
 
   #runSim "$ao --acOptimalRateMult=$incMult --cbLRateIsConst=0 --cbStateDepr=$incDepr --finalNoiseAmpl=$controlNoise" \
   #  $uodPatientsAC
@@ -93,13 +93,13 @@ runAll()
   #  "$controls" "$controlsAC" "$patientsRedRate" "$patientsACredMult" "$patientsIncDepr" "$patientsIncNoise" \
   #"---plotfname=${experimentName}_$ao"
 
-  python $plotfile \
-    "$controls" "$patientsRedRate" \
-  "---plotfname=${experimentName}_noAC_redRate$ao$2"
+  #python $plotfile \
+  #  "$controls" "$patientsRedRate" \
+  #"---plotfname=${experimentName}_noAC_redRate$ao$2"
 
-  python $plotfile \
-    "$controls" "$patientsIncNoise" \
-  "---plotfname=${experimentName}_noAC_incrNoise_$ao$2"
+  #python $plotfile \
+  #  "$controls" "$patientsIncNoise" \
+  #"---plotfname=${experimentName}_noAC_incrNoise_$ao$2"
 
   python $plotfile \
     "$controls" "$patientsIncDepr" \
@@ -113,21 +113,21 @@ runAll()
   #  "$controls" "$patientsIncNoiseDeprRate" \
   #"---plotfname=${experimentName}_noAC_incrNoiseDeprRate_$ao"
 
-  python $plotfile \
-    "$controlsAC" "$patientsACredRate" \
-  "---plotfname=${experimentName}_AC_redRate$ao$2"
+  #python $plotfile \
+  #  "$controlsAC" "$patientsACredRate" \
+  #"---plotfname=${experimentName}_AC_redRate$ao$2"
 
-  python $plotfile \
-    "$controlsAC" "$patientsACredRate2" \
-  "---plotfname=${experimentName}_AC_redRate2$ao$2"
+  #python $plotfile \
+  #  "$controlsAC" "$patientsACredRate2" \
+  #"---plotfname=${experimentName}_AC_redRate2$ao$2"
 
   #python $plotfile \
   #  "$controlsAC" "$patientsACincRate2" \
   #"---plotfname=${experimentName}_AC_incRate2$ao"
 
-  python $plotfile \
-    "$controlsAC" "$patientsACincNoise" \
-  "---plotfname=${experimentName}_AC_incrNoise$ao"
+  #python $plotfile \
+  #  "$controlsAC" "$patientsACincNoise" \
+  #"---plotfname=${experimentName}_AC_incrNoise$ao"
 
   python $plotfile \
     "$controlsAC" "$patientsACincDepr" \
@@ -212,6 +212,7 @@ if [ $# -ne 0 ]; then
   runAll "" "_normRate=2"
 
   normRate=1
+  normMult=0.2
   redRate=0.2
   incDepr=0.16
   runAll "" "_normRate=1"

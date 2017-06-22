@@ -117,15 +117,33 @@ if [ $# -ne 0 ]; then
   #doSim " --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=2.5"
   #doSim " --wmmaxFP=0.1 --perfRewardSize=1   --rewardSize=3"
 
-  addOptions=" --ini=shmuAC.ini --cbStateDepr=0.08"
+  ########################################################
+  ########################################################
+  ########################################################
+
+  #acOptimalRateMult = 0.6 
+  #addOptions=" --ini=shmuAC.ini --cbStateDepr=0.08 --acOptimalRateMult=0.2"
+  addOptions=" --ini=shmuAC.ini --cbStateDepr=0.04 --acOptimalRateMult=0.2"
   # the best ones
   # we do give rwd for performance in error clamp
-  doSim " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1"
-  doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=2"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1"
+  doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=1"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=2"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=4   --rewardSize=2"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=6   --rewardSize=2"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=8   --rewardSize=2"
+
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=2"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1"
+
 
   # somewhat worse
-  doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=0.5"
-  doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=1"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=0.5"
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=1"
+
+  ########################################################
+  ########################################################
+  ########################################################
 
   #doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=2.5"
 

@@ -66,6 +66,7 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     global averageDataOnly
     global reachCoordsHandSpace
     global plotfname
+    global mainColor
 
     plotParams = params_
 
@@ -83,6 +84,13 @@ def exportVarsInit(params_):    # to avoid recalc if one just want to change exp
     #except KeyError as e:
     #    plotHandSpace = 0
     #    print(str(e))
+
+    
+    try:
+        mainColor = params_["mainColor"]
+    except KeyError as e:
+        mainColor = 'blue'
+        print(str(e))
 
     try:
         reachCoordsHandSpace = int(params_["reachCoordsHandSpace"])

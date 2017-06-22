@@ -144,12 +144,19 @@ def genFigurePert(fnames,outname):
 
     if(int(pp.paramsEnv["nc"]) > 1):
         ax = axs[1,0]
-        genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),1)
+        cue=1
+        try:
+            cue=int(pp.paramsEnv["cue1"])
+        except KeyError:
+            cue=1
+
+        genBGWeightsPlot(fig,ax,fileToPlot.replace('arm','weights2'),cue=cue)
         annotateGraph(ax,bg=1)
 
     ax = axs[1,1]
 
-    genMainPlot(ax,fnames,nums)
+    #genMainPlot(ax,fnames,nums)
+    genMainPlot(ax,[fileToPlot],nums)
 
     pos1 = axs[0,0].get_position()
     xLeft = pos1.x0
@@ -269,20 +276,21 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
         nr = 5
         nc = l
 
-    if pp.multi_onlyMainPlots:
-        if pp.multi_ncols > 0:
-            ncfinal=pp.multi_ncols
-            nr=int( math.ceil( float(l) / float(ncfinal) ) )
+    if pp.onlyPubPlot != 1:
+        if pp.multi_onlyMainPlots:
+            if pp.multi_ncols > 0:
+                ncfinal=pp.multi_ncols
+                nr=int( math.ceil( float(l) / float(ncfinal) ) )
+            else:
+                ncfinal=int(math.ceil(nc/2.) )
+            fig, axs = plt.subplots(ncols=ncfinal, nrows=nr, figsize=(5+10*ncfinal, 10*nr), sharex=False, sharey=False)
         else:
-            ncfinal=int(math.ceil(nc/2.) )
-        fig, axs = plt.subplots(ncols=ncfinal, nrows=nr, figsize=(5+10*ncfinal, 10*nr), sharex=False, sharey=False)
-    else:
-        fig, axs = plt.subplots(ncols=nc, nrows=nr, figsize=(5+10*l, 20), sharex=False, sharey=False)
+            fig, axs = plt.subplots(ncols=nc, nrows=nr, figsize=(5+10*l, 20), sharex=False, sharey=False)
 
-    plt.subplots_adjust(left=0.16,right=0.98,bottom=0.1)
+        plt.subplots_adjust(left=0.16,right=0.98,bottom=0.1)
 
-    if pp.multi_onlyMainPlots:
-        axs=axs.ravel()
+        if pp.multi_onlyMainPlots:
+            axs=axs.ravel()
 
     fnames2d = []
     for ind,dat_basename in enumerate(dat_basenames_nonempty):
@@ -296,6 +304,9 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
         fnames2d.append(fnames)
 
         paramsInitFromArmFname(fnames[0])
+
+        if pp.onlyPubPlot:
+            continue
 
         fileToPlot = fnames[0]
         armData = armFileRead(fileToPlot)
@@ -360,19 +371,20 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
 
             #genReachPlot(fig,ax,xs[rangeAdapt1],ys[rangeAdapt1],nums[rangeAdapt1],figName,cbtgt=list(zip(x_cbtgt[rangeAdapt1],y_cbtgt[rangeAdapt1])))
 
-    if pp.multiSameGraph == 0:
-        if pp.multi_onlyMainPlots:
-            ax = axs[ind]
-        else:
-            ax = axs[nr-1,ind]
-    else: 
-        ax = axs
-    
-    pos1 = ax.get_position()
-    xLeft = pos1.x0
-    yTop = pos1.y0+pos1.height
-    posLeftMargin = [0,0,xLeft-0.00,1]             # from left, from down, width, height 
-    printParams(fig,posLeftMargin)
+    if pp.onlyPubPlot != 1:
+        if pp.multiSameGraph == 0:
+            if pp.multi_onlyMainPlots:
+                ax = axs[ind]
+            else:
+                ax = axs[nr-1,ind]
+        else: 
+            ax = axs
+        
+        pos1 = ax.get_position()
+        xLeft = pos1.x0
+        yTop = pos1.y0+pos1.height
+        posLeftMargin = [0,0,xLeft-0.00,1]             # from left, from down, width, height 
+        printParams(fig,posLeftMargin)
 
     bb = pp.paramsEnv["pdfSuffix"]
     bb = re.sub('bg._cb.', '', bb)
@@ -390,8 +402,9 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
 
     print('multi',pdfname)
     with PdfPages(pdfname) as pdf:
-        pdf.savefig()
-        plt.close()
+        if pp.onlyPubPlot != 1:
+            pdf.savefig()
+            plt.close()
 
         if pp.plotPubFile != "":
 
@@ -408,12 +421,14 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
             nicener.makePubPlot(fnames2d,pdf)
 
             pdf.savefig()
+            #plt.savefig(pp.plotfname+'.svg',format='svg')#,bbox_inches='tight')
+
             plt.close()
         
             mpl.rcParams.update(backup)
 
     #plt.savefig(pp.out_dir_pdf+outname+".pdf")
-    plt.close(fig)
+    #plt.close(fig)
 
 def genReachingByPhase(fname):
     fileToPlot = fname
