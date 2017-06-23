@@ -26,6 +26,7 @@ class expPhaseParams{
   bool  learn_bg;
   bool  learn_cb;
   bool cbLRateReset;
+  bool errHistReset;
   bool resetCBState;
   bool randomTgt;
 
@@ -69,8 +70,9 @@ class expPhaseParams{
     learn_bg=1;
     learn_cb=1;
 
+    errHistReset = 0;
     cue = 0;
-    cbLRateReset = 1;
+    cbLRateReset = 0;
     resetCBState = 0;
     setRPre = -2000;
     resetRPre = 0;

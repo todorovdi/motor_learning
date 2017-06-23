@@ -30,6 +30,8 @@ class CB_model
   float cbStateDepr;
 
   float cbRetrainNeeded_thr;
+  float cbRetrainNeeded_thr_Linf;
+  bool cbRetrainNeeded_LinfNorm;
 
   float prevErrAbs;
 
@@ -49,6 +51,7 @@ class CB_model
 
   float acOptimalRateMult;
   float acThrMult;
+  float acLowThrMult;
   bool acInstantUpd;
 
   vector<float> errHist;
@@ -93,7 +96,7 @@ class CB_model
         void init(parmap & params,Exporter *exporter,Arm * arm_, Percept * percept_);
         
         //float errDFmod(float dx, float dy);
-        float get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb);
+        int get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb);
 
         bool trainNeeded(float * y_, float newx=-1000, float newy=-1000); 
 

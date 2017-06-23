@@ -106,8 +106,11 @@ void perturbationExperimentEnv::runSession()
           {
             if(p.cbLRateReset)
             { 
-              percept.resetErrHist();
               ml.resetCBLRate(p.cbLRate);
+            }
+            if(p.errHistReset)
+            {
+              percept.resetErrHist();
             }
             //cout<<"4"<<endl;
 
@@ -542,18 +545,14 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
       if(percept.getHistSz() > 1 )
       { 
         float real, expected;
-        float ach = ml.get_cbACHappiness(&real, &expected);
-
-        float tt = acUpdCoefThr;
-        bool b2 = ach < tt;   
-        bool b2neg = ach > tt * 2.;   
+        int acAns = ml.get_cbACHappiness();
         
         float f = errReduction > 0 ? pow(errReduction,perfGradePower) : 0.;
-        if(b2)       // means succesful correction. Then correct more!
+        if(acAns==0)       // means succesful correction. Then correct more!
         {
           relR = perfRewardSize * f * perfRwdMult;
         }
-        else if(b2neg)  // if we reduced error not due to CB
+        else if(acAns==2)  // if we reduced error not due to CB
         {
           relR = perfRewardSize/4. * f * perfRwdMult;
         }
@@ -710,8 +709,8 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     s = params["cbLRateUpdAbsErr_threshold"];
     cbLRateUpdAbsErr_threshold = s!="" ? stof(s) : 0;
 
-    s = params["rwdFromcbLRate_thr"];
-    rwdFromcbLRate_thr = s!="" ? stof(s) : 0;
+    //s = params["rwdFromcbLRate_thr"];
+    //rwdFromcbLRate_thr = s!="" ? stof(s) : 0;
 
     //s = params["rwdFromcbLRate_mult"];
     //rwdFromcbLRate_mult = s!="" ? stof(s) : 0;
@@ -749,7 +748,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       if(iter != params.end() && fabs(stof(iter->second) ) > EPS )
       { 
         string val = ((iter->second) );
-        params["actcue_rot"+to_string(i)] = val;
+        //params["actcue_rot"+to_string(i)] = val;
         params["target_rotation"+to_string(i)] = val;
         params["endpoint_rotation"+to_string(i)] = val;
       }
@@ -758,7 +757,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       iter = params.find(key);
       if(iter != params.end() && stoi(iter->second) )
       { 
-        params["actcue_rot"+to_string(i)] = "180";
+        //params["actcue_rot"+to_string(i)] = "180";
         params["target_xreverse"+to_string(i)] = "1";
         params["endpoint_xreverse"+to_string(i)] = "1";
       }
@@ -768,7 +767,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       if(iter != params.end() && fabs(stof(iter->second)) > EPS)
       { 
         string val = ((iter->second) );
-        params["actcue_rot"+to_string(i)] = "45";  // we use real prelearn
+        //params["actcue_rot"+to_string(i)] = "45";  // we use real prelearn
         // anyway
         params["endpt_xshift"+to_string(i)] = val;
         params["tgt_xshift"+to_string(i)] =   val;
@@ -779,7 +778,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       if(iter != params.end() && fabs(stof(iter->second)) > EPS)
       { 
         string val = (iter->second) ;
-        params["actcue_rot"+to_string(i)] = "45";
+        //params["actcue_rot"+to_string(i)] = "45";
         params["endpt_yshift"+to_string(i)] = val;
         params["tgt_yshift"+to_string(i)]   = val;
       }
@@ -917,6 +916,14 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       { 
         bool val = stoi(iter->second);
         p.cbLRateReset = val;
+      }
+      
+      key = string("errHistReset") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        bool val = stoi(iter->second);
+        p.errHistReset = val;
       }
 
       key = string("resetCBState") + to_string(i);
@@ -1062,6 +1069,19 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
         //   minActionAngDeg<<endl;
       }
 
+      //override wmmaxFP, working globally
+      key = string("actPrelearn_wmmaxFP") + to_string(i);
+      iter = params.find(key);
+      if(iter != params.end() )
+      { 
+        float wm = stof(iter->second);
+        c2p.wmmax = wm;
+      }
+      else
+      {
+        c2p.wmmax = wmmaxFP;
+      }
+
       key = string("tgt_xPrelearn") + to_string(i);
       iter = params.find(key);
       if(iter != params.end() )
@@ -1091,7 +1111,6 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
       c2p.patPMC.resize(na);
       fill(c2p.patPMC.begin(),c2p.patPMC.end(),0.);
-      c2p.wmmax = wmmaxFP;
       c2p.tempWAmpl = w1maxFP;
     }
 }

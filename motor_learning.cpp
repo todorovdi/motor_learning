@@ -146,17 +146,6 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       //cb.setCBtarget(cbTgt_x,cbTgt_y);
       if(learn_cb && trainCBEveryTrial)
       {
-        // no! even if the program is unchanged, the W may have changed
-        //bool ychanged = false;
-        //for(int i=0;i<na; i++)
-        //{
-        //  // if at least one activity has changed, then do retrain
-        //  if(fabs(y[i]-prevy[i]) > 0.1)
-        //  { 
-        //    ychanged = true;
-        //    break;
-        //  }
-        //}
         if(!cbRetrainSpeedup || cb.trainNeeded(y,cbTgt_x,cbTgt_y))
         {
           cb.train(cbTgt_x, cbTgt_y, y,false,retrainCB_useCurW,ffield);  // flushW= false, useCurW = true
@@ -383,9 +372,9 @@ void MotorLearning::setCBtCDS(float val)
   cb.set_tCDS(val);
 }
 
-float MotorLearning::get_cbACHappiness(float* real, float* expected)
+int MotorLearning::get_cbACHappiness()
 {
-  return cb.get_ACHappiness(real,expected);
+  return cb.get_ACHappiness(0,0);
 }
 
 //void initWeightNormFactor(unsigned int memoryLen)  // should be called ONLY ONCE

@@ -446,7 +446,7 @@ def makePubPlot(fnames2d,pdf):
 
     if pp.plotfname == 'mildPert_AC':
         ymin = -20
-        ymax = 30 
+        ymax = 40 
         ystep = 10
         cbStateLim=0.3
         cbLRateLim=7

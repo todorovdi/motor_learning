@@ -18,13 +18,16 @@ seed=0     #makes <more or less> random seed
 
 shortSim()
 {
+  perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
+  args_EB_HD=$pdfSuffix
+
   perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
   args_EB_control=$pdfSuffix
 
   perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
   args_nonEB_control=$pdfSuffix
  
-  python "$plotfile" "$args_EB_control" "$args_nonEB_control"
+  python "$plotfile" "$args_EB_HD" "$args_EB_control" "$args_nonEB_control"
 }
 
 fullSim()
@@ -35,14 +38,14 @@ fullSim()
   perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
   args_nonEB_control=$pdfSuffix
 
-  perturbSimple "--ini=$ini --percept_xrev1=1 --HD=1$addOptionsLoc" $1 $useOldData
-  args_nonEB_HD=$pdfSuffix
-
   perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
   args_EB_HD=$pdfSuffix
 
   perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1 $useOldData
   args_EB_PD=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=1 --HD=1$addOptionsLoc" $1 $useOldData
+  args_nonEB_HD=$pdfSuffix
 
   perturbSimple "--ini=$ini --percept_xrev1=1 --PD=1$addOptionsLoc" $1  $useOldData
   args_nonEB_PD=$pdfSuffix
@@ -76,45 +79,136 @@ if [ $# -ne 0 ]; then
 
   echo "Starting experiment "$experimentName
 
-  addOptions=" acOptimalRateMult=0.2"
+  addOptions=" --cbRetrainSpeedup=0 --wmmaxFP=0.6"
 
-  addOptionsLoc=" --gradedReward=1"$addOptions
+  mp=0.63
+  #1.6 because it is the baseline stationary CB learning rate
+  rpre=`echo "scale=4;$mp*1.6" | bc -l`
+
+  addOptionsLoc=" --setRPre0=$rpre --setRPre1=$rpre"$addOptions
   fullSim $1
 
-  addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
-  fullSim $1
+  ##################################
 
-  addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
-  fullSim $1
+  #mp=0.4
+  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=10 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=12.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=15 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=17.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=20 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=25 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=30 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+
+  ##
+
+  #mp=0.5
+  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=10 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=12.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=15 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=17.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=20 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=25 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  ##
+
+  #mp=0.63
+  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=8 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=10 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=12.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=15 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=17.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=20 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+
+  ##12.2-13.472
+  ##
+  #mp=0.7
+  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
+
+  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=15 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
+
+
+
+  ###################
+  ###################
+
+  #addOptionsLoc=" --gradedReward=1 --perfRewardSize=5"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --gradedReward=1 --perfRewardSize=7"$addOptions
+  #fullSim $1
 
   #addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
   #fullSim $1
 
   ############################
-  addOptions=" --cbStateDepr=0.02"
+  #addOptions=" --cbStateDepr=0.02"
 
-  addOptionsLoc=" --gradedReward=1"$addOptions
-  fullSim $1
-
-  addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
-  fullSim $1
-
-  addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
-  fullSim $1
-
-  #addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
+  #addOptionsLoc=" --gradedReward=1"$addOptions
   #fullSim $1
 
-  addOptions=" --cbStateDepr=0.01"
+  #addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
+  #fullSim $1
 
-  addOptionsLoc=" --gradedReward=1"$addOptions
-  fullSim $1
+  #addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
+  #fullSim $1
 
-  addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
-  fullSim $1
+  ##addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
+  ##fullSim $1
 
-  addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
-  fullSim $1
+  #addOptions=" --cbStateDepr=0.01"
+
+  #addOptionsLoc=" --gradedReward=1"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
+  #fullSim $1
+
+  #addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
+  #fullSim $1
 
   #addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
   #fullSim $1

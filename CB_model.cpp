@@ -25,15 +25,9 @@ void CB_model::train(float x0, float y0, float * yy, bool flushW, bool useCurW, 
 	  for(int i=0;i<6;i++) 
         for(int j=0;j<6;j++)
         {  
-            // this is not needed because we add W*(activities ) to existing activities. So we actually do (Id + W)*(activities)
-            //for(int l=0;l<6;l++) 
-            //    wcb[l][l] = 1.;
-
             // set only current weight nonzero
             wcb[i][j]+=cbInitShiftSz;
 
-            //x[0]=a; x[1]=b;
-            
             // it influences update of DR which is basically some precalc * neuron activity
             arm->move(yy,endpt,wcb,ffield,false);
 
@@ -94,20 +88,6 @@ void CB_model::cblearn(float dx,float dy)
   //last_errDFmod *= cbLRate;
 }
 
-//float CB_model::errDFmod(float dx, float dy)
-//{
-//  float r = 0;
-//	for(int i=0;i<6;i++) 
-//  {
-//    for(int j=0;j<6;j++) 
-//    { 
-//      float t = (dx*dfwx[i][j]+dy*dfwy[i][j]);
-//        r+=t*t; 
-//    } 
-//  }
-//  return sqrt(r);
-//}
-
 // should be called before cb learning is done
 bool CB_model::trainNeeded(float * y_,float newx, float newy)
 {
@@ -124,7 +104,7 @@ bool CB_model::trainNeeded(float * y_,float newx, float newy)
   {
     for(int i = 0; i<train_patPMC.size();i++)
     {
-      if(fabs(y_[i]-train_patPMC[i]) > 0.1)
+      if(fabs(y_[i]-train_patPMC[i]) > 0.05)
       { 
         ychanged = true;
         break;
@@ -137,38 +117,74 @@ bool CB_model::trainNeeded(float * y_,float newx, float newy)
 
   if(!ychanged && !ptchanged)
   {
-    for(int k=0;k<6;k++) 
-      for(int l=0;l<6;l++) 
+    if(cbRetrainNeeded_LinfNorm)
+    { 
+      for(int k=0;k<6;k++) 
+        for(int l=0;l<6;l++) 
+        {
+          // L^infty norm
+          if( fabs( wcb_train[k][l] - wcb[k][l] ) > cbRetrainNeeded_thr_Linf )
+          {
+            //tt = fmax( tt, fabs( wcb_train[k][l] - wcb[k][l] ) );
+            Wchanged = true;
+            //break;
+          }
+        }
+    }
+    else
+    {
+      for(int k=0;k<6;k++) 
       {
-        ttt += fabs( wcb_train[k][l] - wcb[k][l] );
-        //if( fabs( wcb_train[k][l] - wcb[k][l] ) > cbRetrainNeeded_thr )
-        //{
-        //  tt = fmax( tt, fabs( wcb_train[k][l] - wcb[k][l] ) );
-        //  Wchanged = true;
-        //  //break;
-        //}
+        for(int l=0;l<6;l++) 
+        {
+          ttt += fabs( wcb_train[k][l] - wcb[k][l] );
+          // L^infty norm
+          //if( fabs( wcb_train[k][l] - wcb[k][l] ) > cbRetrainNeeded_thr )
+          //{
+          //  tt = fmax( tt, fabs( wcb_train[k][l] - wcb[k][l] ) );
+          //  Wchanged = true;
+          //  //break;
+          //}
+        }
       }
+      Wchanged = ttt > cbRetrainNeeded_thr ? true : false;
+    }
   }
-  Wchanged = ttt > cbRetrainNeeded_thr ? true : false;
 
   bool needed = ychanged || Wchanged || ptchanged;
   //cout<<" trainNeeded "<<needed<<" W change (L1 norm) "<<ttt<<endl;
   return needed;
 } 
 
-float CB_model::get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb)
+int CB_model::get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb)
 {
   float dx,dy;
   float errAbs = percept->calcErr(&dx,&dy,true);
   float prevErrAbs = percept->getHistSz() > 1 ? percept->getErr(1,true) : -100;  
   float easq = errAbs*errAbs;
 
-  *pupd_coef_real = prevErrAbs * prevErrAbs - easq;
-  *pupd_coef_cb = last_errDFmod * cbLRate;
+   // note that the cost functions that CB aims to decrease is quadratic, thus it is 
+    // difference of SQUARES of moduli of vector errors, which is proportional to the prev learning rate
+  float upd_coef_real = prevErrAbs * prevErrAbs - easq;
+  float upd_coef_cb = last_errDFmod * cbLRate;
+  if(pupd_coef_real && pupd_coef_cb)
+  {
+    *pupd_coef_real = upd_coef_real;
+    *pupd_coef_cb = upd_coef_cb;
+  }
   // if true we assume that CB did last correction. And it did it using
   // correct visual feedback (more or less)
+  
+  float tt = cbLRateUpdAbsErr_threshold * cbLRateUpdAbsErr_threshold;
+  //tt *= 5; // too much
+  //cout<<"tt "<<tt<<endl;
+  bool b,bneg; 
+  b = fabs( upd_coef_real - upd_coef_cb) < tt * acLowThrMult;   
+  bneg = fabs( upd_coef_real - upd_coef_cb) >= tt * acThrMult;   
     
-  return fabs(*pupd_coef_real - *pupd_coef_cb);
+  if(b) return 0;          // CB works ok
+  else if(bneg) return 2;  // CB works bad
+  else return 1;            // we are not sure
 }
  
 // adaptive critic code is here
@@ -197,31 +213,19 @@ void CB_model::learn()
   {
     //float mult = ( 1./(1.+m)  );
 
-    // note that the cost functions that CB aims to decrease is quadratic, thus it is 
-    // difference of SQUARES of moduli of vector errors, which is proportional to the prev learning rate
     float easq = errAbs*errAbs;
-    bool b2,b2neg; 
     if(acByUpdCoefThr)
     { 
-      upd_coef_real = prevErrAbs * prevErrAbs - easq;
-      upd_coef_cb = last_errDFmod * cbLRate;
-      // if true we assume that CB did last correction. And it did it using
-      // correct visual feedback (more or less)
-      
-      //float tt = acUpdCoefThr;
-      float tt = 3 * cbLRateUpdAbsErr_threshold * cbLRateUpdAbsErr_threshold;
-      b2 = fabs( upd_coef_real - upd_coef_cb) < tt;   
-      b2neg = fabs( upd_coef_real - upd_coef_cb) >= tt * acThrMult;   
-
+      int acAns = get_ACHappiness(&upd_coef_real,&upd_coef_cb);
       float optimalLambda =  prevErrAbs * prevErrAbs / last_errDFmod;
       if(!acInstantUpd)
       {
-        if(b2)       // means succesful correction. Then correct more!
+        if(acAns==0)    // means succesful correction. Then correct more!
         {
           cblr_upd = acOptimalRateMult * optimalLambda;
           cbLRate = fmin( cbLRate * cbLRateUpdSpdUp , cblr_upd);
         }
-        else if(b2neg)
+        else if(acAns==2)
         {
           cblr_upd = 1/(cbLRateUpdSpdDown);
           cbLRate *= cblr_upd;
@@ -230,11 +234,11 @@ void CB_model::learn()
       }
       else
       {
-        if(b2)       // means succesful correction. Then correct more!
+        if(acAns==0)       // means succesful correction. Then correct more!
         {
           cbLRate = cbLRate * acOptimalRateMult;
         }
-        else if(b2neg)
+        else if(acAns==2)
         {
           cbLRate = 0;
         }
@@ -242,7 +246,7 @@ void CB_model::learn()
     }
     else
     {
-      b2 = cbLRateUpdErrRatio_threshold * errAbs < errToCompare; 
+      bool b2 = cbLRateUpdErrRatio_threshold * errAbs < errToCompare; 
 
       if(b2)       // means succesful correction. Then correct more!
       {
@@ -382,11 +386,20 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * p
   s = params["cbRetrainNeeded_thr"];
   cbRetrainNeeded_thr = s != "" ? stof(s) : 0.4; 
 
+  s = params["cbRetrainNeeded_thr_Linf"];
+  cbRetrainNeeded_thr_Linf = s != "" ? stof(s) : 0.025; 
+
+  s = params["cbRetrainNeeded_LinfNorm"];
+  cbRetrainNeeded_LinfNorm = s != "" ? stoi(s) : 0; 
+
   s = params["acOptimalRateMult"];
   acOptimalRateMult = s != "" ? stof(s) : 0.6; 
 
   s = params["acThrMult"];
   acThrMult = s != "" ? stof(s) : 2; 
+
+  s = params["acLowThrMult"];
+  acLowThrMult = s != "" ? stof(s) : 2; 
 
   s = params["acInstantUpd"];
   acInstantUpd = s != "" ? stoi(s) : 0; 

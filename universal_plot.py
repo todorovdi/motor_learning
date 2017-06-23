@@ -354,12 +354,14 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
                 annotateGraph(ax,bg=1)
 
                 ax = axs[2,ind]
-                genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'))
+                fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames ]
+                genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
                 annotateGraph(ax)
                 ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
                 ax = axs[3,ind]
-                genCBMiscPlot(fig,ax,fileToPlot.replace('arm','CBMisc'))
+                fnamesCBMisc=[ fname.replace('arm','CBMisc') for fname in fnames ]
+                genCBMiscPlot(fig,ax,fnamesCBMisc,avg=True)
                 annotateGraph(ax)
                 ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 

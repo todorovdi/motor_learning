@@ -50,7 +50,7 @@ def annotateCommon(ax):
     ax.yaxis.grid(True)
 
     ymin = -2
-    ymax = 2 
+    ymax = 3 
     step = 1
     #ymin = -30
     #ymax = 50 

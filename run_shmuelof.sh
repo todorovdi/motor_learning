@@ -78,7 +78,7 @@ if [ $# -ne 0 ]; then
   echo "Starting experiment "$experimentName
 
   addTrials=" --numTrials4=100"
-  onlyBE=" --learn_cb2=0"
+  onlyBE=" --learn_cb2=0 errHistReset2=1"
 
   addOptions="" 
 
@@ -124,10 +124,17 @@ if [ $# -ne 0 ]; then
   #acOptimalRateMult = 0.6 
   #addOptions=" --ini=shmuAC.ini --cbStateDepr=0.08 --acOptimalRateMult=0.2"
   addOptions=" --ini=shmuAC.ini --cbStateDepr=0.04 --acOptimalRateMult=0.2"
-  # the best ones
+  # the best one
   # we do give rwd for performance in error clamp
-  #doSim " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1"
   doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=1"
+
+  ########################################################
+  ########################################################
+  ########################################################
+  ########################################################
+
+  #doSim " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1"
+
   #doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=2"
   #doSim " --wmmaxFP=0.05 --perfRewardSize=4   --rewardSize=2"
   #doSim " --wmmaxFP=0.05 --perfRewardSize=6   --rewardSize=2"
