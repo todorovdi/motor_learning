@@ -176,3 +176,20 @@ exportDynData(..) -- called every trial before doing iterations
 exportWeightsOnce -- called after the last trial
 exportInit(..)    -- open ofsteram objects for writing. Argument determines the change of name. Change the body of the function to specify the folder where you put your output
 e
+
+--------- removeInterruptedCalcData
+
+removes data from the interrupted calculation. It is necessary because
+when you do plotting, the plotting code collects the dat files by name
+and has issues if they have different lengths
+
+----------- Notes
+
+sometimes after you finish calculations, the plotting code complains
+about "no dat files found" and does not output anything.
+Two most often reasons for that: 1) the argument string has a whitespace
+character at the end, it creates the issue (it is stripped in part of the code and is not stripped
+in another part) 2) you gave too many parameters in the command line
+and dat filename becomes too long for the filesystem to store it
+(usually basename limit is about 256 chars) -- consider then moving
+some parameters to the ini file 

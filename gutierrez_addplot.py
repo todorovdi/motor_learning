@@ -23,6 +23,20 @@ def makeNicerMulti(fig,ax):
    #     line.set_color(c)
     return
 
+def addTgtSz(ax):
+    tsz = pp.target_radius
+
+    linew=0.5
+    #ax.axhline(y=tsz,c="red",linewidth=linew,zorder=0)
+    #ax.axhline(y=-tsz,c="red",linewidth=linew,zorder=0)
+    #ax.axhline(y=nsz,c=myell,linewidth=linew,zorder=0)
+    #ax.axhline(y=-nsz,c=myell,linewidth=linew,zorder=0)
+
+    ax.axhline(y=10.*tsz,c=pp.mainColor,linewidth=linew,ls='dashed',zorder=0)
+    ax.axhline(y=-10.*tsz,c=pp.mainColor,linewidth=linew,ls='dashed',zorder=0)
+
+    #addNoiseSz(ax)
+
 def prep(fnames):
     global nums
     global errs
@@ -62,14 +76,20 @@ def annotateCommon(ax):
     ax.xaxis.grid(True, which='minor')
 
 def makePubPlot(fnames2d,pdf):
+    globalFontSz=10
+    mpl.rcParams.update({'font.size': globalFontSz})
+
+    wordTextWidth=6.78
+    wordSingleFigHeight=3.38
+
     # shiny plotting code goes here
     if(len(fnames2d) != 6):
         print("---Error -- not enough data to plot, exiting! ")
         return
 
-    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(20, 20), sharex=True, sharey=True)
+    fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(6, 6), sharex=True, sharey=True)
 
-    mpl.rcParams.update({'font.size': 22})
+    plt.subplots_adjust(left=0.09, right=0.98, bottom=0.09, top=0.96, wspace=0.2, hspace=0.2)
 
     fnames_nonEB_HD = fnames2d[0]
     fnames_nonEB_PD = fnames2d[1]
@@ -81,10 +101,10 @@ def makePubPlot(fnames2d,pdf):
 #    for i,f in enumerate(fnames2d):
 #        print i,len(f)
 
-    msz = 12
+    msz = 4
     xlegendloc = 0.0
-    ylegendloc = 1.0
-    legendloc = 'upper left'
+    ylegendloc = 0.0
+    legendloc = 'lower left'
 
     ax = axs[0,0]
     prep(fnames_EB_control)
@@ -95,6 +115,7 @@ def makePubPlot(fnames2d,pdf):
     
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
     ax.set_ylabel('Error (cm)')
+    addTgtSz(ax)
 
     ax = axs[0,1]
     prep(fnames_EB_control)
@@ -102,8 +123,8 @@ def makePubPlot(fnames2d,pdf):
     prep(fnames_EB_PD)
     ax.errorbar(nums, errs, yerr=SEMs, marker='^', color='skyblue',markersize=msz,label='PD')
     annotateCommon(ax)
-    
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
+    addTgtSz(ax)
 
     #######################################
     lightcoral = [0.9, 0.4, 0.4]
@@ -114,9 +135,10 @@ def makePubPlot(fnames2d,pdf):
     prep(fnames_nonEB_HD)
     ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='s', color=lightcoral,markersize=msz,label='HD')
     annotateCommon(ax)
-
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
     ax.set_ylabel('Error (cm)')
+    ax.set_xlabel("Movement Number", labelpad=8)
+    addTgtSz(ax)
 
     ax = axs[1,1]
     prep(fnames_nonEB_control)
@@ -124,9 +146,11 @@ def makePubPlot(fnames2d,pdf):
     prep(fnames_nonEB_PD)
     ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='^', color=lightcoral,markersize=msz,label='PD')
     annotateCommon(ax)
-
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
+    ax.set_xlabel("Movement Number", labelpad=8)
+    addTgtSz(ax)
 
+    ##########################
 
     noExt=pp.out_dir_pdf + pp.plotfname
     svgname=noExt+'.svg'

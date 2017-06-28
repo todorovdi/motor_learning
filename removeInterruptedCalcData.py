@@ -43,7 +43,7 @@ if len(fnames) == 0:
 for fname in fnames:
     try:
         up.paramsInitFromArmFname(fname)
-    except (IOError,KeyError):
+    except (IOError,KeyError,ValueError):
         killFileFromArm(fname)
         continue
 

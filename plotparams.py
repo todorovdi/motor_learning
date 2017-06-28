@@ -255,6 +255,8 @@ def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one be
     global phaseBegins
     global phaseNames
 
+    #print("Init params from file ",fname)
+
     paramsEnv = None
     paramsEnv = paramFileRead(fname) 
 

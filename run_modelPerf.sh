@@ -136,18 +136,21 @@ runForPaper()
 {
   #params="--cbLRate=$cblc --cbStateDepr=$depr"
   #ao=" $addOptions --learn_bg=0 --cbLRateIsConst=1 $params"$1 
+  ao=" $addOptions --learn_bg=0 --cbLRateIsConst=1"$1 
 
   #####################   CB for small adaptation
 
-  #addOptionsLoc="--cue1=1"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #shiftSmall=$pdfSuffix
+  if [ $run_mildPert_cbOnly == '1' ]; then
+    addOptionsLoc="--cue1=1"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    shiftSmall=$pdfSuffix
 
-  #addOptionsLoc="--cue1=2 --endpoint_rotation1=30"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #rotSmall=$pdfSuffix
+    addOptionsLoc="--cue1=2 --endpoint_rotation1=30"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    rotSmall=$pdfSuffix
 
-  #python $plotfile  "$shiftSmall" "$rotSmall" "---plotfname=pertSmall_cbOnly"
+    python $plotfile  "$shiftSmall" "$rotSmall" "---plotfname=mildPert_cbOnly"
+  fi
 
   ####################   CB failure strong pert, should include W plot
 
@@ -157,80 +160,94 @@ runForPaper()
   ##addOptionsLoc="--cue1=2 --endpoint_rotation1=-90 --cbStateDepr=0"$ao
   ##perturbSimple "$addOptionsLoc" $nsess $useOldData
   ###rot90=$pdfSuffix
+  if [ $run_strongPert_cbOnly == '1' ]; then
+    addOptionsLoc="--cue1=4"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    shift90=$pdfSuffix
 
-  #addOptionsLoc="--cue1=2 --endpoint_rotation1=-90"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #rot90=$pdfSuffix
+    addOptionsLoc="--cue1=2 --endpoint_rotation1=-90"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    rot90=$pdfSuffix
 
-  ## guti NEBL
-  #addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #xrev=$pdfSuffix
+    # guti NEBL
+    addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    xrev=$pdfSuffix
 
-  #python $plotfile "$rot90" "$xrev" "---plotfname=strongPert_cbOnly$1"
+    python $plotfile "$shift90" "$rot90" "$xrev" "---plotfname=strongPert_cbOnly$1"
+  fi
 
   #################### different rotations reaching plots
-  #ao=" $addOptions --learn_bg=0 --cbLRateIsConst=1 --cbLRate=3.5 --cbStateDepr=0"$1 
+  if [ $run_difRotations == '1' ]; then
+    ao=" $addOptions --learn_bg=0 --cbLRateIsConst=1 --cbLRate=3.5 --cbStateDepr=0"$1 
 
-  #addOptionsLoc="--numTrials0=0 --numTrials2=0 --endpoint_rotation1=-60"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #rot1=$pdfSuffix
+    addOptionsLoc="--numTrials0=0 --numTrials2=0 --endpoint_rotation1=-60"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    rot1=$pdfSuffix
 
-  #addOptionsLoc="--numTrials0=0 --numTrials2=0 --endpoint_rotation1=-75"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #rot2=$pdfSuffix
+    addOptionsLoc="--numTrials0=0 --numTrials2=0 --endpoint_rotation1=-75"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    rot2=$pdfSuffix
 
-  #addOptionsLoc="--numTrials0=0 --numTrials2=0 --endpoint_rotation1=-85"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #rot3=$pdfSuffix
+    addOptionsLoc="--numTrials0=0 --numTrials2=0 --endpoint_rotation1=-85"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    rot3=$pdfSuffix
 
-  #python $plotfile "$rot1" "$rot2" "$rot3" "---plotfname=difRotations_cbOnly$1"
-
+    python $plotfile "$rot1" "$rot2" "$rot3" "---plotfname=difRotations_cbOnly$1"
+  fi
   ################## BG + CB noAC shift 
-  #ao=" $addOptions --cbLRateIsConst=1 $params"$1 
+  if [ $run_mildPert_noAC == '1' ]; then
+    ao=" $addOptions --cbLRateIsConst=1"$1 
 
-  #addOptionsLoc="--cue1=1"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #mildPert=$pdfSuffix
+    addOptionsLoc="--cue1=1"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    mildPert=$pdfSuffix
 
-  #python $plotfile "$mildPert" "$mildPert" "---plotfname=mildPert_noAC$1"
+    python $plotfile "$mildPert" "$mildPert" "---plotfname=mildPert_noAC$1"
+  fi
 
   ############### BG + CB noAC strong pert 
-  #ao=" $addOptions --cbLRateIsConst=1 $params"$1 
+  if [ $run_strongPert_noAC == '1' ]; then
+    ao=" $addOptions --cbLRateIsConst=1"$1 
 
-  #addOptionsLoc="--cue1=2 --endpoint_rotation1=-90"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #strongPert1=$pdfSuffix
+    addOptionsLoc="--cue1=2 --endpoint_rotation1=-90"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    strongPert1=$pdfSuffix
 
-  #addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-  #strongPert2=$pdfSuffix
+    addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    strongPert2=$pdfSuffix
 
-  #python $plotfile "$strongPert1" "$strongPert2" "---plotfname=strongPert_noAC$1"
+    python $plotfile "$strongPert1" "$strongPert2" "---plotfname=strongPert_noAC$1"
+  fi
 
   ################### BG + CB with AC, strong pert 
-  ao=" $addOptions --cbStateDepr=$depr$1" 
+  if [ $run_strongPert_AC == '1' ]; then
+    ao=" $addOptions$1" 
 
-  addOptionsLoc="--cue1=2 --endpoint_rotation1=-90$ao"
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  strongPert1=$pdfSuffix
+    addOptionsLoc="--cue1=2 --endpoint_rotation1=-90$ao"
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    strongPert1=$pdfSuffix
 
-  addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  strongPert2=$pdfSuffix
+    addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    strongPert2=$pdfSuffix
 
-  python $plotfile "$strongPert1" "$strongPert2" "---plotfname=strongPert_AC$1"
+    python $plotfile "$strongPert1" "$strongPert2" "---plotfname=strongPert_AC$1"
+  fi
 
-  ################## BG + CB with AC for CB, shift
-  ##ao=" $addOptions --cbStateDepr=$depr$1 --cbLRate=0.2 --acOptimalRateMult=0.1" 
-  ao=" $addOptions --cbStateDepr=$depr$1" 
-  #ao=" $addOptions --cbStateDepr=$depr$1 --cbLRate=0.2" 
+  ################### BG + CB with AC for CB, shift
+  ###ao=" $addOptions --cbStateDepr=$depr$1 --cbLRate=0.2 --acOptimalRateMult=0.1" 
+  #ao=" $addOptions$1" 
+  ##ao=" $addOptions --cbStateDepr=$depr$1 --cbLRate=0.2" 
 
-  addOptionsLoc="--cue1=1"$ao
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  mildPert=$pdfSuffix
+  if [ $run_mildPert_AC == '1' ]; then
+    addOptionsLoc="--cue1=1"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    mildPert=$pdfSuffix
 
-  python $plotfile "$mildPert" "$mildPert" "---plotfname=mildPert_AC$1"
+    python $plotfile "$mildPert" "$mildPert" "---plotfname=mildPert_AC$1"
+  fi
 
   #################### BG + CB with AC for CB and dopamine, shift
 
@@ -262,11 +279,19 @@ if [ $# -ne 0 ]; then
   #--cbStateDepr=0."
   addOptionsLoc=""$addOptions
 
-  cblc=0.9
-  depr=0.04
+  #cblc=0.9
+  #depr=0.04
 
   addOptionsLoc="$addOptions --cue1=1 --learn_bg=0"$ao
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+ 
+  run_mildPert_cbOnly=1
+  run_strongPert_cbOnly=1
+  run_difRotations=1
+  run_mildPert_noAC=1
+  run_strongPert_noAC=1
+  run_strongPert_AC=1
+  run_mildPert_AC=1
 
   runForPaper ""
 

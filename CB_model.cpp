@@ -227,7 +227,7 @@ void CB_model::learn()
         }
         else if(acAns==2)
         {
-          cblr_upd = 1/(cbLRateUpdSpdDown);
+          cblr_upd = 1./(cbLRateUpdSpdDown);
           cbLRate *= cblr_upd;
           //cbLRate = 0;
         }

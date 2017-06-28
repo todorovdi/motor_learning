@@ -91,15 +91,21 @@ def makeReach(fig,ax,fname):
 
     ax.grid()
 
-def addTgtSz(ax):
-    tsz = pp.target_radius
+def addNoiseSz(ax):
+    linew=0.5
+
     nsz = float(pp.paramsEnv["finalNoiseAmpl"] )
     if( pp.plotReachAngles or pp.plotAngleErrs):
         nsz = 2. * pp.eucl2angDist( 0.5*nsz )
-    myell = [1,167./255.,66./255.]
+    #myell = [1,167./255.,66./255.]
+
+    ax.axhline(y=nsz,c=pp.mainColor,linewidth=linew,ls='dashdot',zorder=0)
+    ax.axhline(y=-nsz,c=pp.mainColor,linewidth=linew,ls='dashdot',zorder=0)
+
+def addTgtSz(ax):
+    tsz = pp.target_radius
 
     linew=0.5
-
     #ax.axhline(y=tsz,c="red",linewidth=linew,zorder=0)
     #ax.axhline(y=-tsz,c="red",linewidth=linew,zorder=0)
     #ax.axhline(y=nsz,c=myell,linewidth=linew,zorder=0)
@@ -107,8 +113,8 @@ def addTgtSz(ax):
 
     ax.axhline(y=tsz,c=pp.mainColor,linewidth=linew,ls='dashed',zorder=0)
     ax.axhline(y=-tsz,c=pp.mainColor,linewidth=linew,ls='dashed',zorder=0)
-    ax.axhline(y=nsz,c=pp.mainColor,linewidth=linew,ls='dashdot',zorder=0)
-    ax.axhline(y=-nsz,c=pp.mainColor,linewidth=linew,ls='dashdot',zorder=0)
+
+    addNoiseSz(ax)
 
 def makePubPlot(fnames2d,pdf):
     # shiny plotting code goes here
@@ -152,11 +158,11 @@ def makePubPlot(fnames2d,pdf):
 
     capsz=1.5
 
-    if pp.plotfname == 'pertSmall_cbOnly':
-        numcols=2
+    if pp.plotfname == 'mildPert_cbOnly':
+        numcols=1
         numrows=1
         fig, axs = plt.subplots(ncols=numcols, nrows=numrows, 
-                figsize=(wordTextWidth, wordSingleFigHeight), sharex=True, sharey=False)
+                figsize=(wordTextWidth/1.9, wordSingleFigHeight), sharex=True, sharey=False)
 
         plt.subplots_adjust(left=0.1, right=0.98, bottom=0.15, top=0.84, wspace=0.4)
         #plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
@@ -165,28 +171,34 @@ def makePubPlot(fnames2d,pdf):
         ymax = 40 
         ystep = 10
 
-        ax=axs[0]
+        ax=axs#[0]
         prep(fnames2d[0])
         #ax.errorbar(nums, errs, yerr=SEMs)
-        shadedErrorbar(ax,nums,errs,SEMs)
+        handle1, = shadedErrorbar(ax,nums,errs,SEMs)
         annotateCommon(ax)
-        ax.set_title("Shift of the vision by 30 degrees", y=title_ycoord) 
+        ax.set_title("Shift and rotation by 30 degrees", y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
         ax.set_yticks(np.arange(ymin,ymax,ystep))
         #panel name
-        ax.text(-0.1, 1.15, 'A', transform=ax.transAxes,    
-      fontsize=16, fontweight='bold', va='top', ha='right')
+        #ax.text(-0.1, 1.15, 'A', transform=ax.transAxes,    fontsize=16, fontweight='bold', va='top', ha='right')
 
-        ax=axs[1]
+        ax.get_lines()[0].set_color("grey")
+
+        addNoiseSz(ax)
+
+        #ax=axs[1]
         prep(fnames2d[1])
         #ax.errorbar(nums, errs, yerr=SEMs)
-        shadedErrorbar(ax,nums,errs,SEMs)
-        annotateCommon(ax)
-        ax.set_title("Rotation by 30 degrees", y=title_ycoord) 
-        ax.set_ylim([ymin,ymax])
-        ax.set_yticks(np.arange(ymin,ymax,ystep))
-        ax.text(-0.1, 1.15, 'B', transform=ax.transAxes,
-      fontsize=16, fontweight='bold', va='top', ha='right')
+        handle2, = shadedErrorbar(ax,nums,errs,SEMs)
+        #annotateCommon(ax)
+        #ax.set_title("Rotation by 30 degrees", y=title_ycoord) 
+        #ax.set_ylim([ymin,ymax])
+        #ax.set_yticks(np.arange(ymin,ymax,ystep))
+        #ax.text(-0.1, 1.15, 'B', transform=ax.transAxes, fontsize=16, fontweight='bold', va='top', ha='right')
+
+        plt.legend(handles=[handle1, handle2], labels=['shift', 'rotation'], loc='lower left')
+        
+        addNoiseSz(ax)
 
     if pp.plotfname == 'strongPert_cbOnly':
         ymin = -180
@@ -195,46 +207,57 @@ def makePubPlot(fnames2d,pdf):
         cbStateLim=6
 
         numcols=2
-        numrows=2
+        numrows=1
         fig, axs = plt.subplots(ncols=numcols, nrows=numrows, 
-                figsize=(wordTextWidth, wordSingleFigHeight*2), sharex=False, sharey=False)
+                figsize=(wordTextWidth, wordSingleFigHeight), sharex=False, sharey=False)
 
-        plt.subplots_adjust(left=0.11, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.4)
+        plt.subplots_adjust(left=0.11, right=0.98, bottom=0.08, top=0.85, wspace=0.4, hspace=0.4)
 
-        ax=axs[0,0]
+        ax=axs[0]
         prep(fnames2d[0])
         #ax.errorbar(nums, errs, yerr=SEMs)
-        shadedErrorbar(ax,nums,errs,SEMs)
-        annotateCommon(ax)
-        ax.set_title("rotation 90, CB only", y=title_ycoord) 
-        ax.set_ylim([ymin,ymax])
-        ax.set_yticks(np.append(np.arange(ymin,0,ystep),np.arange(0,ymax,ystep) ) )
-        ax.text(-0.1, 1.15, 'A1', transform=ax.transAxes,
-      fontsize=16, fontweight='bold', va='top', ha='right')
+        handle1, = shadedErrorbar(ax,nums,errs,SEMs)
+        ax.get_lines()[0].set_color("grey")
 
-        ax=axs[0,1]
         prep(fnames2d[1])
         #ax.errorbar(nums, errs, yerr=SEMs)
-        shadedErrorbar(ax,nums,errs,SEMs)
+        handle2, = shadedErrorbar(ax,nums,-1.*errs,SEMs)
+        annotateCommon(ax)
+        ax.set_title("rotation and shift 90, CB only", y=title_ycoord) 
+        ax.set_ylim([ymin,ymax])
+        ax.set_yticks(np.append(np.arange(ymin,0,ystep),np.arange(0,ymax,ystep) ) )
+        ax.text(-0.1, 1.15, 'A', transform=ax.transAxes,
+      fontsize=16, fontweight='bold', va='top', ha='right')
+
+        addNoiseSz(ax)
+        plt.legend(handles=[handle1, handle2], labels=['shift', 'rotation'], loc='lower left')
+
+        ax=axs[1]
+        prep(fnames2d[2])
+        #ax.errorbar(nums, errs, yerr=SEMs)
+        shadedErrorbar(ax,nums,-1.*errs,SEMs)
         annotateCommon(ax)
         ax.set_title("x-reflection, CB only", y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
         ax.set_yticks(np.append(np.arange(ymin,0,ystep),np.arange(0,ymax,ystep) ) )
-        ax.text(-0.1, 1.15, 'B1', transform=ax.transAxes,
+        ax.text(-0.1, 1.15, 'B', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
-        ax = axs[1,0]
-        fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[0] ]
-        genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
-        annotateCommon(ax)
-        ax.set_ylabel(r"max of moduli of CB state entries", labelpad=15)
-        ax.set_xlabel("Movement Number", labelpad=8)
-        ax.set_ylim([0,cbStateLim])
-        ax.set_yticks(np.arange(0,cbStateLim,1))
-        ax.xaxis.grid(False, which='major')
-        ax.set_title("", y=title_ycoord) 
-        ax.text(-0.1, 1.15, 'A2', transform=ax.transAxes,
-      fontsize=16, fontweight='bold', va='top', ha='right')
+        addNoiseSz(ax)
+
+     #   ax = axs[1,0]
+     #   fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[0] ]
+     #   genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
+     #   annotateCommon(ax)
+     #   ax.set_ylabel(r"max of moduli of CB state entries", labelpad=15)
+     #   ax.set_xlabel("Movement Number", labelpad=8)
+     #   ax.set_ylim([0,cbStateLim])
+     #   ax.set_yticks(np.arange(0,cbStateLim,1))
+     #   ax.xaxis.grid(False, which='major')
+     #   ax.set_title("", y=title_ycoord) 
+     #   ax.text(-0.1, 1.15, 'A2', transform=ax.transAxes,
+     # fontsize=16, fontweight='bold', va='top', ha='right')
+
 
         #ax_ = ax.twiny()
         #ax_.xaxis.grid(True,color='w')
@@ -242,18 +265,18 @@ def makePubPlot(fnames2d,pdf):
         #ax.xaxis.grid(False)
         #ax.xaxis.grid(True, which='minor')
 
-        ax = axs[1,1]
-        fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[1] ]
-        genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
-        annotateCommon(ax)
-        ax.set_ylabel(r"max of moduli of CB state entries", labelpad=15)
-        ax.set_xlabel("Movement Number", labelpad=8)
-        ax.set_ylim([0,cbStateLim])
-        ax.set_yticks(np.arange(0,cbStateLim,1))
-        ax.xaxis.grid(False, which='major')
-        ax.set_title("", y=title_ycoord) 
-        ax.text(-0.1, 1.15, 'B2', transform=ax.transAxes,
-      fontsize=16, fontweight='bold', va='top', ha='right')
+     #   ax = axs[1,1]
+     #   fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[1] ]
+     #   genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
+     #   annotateCommon(ax)
+     #   ax.set_ylabel(r"max of moduli of CB state entries", labelpad=15)
+     #   ax.set_xlabel("Movement Number", labelpad=8)
+     #   ax.set_ylim([0,cbStateLim])
+     #   ax.set_yticks(np.arange(0,cbStateLim,1))
+     #   ax.xaxis.grid(False, which='major')
+     #   ax.set_title("", y=title_ycoord) 
+     #   ax.text(-0.1, 1.15, 'B2', transform=ax.transAxes,
+     # fontsize=16, fontweight='bold', va='top', ha='right')
  
     if pp.plotfname == 'difRotations_cbOnly':
         numcols=3
@@ -317,7 +340,7 @@ def makePubPlot(fnames2d,pdf):
         prep(fnames2d[0])
         prep(fnames2d[0])
         #ax.errorbar(nums, errs, yerr=SEMs, capsize=capsz)
-        shadedErrorbar(ax,nums,errs,SEMs)
+        shadedErrorbar(ax,nums,-1.*errs,SEMs)
         annotateCommon(ax)
         ax.set_title("rotation 90, BG and CB", size=30, y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
@@ -337,7 +360,7 @@ def makePubPlot(fnames2d,pdf):
         ax=axs[1]
         prep(fnames2d[1])
         #ax.errorbar(nums, errs, yerr=SEMs,capsize=capsz)
-        shadedErrorbar(ax,nums,errs,SEMs)
+        shadedErrorbar(ax,nums,-1.*errs,SEMs)
         annotateCommon(ax)
         ax.set_title("BG and CB, x-mirror", size=30, y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
@@ -350,16 +373,16 @@ def makePubPlot(fnames2d,pdf):
         #ax.legend(loc='upper right')
 
     if pp.plotfname == 'strongPert_AC':
-        ymin = -120
-        ymax = 30 
+        ymin = -30
+        ymax = 120 
         ystep = 30
         cbStateLim=0.3
         cbLRateLim=6
 
         numcols=2
-        numrows=3
+        numrows=2
         fig, axs = plt.subplots(ncols=numcols, nrows=numrows, 
-                figsize=(wordTextWidth, wordSingleFigHeight*3), sharex=False, sharey=False)
+                figsize=(wordTextWidth, wordSingleFigHeight*2), sharex=False, sharey=False)
         plt.tight_layout()
 
         plt.subplots_adjust(left=0.11, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.4)
@@ -367,7 +390,7 @@ def makePubPlot(fnames2d,pdf):
         ax=axs[0,0]
         prep(fnames2d[0])
         #ax.errorbar(nums, errs, yerr=SEMs)
-        shadedErrorbar(ax,nums,errs,SEMs)
+        shadedErrorbar(ax,nums,-1.*errs,SEMs)
         annotateCommon(ax)
         ax.set_title("BG and CB, rotation 90", y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
@@ -379,21 +402,21 @@ def makePubPlot(fnames2d,pdf):
 
         ax.legend(loc='upper right')
 
-        fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[0] ]
+     #   fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[0] ]
         fnamesCBMisc=[ fname.replace('arm','CBMisc') for fname in fnames2d[0] ]
+     #   ax=axs[1,0]
+     #   genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
+     #   annotateCommon(ax)
+     #   ax.set_ylabel(r"max of moduli of CB state entries", labelpad=15)
+     #   ax.set_ylim([0,cbStateLim])
+     #   ax.set_yticks(np.arange(0,cbStateLim,0.1))
+     #   ax.xaxis.grid(False, which='major')
+     #   ax.set_title("", y=title_ycoord) 
+
+     #   ax.text(-0.1, 1.15, 'A2', transform=ax.transAxes,
+     # fontsize=16, fontweight='bold', va='top', ha='right')
+
         ax=axs[1,0]
-        genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
-        annotateCommon(ax)
-        ax.set_ylabel(r"max of moduli of CB state entries", labelpad=15)
-        ax.set_ylim([0,cbStateLim])
-        ax.set_yticks(np.arange(0,cbStateLim,0.1))
-        ax.xaxis.grid(False, which='major')
-        ax.set_title("", y=title_ycoord) 
-
-        ax.text(-0.1, 1.15, 'A2', transform=ax.transAxes,
-      fontsize=16, fontweight='bold', va='top', ha='right')
-
-        ax=axs[2,0]
         genCBMiscPlot(fig,ax,fnamesCBMisc,rateOnly=True,avg=True)
         annotateCommon(ax)
         ax.set_ylabel(r"CB learning rate", labelpad=15)
@@ -401,13 +424,13 @@ def makePubPlot(fnames2d,pdf):
         ax.set_yticks(np.arange(0,cbLRateLim,2))
         ax.set_title("", y=title_ycoord) 
 
-        ax.text(-0.1, 1.15, 'A3', transform=ax.transAxes,
+        ax.text(-0.1, 1.15, 'A2', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
         ax=axs[0,1]
         prep(fnames2d[1])
         #ax.errorbar(nums, errs, yerr=SEMs)
-        shadedErrorbar(ax,nums,errs,SEMs)
+        shadedErrorbar(ax,nums,-1.*errs,SEMs)
         annotateCommon(ax)
         ax.set_title("BG and CB, x-mirror", y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
@@ -419,21 +442,21 @@ def makePubPlot(fnames2d,pdf):
         addTgtSz(ax)
         ax.legend(loc='upper right')
 
-        fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[1] ]
+     #   fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[1] ]
         fnamesCBMisc=[ fname.replace('arm','CBMisc') for fname in fnames2d[1] ]
+     #   ax=axs[1,1]
+     #   genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
+     #   annotateCommon(ax)
+     #   ax.set_ylim([0,cbStateLim])
+     #   ax.set_yticks(np.arange(0,cbStateLim,0.1))
+     #   ax.xaxis.grid(False, which='major')
+     #   ax.set_title("", y=title_ycoord) 
+     #   ax.set_ylabel(r"max of moduli of CB state entries", labelpad=15)
+
+     #   ax.text(-0.1, 1.15, 'B2', transform=ax.transAxes,
+     # fontsize=16, fontweight='bold', va='top', ha='right')
+
         ax=axs[1,1]
-        genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
-        annotateCommon(ax)
-        ax.set_ylim([0,cbStateLim])
-        ax.set_yticks(np.arange(0,cbStateLim,0.1))
-        ax.xaxis.grid(False, which='major')
-        ax.set_title("", y=title_ycoord) 
-        ax.set_ylabel(r"max of moduli of CB state entries", labelpad=15)
-
-        ax.text(-0.1, 1.15, 'B2', transform=ax.transAxes,
-      fontsize=16, fontweight='bold', va='top', ha='right')
-
-        ax=axs[2,1]
         genCBMiscPlot(fig,ax,fnamesCBMisc,rateOnly=True,avg=True)
         annotateCommon(ax)
         ax.set_ylabel(r"CB learning rate", labelpad=15)
@@ -441,7 +464,7 @@ def makePubPlot(fnames2d,pdf):
         ax.set_yticks(np.arange(0,cbLRateLim,2))
         ax.set_title("", y=title_ycoord) 
 
-        ax.text(-0.1, 1.15, 'B3', transform=ax.transAxes,
+        ax.text(-0.1, 1.15, 'B2', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
     if pp.plotfname == 'mildPert_AC':
@@ -452,9 +475,9 @@ def makePubPlot(fnames2d,pdf):
         cbLRateLim=7
 
         numcols=1
-        numrows=3
+        numrows=2
         fig, axs = plt.subplots(ncols=numcols, nrows=numrows, 
-                figsize=(wordTextWidth/1.9, wordSingleFigHeight*3), sharex=True, sharey=False)
+                figsize=(wordTextWidth/1.9, wordSingleFigHeight*2), sharex=True, sharey=False)
 
         plt.subplots_adjust(left=0.18, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.3)
 
@@ -473,27 +496,27 @@ def makePubPlot(fnames2d,pdf):
 
         addTgtSz(ax)
 
-        fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[0] ]
+     #   fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[0] ]
         fnamesCBMisc=[ fname.replace('arm','CBMisc') for fname in fnames2d[0] ]
-        ax=axs[1]
-        genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
-        annotateCommon(ax)
-        ax.set_ylim([0,cbStateLim])
-        ax.set_yticks(np.arange(0,cbStateLim,0.1))
-        ax.set_ylabel(r"max of moduli of CB state entries",labelpad=15)
-        ax.set_xlabel("")
-        ax.set_title("")
-        ax.text(-0.1, 1.15, 'B', transform=ax.transAxes,
-      fontsize=16, fontweight='bold', va='top', ha='right')
+     #   ax=axs[1]
+     #   genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
+     #   annotateCommon(ax)
+     #   ax.set_ylim([0,cbStateLim])
+     #   ax.set_yticks(np.arange(0,cbStateLim,0.1))
+     #   ax.set_ylabel(r"max of moduli of CB state entries",labelpad=15)
+     #   ax.set_xlabel("")
+     #   ax.set_title("")
+     #   ax.text(-0.1, 1.15, 'B', transform=ax.transAxes,
+     # fontsize=16, fontweight='bold', va='top', ha='right')
 
-        ax=axs[2]
+        ax=axs[1]
         genCBMiscPlot(fig,ax,fnamesCBMisc,rateOnly=True,avg=True)
         annotateCommon(ax)
         ax.set_ylim([0,cbLRateLim])
         ax.set_yticks(np.arange(0,cbLRateLim,2))
         ax.set_ylabel(r"CB learning rate", labelpad=15)
         ax.set_title("")
-        ax.text(-0.1, 1.15, 'C', transform=ax.transAxes,
+        ax.text(-0.1, 1.15, 'B', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
                                        
     noExt=pp.out_dir_pdf + pp.plotfname

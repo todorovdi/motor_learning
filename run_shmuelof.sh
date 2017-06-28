@@ -38,7 +38,7 @@ doSim()
   fi
 
   python "$plotfile" "$argsCBon" "$argsCBoff" "$argsCBonLong" "$argsCBoffLong" \
-    "---plotfile=shmu_$1"
+    "---plotfname=shmu_$1"
 }
 
 doTest()
@@ -123,10 +123,10 @@ if [ $# -ne 0 ]; then
 
   #acOptimalRateMult = 0.6 
   #addOptions=" --ini=shmuAC.ini --cbStateDepr=0.08 --acOptimalRateMult=0.2"
-  addOptions=" --ini=shmuAC.ini --cbStateDepr=0.04 --acOptimalRateMult=0.2"
+  addOptions=" --ini=shmuAC.ini"
   # the best one
   # we do give rwd for performance in error clamp
-  doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=1"
+  doSim " --perfRewardSize=2   --rewardSize=1"
 
   ########################################################
   ########################################################

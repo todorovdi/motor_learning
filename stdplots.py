@@ -444,7 +444,7 @@ def shadedErrorbar(ax,nums,errs,SEMs):
     eopacity=1
     shade=0.7
     ax.fill_between(nums, errs-SEMs, errs+SEMs, facecolor=(shade, shade, shade, eopacity),edgecolor=(0,0,0,1),lw=0 )
-    ax.plot(nums, errs, color=pp.mainColor)
+    return ax.plot(nums, errs, color=pp.mainColor)
 
 def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
     if avg==False:

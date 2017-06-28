@@ -157,6 +157,8 @@ def makePubPlot(fnames2d,pdf):
     #xmin0, xmax0 = 0, phases[0]
     #ax_.plot(np.arange(xmin0, xmax0), [rot0]*int(xmax0-xmin0), lw=2.0, zorder=2, color='k') # target center
 
+    xpanellabel=-0.04
+
     ax = axs[0]
     ffirst = [ [fnames[0]] for fnames in fnames2d]
     #print('-----------------ffirst',ffirst)
@@ -166,7 +168,7 @@ def makePubPlot(fnames2d,pdf):
     ax.set_ylabel(r"Error in degrees",labelpad=8)
     ax.set_xlabel("Movement Number", labelpad=8)
     
-    ax.text(-0.14, 1.06, 'A', transform=ax.transAxes,
+    ax.text(xpanellabel, 1.06, 'A', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
     ax = axs[1]
@@ -177,7 +179,7 @@ def makePubPlot(fnames2d,pdf):
     ax.set_ylabel(r"Error in degrees",labelpad=8)
     ax.set_xlabel("Movement Number", labelpad=8)
 
-    ax.text(-0.14, 1.06, 'B', transform=ax.transAxes,
+    ax.text(xpanellabel, 1.06, 'B', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
     ax = axs[2]
@@ -188,7 +190,7 @@ def makePubPlot(fnames2d,pdf):
     ax.set_ylabel(r"Error in degrees",labelpad=8)
     ax.set_xlabel("Movement Number", labelpad=8)
 
-    ax.text(-0.14, 1.06, 'C', transform=ax.transAxes,
+    ax.text(xpanellabel, 1.06, 'C', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
     fig.suptitle("Reach angle hand space minus target location",size=globalFontSz*1.5)#, y=0.99)

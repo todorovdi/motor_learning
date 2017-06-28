@@ -79,7 +79,7 @@ if [ $# -ne 0 ]; then
 
   echo "Starting experiment "$experimentName
 
-  addOptions=" --cbRetrainSpeedup=0 --wmmaxFP=0.6"
+  addOptions=" --cbRetrainSpeedup=0 --wmmaxFP=0.55"
 
   mp=0.63
   #1.6 because it is the baseline stationary CB learning rate
@@ -87,6 +87,17 @@ if [ $# -ne 0 ]; then
 
   addOptionsLoc=" --setRPre0=$rpre --setRPre1=$rpre"$addOptions
   fullSim $1
+
+  ###
+
+  #addOptions=" --cbRetrainSpeedup=0 --wmmaxFP=0.6"
+
+  #mp=0.63
+  ##1.6 because it is the baseline stationary CB learning rate
+  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
+
+  #addOptionsLoc=" --setRPre0=$rpre --setRPre1=$rpre"$addOptions
+  #fullSim $1
 
   ##################################
 
