@@ -31,9 +31,9 @@ runSim()
 runAll()
 {
   #uodControls=9$useOldData
-  uodControls=9
-  uodPatients=$useOldData 
-  uodPatientsAC=$useOldData
+  uodControls=$useOldData
+  uodPatients=$useOldData
+  uodPatientsAC=9
 
   #$ao="$1 --cbLRateUpdAbsErr_threshold=$errThr"
   aocontrol="$1"
@@ -290,7 +290,7 @@ if [ $# -ne 0 ]; then
   # maxAngDeg  is end of the sector
 
   echo "Starting experiment $experimentName"
-               $useOldData
+               #$useOldData
   addOptions=" --ini=$ini"
   #--cbStateDepr=0."
   addOptionsLoc=""$addOptions

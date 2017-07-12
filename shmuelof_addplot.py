@@ -23,6 +23,12 @@ def makeNicerMulti(fig,ax):
 def makePubPlot(fnames2d,pdf):
     # shiny plotting code goes here
 
+    fnames_BEVE       = fnames2d[0]
+    fnames_BE         = fnames2d[1]
+    if(len(fnames2d) > 2):
+        fnames_BEVE_long  = fnames2d[2]
+        fnames_BE_long    = fnames2d[3]
+
     globalFontSz=10
     mpl.rcParams.update({'font.size': globalFontSz})
 
@@ -49,7 +55,8 @@ def makePubPlot(fnames2d,pdf):
         up.paramsInitFromArmFname(filename)
 
         PEstr = str(pp.paramsEnv)
-        BEonly = PEstr.find("learn_cb2=0") # check for BE only flag
+        #BEonly = PEstr.find("learn_cb2=0") # check for BE only flag
+        BEonly = PEstr.find("cueList2=") # check for BE only flag
         EAsymp = PEstr.find("numTrials4=100") # check for extended asymp. flag
         
         # Default plotting params

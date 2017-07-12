@@ -287,7 +287,7 @@ if [ $# -ne 0 ]; then
  
   run_mildPert_cbOnly=1
   run_strongPert_cbOnly=1
-  run_difRotations=1
+  run_difRotations=0
   run_mildPert_noAC=1
   run_strongPert_noAC=1
   run_strongPert_AC=1

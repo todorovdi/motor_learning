@@ -53,6 +53,8 @@ class CB_model
   float acThrMult;
   float acLowThrMult;
   bool acInstantUpd;
+  bool debug_printAC;
+  bool debug_retrainCB;
 
   vector<float> errHist;
 

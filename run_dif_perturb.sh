@@ -68,7 +68,8 @@ perturbSimple()
 
   echo ".sh pdfSuffix ="$pdfSuffix
   runSimulationSimple  "$1" "$2" $uod
-  if [ $uod -ne 9 ] && [ $uod -ne 3 ] && [ $uod -ne 4 ]; then
+  res=$?
+  if [ $uod -ne 9 ] && [ $uod -ne 3 ] && [ $uod -ne 4 ] && [ $res -eq 0 ]; then
     python "$plotfile" "$pdfSuffix"
   fi
   

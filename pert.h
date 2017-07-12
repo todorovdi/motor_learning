@@ -5,6 +5,18 @@
 #include "environment.h"
 #include "percept.h"
 
+class cueListItem
+{
+  public:
+  int cue,numShows,feedbackOn;
+};
+
+class cueFeedback
+{
+  public:
+  int cue, feedbackOn;
+};
+
 class expPhaseParams{
   public:
 
@@ -42,10 +54,12 @@ class expPhaseParams{
   float tgt_yshift;
 
   bool randomCue;
+  bool exitIfExplore;
 
   // only makes sense for a special parameter called cueList in the ini file
   // done for Izawa-Shadmehr paper to generate generalization graph
-  vector<int> cueList,numShows,feedbackOn, cueSeq;    
+  vector<cueListItem> cueList;    
+  vector<cueFeedback> cueSeq;    
 
   expPhaseParams()
   {
@@ -81,6 +95,28 @@ class expPhaseParams{
     randomCue=false;
  
     randomTgtRange=0.;
+    exitIfExplore=0;
+  }
+
+  // standard Fisher-Yates shuffle algorithm
+  void shuffle(vector<cueFeedback> & elements)
+  {
+  ////  rng.seed(0);
+
+    // the counter to be used to generate the random number
+  int currentIndexCounter = elements.size();
+  auto currentIndex = elements.rbegin();
+  for (auto currentIndex = elements.rbegin(); currentIndex != elements.rend() - 1;
+         currentIndex++ , --currentIndexCounter)
+        {
+            int randomIndex = rand() % currentIndexCounter;
+            // if its not pointing to the same index      
+            //if (*currentIndex != elements.at(randomIndex))
+            {
+                //then swap the elements
+                swap(elements.at(randomIndex), *currentIndex);
+            }
+        }
   }
 
   // generate a random seq of cues demonstrations. 
@@ -89,25 +125,78 @@ class expPhaseParams{
   {
     int totalNum = 0;
     cueSeq.reserve(numTrials);
-    for(int i = 0; i<numShows.size(); i++)
+    for(int i = 0; i<cueList.size(); i++)
     {
+      cueFeedback cf;
+      cf.cue        = cueList[i].cue;
+      cf.feedbackOn = cueList[i].feedbackOn;
       // insert numShows[i] times cueList[i] at the end
-      cueSeq.insert(cueSeq.end(), numShows[i], cueList[i]);  
-      totalNum += numShows[i];
+      cueSeq.insert(cueSeq.end(), cueList[i].numShows, cf);  
+      totalNum += cueList[i].numShows;
     }
     if (totalNum != numTrials)
     {
-      string estr = "Wrong cueList contents, trial numbers don't add upp";
-      cout<<"---------- ERROR: "<<estr<<endl;
+      string estr = "Wrong cueList contents, trial numbers don't add upp ";
+      cout<<"---------- ERROR: "<<totalNum<<estr<<endl;
       throw estr;
     }
     shuffle(cueSeq);
 
-    //for debug
+    ////for debug
     //for(int i=0;i<cueSeq.size();i++)
     //{
-    //  cout<<"cue seq "<<i<<" "<<cueSeq[i]<<endl;
+    //  cout<<"cue seq "<<i<<" "<<cueSeq[i].cue<<"  "<<cueSeq[i].feedbackOn<<endl;
     //}
+  }
+
+  void parseCueList(std::string str)
+  {
+    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+    boost::char_separator<char> sep("|");
+    tokenizer tokens(str, sep);
+
+    //cues.reserve(tokens.size());
+    //numShows.reserve(tokens.size());
+    //feedbackOn.reserve(tokens.size());
+    //cues.resize(0);
+    //numShows.resize(0);
+    //feedbackOn.resize(0);
+    //cueList.reserve(tokens.size());
+    cueList.resize(0);
+
+    boost::char_separator<char> sep2(":");
+    typedef boost::tokenizer<boost::char_separator<char> > tokenizer2;
+    for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
+    {
+      tokenizer2 subtokens(*tok_iter, sep2);
+      tokenizer2::iterator it=subtokens.begin();
+      cueListItem cli;
+      cli.cue= stoi(*it); it++;
+      cli.numShows= stoi(*it); it++;
+      cli.feedbackOn= stoi(*it); 
+
+      cueList.push_back(cli);
+    }
+
+  //std::vector<std::string> cueNumList;
+  //strtk::parse(str,"|",cueNumList);
+
+  //cues.reserve(cueNumList.size());
+  //cues.resize(0);
+  //numShows.reserve(cueNumList.size());
+  //numShows.resize(0);
+  //feedbackOn.reserve(cueNumList.size());
+  //feedbackOn.resize(0);
+
+  //std::vector<std::string>::iterator it = cueNumList.begin();
+  //for(;it != cueNumList.end(); it++)
+  //{
+  //  std::vector<int> sublist;
+  //  strtk::parse(str,":",sublist);
+  //  cue.push_back(sublist[0]);
+  //  numShows.push_back(sublist[1]);
+  //  feedbackOn.push_back(sublist[2]);
+  //}
   }
 
   void print()

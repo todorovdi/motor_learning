@@ -29,7 +29,7 @@ int Percept::getHistSz()
 
 void Percept::resetErrHist(){
     errHist.resize(0);
-    cout<<"reset hist"<<endl;
+    //cout<<"reset hist"<<endl;
 }
 
 void Percept::setErrorClamp(bool b)

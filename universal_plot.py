@@ -127,6 +127,8 @@ def genFigurePert(fnames,outname):
 
     fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
 
+    plt.subplots_adjust(left=0.18,right=0.96,bottom=0.1,top=0.97)
+
     ax = axs[0,0]
     genBGActivityPlot(fig,ax,fileToPlot.replace('arm','var_dyn2'))
     annotateGraph(ax,bg=1)
@@ -287,7 +289,7 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
         else:
             fig, axs = plt.subplots(ncols=nc, nrows=nr, figsize=(5+10*l, 20), sharex=False, sharey=False)
 
-        plt.subplots_adjust(left=0.16,right=0.98,bottom=0.1)
+        plt.subplots_adjust(left=0.18,right=0.96,bottom=0.1)
 
         if pp.multi_onlyMainPlots:
             axs=axs.ravel()
@@ -503,34 +505,37 @@ def printParams(fig,pos):
     paramsToPlot.append("PD_LTP_reduction")
 
     paramsToPlot.append("")
+    paramsToPlot.append("trainCBEveryTrial")
+    paramsToPlot.append("cbRetrainSpeedup")
+
+    paramsToPlot.append("")
     paramsToPlot.append("cbLRate")
     paramsToPlot.append("cbStateDepr")
     paramsToPlot.append("cbLRateMax")
     #paramsToPlot.append("randomCBStateInit")
     #paramsToPlot.append("randomCBStateInitAmpl")
-    paramsToPlot.append("trainCBEveryTrial")
     #paramsToPlot.append("retrainCB_useCurW")
-    paramsToPlot.append("updateCBStateDist")
-    paramsToPlot.append("cbRateDepr")
+    #paramsToPlot.append("updateCBStateDist")
     paramsToPlot.append("cbLRateUpdSpdUp")
     paramsToPlot.append("cbLRateUpdSpdDown")
     #paramsToPlot.append("cbLRateUpdSpdMax")
 
-    paramsToPlot.append("cbErrDepth")
+    #paramsToPlot.append("cbErrDepth")
     paramsToPlot.append("cbLRateUpdAbsErr_threshold")
-    paramsToPlot.append("cbLRateUpdErrRatio_threshold")
-    paramsToPlot.append("cbLRateUpdTwoErrThreshold")
+    #paramsToPlot.append("cbLRateUpdErrRatio_threshold")
+    #paramsToPlot.append("cbLRateUpdTwoErrThreshold")
     paramsToPlot.append("acThrMult")
+    paramsToPlot.append("acLowThrMult")
+    paramsToPlot.append("acOptimalRateMult")
 
     paramsToPlot.append("")
     paramsToPlot.append("fake_prelearn")
     paramsToPlot.append("wmmaxFP")
-    paramsToPlot.append("numTrialsPrelearn")
+    #paramsToPlot.append("numTrialsPrelearn")
     paramsToPlot.append("fake_prelearn_tempWAmpl")
     paramsToPlot.append("lam2")
     paramsToPlot.append("A_exp")
     paramsToPlot.append("Q")
-    paramsToPlot.append("finalNoiseAmpl")
     paramsToPlot.append("randomTgt_all")
     paramsToPlot.append("randomTgtRange_all")
 
@@ -542,41 +547,45 @@ def printParams(fig,pos):
     paramsToPlot.append("endpoint_xreverse1")
     paramsToPlot.append("force_field1")
     paramsToPlot.append("actPrelearn1")
+    paramsToPlot.append("actPrelearnAng0")
+    paramsToPlot.append("actPrelearnAng1")
 
     paramsToPlot.append("gradedReward")
     paramsToPlot.append("rwdGradePower")
-    paramsToPlot.append("rwdFromcbLRate_thr")
+    #paramsToPlot.append("rwdFromcbLRate_thr")
 
     paramsToPlot.append("")
-    paramsToPlot.append("perfBasedReward")
-    paramsToPlot.append("perfRwdMult")
-    paramsToPlot.append("perfFromAC")
     paramsToPlot.append("perfRewardSize")
-    paramsToPlot.append("perfRwdErrChange_threshold")
+    paramsToPlot.append("rewardSize")
+    paramsToPlot.append("perfBasedReward")
+    #paramsToPlot.append("perfRwdMult")
+    paramsToPlot.append("perfFromAC")
+    #paramsToPlot.append("perfRwdErrChange_threshold")
 
-    paramsToPlot.append("")
-    paramsToPlot.append("rwdFromcbLRate_add")
-    paramsToPlot.append("rwdFromcbLRate_mult")
+    #paramsToPlot.append("")
+    #paramsToPlot.append("rwdFromcbLRate_add")
+    #paramsToPlot.append("rwdFromcbLRate_mult")
 
     paramsToPlot.append("")
     paramsToPlot.append("learn_cb2")
     paramsToPlot.append("resetCBState2")
 
     paramsToPlot.append("")
-    paramsToPlot.append("sess_seed")
-    paramsToPlot.append("seed")
-    paramsToPlot.append("nsessions")
-
-    paramsToPlot.append("")
     paramsToPlot.append("rewardDist")
-    paramsToPlot.append("vectorErrTgtBorder")
+    #paramsToPlot.append("vectorErrTgtBorder")
     paramsToPlot.append("minActionAngDeg")
     paramsToPlot.append("maxActionAngDeg")
+    paramsToPlot.append("finalNoiseAmpl")
 
     paramsToPlot.append("")
     paramsToPlot.append("sector_reward")
     paramsToPlot.append("sector_width")
     paramsToPlot.append("sector_thickness")
+
+    paramsToPlot.append("")
+    paramsToPlot.append("sess_seed")
+    paramsToPlot.append("seed")
+    paramsToPlot.append("nsessions")
 
     i = 0
     for param in paramsToPlot:
@@ -612,21 +621,23 @@ if __name__ == '__main__':
     iniParamFound = 0
     dat_basenames=[]
     for farg in sys.argv:
-        ree = '.*--ini=(.*\.ini).*'
-        s = re.match(ree,farg)  
-        if s!= None:
-            val = s.group(1)
-            dat_basenames.append(farg)
-
         ree = '.*---plotfname=(.*).*'
         s = re.match(ree,farg)  
         if s!= None:
             plotfname = s.group(1)
+            continue
 
         ree = '.*---onlyMainPlots.*'
         s = re.match(ree,farg)  
         if s!= None:
             onlyMainPlots=1
+            continue
+
+        ree = '.*--ini=(.*\.ini).*'
+        s = re.match(ree,farg)  
+        if s!= None:
+            val = s.group(1)
+            dat_basenames.append(farg)
 
     pp.plotfname = plotfname
 

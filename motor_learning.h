@@ -51,6 +51,9 @@ class MotorLearning
     float ffield;
     float bgStepsizeIntStopThr;
 
+////////////////////////////////
+    bool debug_printTrialNumbers;
+
     public:
     
     /////////////////////////////////////

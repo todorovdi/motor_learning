@@ -112,7 +112,6 @@ bool CB_model::trainNeeded(float * y_,float newx, float newy)
     }
   }
 
-  float tt = 0;
   float ttt = 0;
 
   if(!ychanged && !ptchanged)
@@ -123,9 +122,10 @@ bool CB_model::trainNeeded(float * y_,float newx, float newy)
         for(int l=0;l<6;l++) 
         {
           // L^infty norm
-          if( fabs( wcb_train[k][l] - wcb[k][l] ) > cbRetrainNeeded_thr_Linf )
+          float ttt = fabs( wcb_train[k][l] - wcb[k][l] );
+          if( ttt  > cbRetrainNeeded_thr_Linf )
           {
-            //tt = fmax( tt, fabs( wcb_train[k][l] - wcb[k][l] ) );
+            ttt = fmax( ttt, fabs( wcb_train[k][l] - wcb[k][l] ) );
             Wchanged = true;
             //break;
           }
@@ -149,6 +149,11 @@ bool CB_model::trainNeeded(float * y_,float newx, float newy)
       }
       Wchanged = ttt > cbRetrainNeeded_thr ? true : false;
     }
+  }
+
+  if(debug_retrainCB)
+  {
+    cout<<" DEBUG: retrain W change "<<ttt<<" Linf norm"<<cbRetrainNeeded_LinfNorm;
   }
 
   bool needed = ychanged || Wchanged || ptchanged;
@@ -207,6 +212,7 @@ void CB_model::learn()
 
   float upd_coef_real=0;
   float upd_coef_cb = 0;
+  float optimalLambda = 0;
 
   // if we don't have even last error before current, don't update the learning rate
   if(percept->getHistSz() > 1 && !cbLRateIsConst && b)   // if not, it is set artificially
@@ -216,20 +222,37 @@ void CB_model::learn()
     float easq = errAbs*errAbs;
     if(acByUpdCoefThr)
     { 
+      //cout<<"AC works"<<endl;
       int acAns = get_ACHappiness(&upd_coef_real,&upd_coef_cb);
-      float optimalLambda =  prevErrAbs * prevErrAbs / last_errDFmod;
+      optimalLambda =  prevErrAbs * prevErrAbs / last_errDFmod;
       if(!acInstantUpd)
       {
         if(acAns==0)    // means succesful correction. Then correct more!
         {
           cblr_upd = acOptimalRateMult * optimalLambda;
+          if(debug_printAC)
+          {
+            cout<<" AC increases Lrate, cblr_upd is"<<cblr_upd;
+            cout<<" optimalLbd is"<<optimalLambda<<endl;
+          }
           cbLRate = fmin( cbLRate * cbLRateUpdSpdUp , cblr_upd);
         }
         else if(acAns==2)
         {
+          if(debug_printAC)
+          {
+            cout<<" AC reduces Lrate "<<endl;
+          }
           cblr_upd = 1./(cbLRateUpdSpdDown);
           cbLRate *= cblr_upd;
           //cbLRate = 0;
+        }
+        else
+        {
+          if(debug_printAC)
+          {
+            cout<<" AC does nothing "<<endl;
+          }
         }
       }
       else
@@ -262,19 +285,19 @@ void CB_model::learn()
 
     cbLRate = fmax(cbLRate , 0.001);  // to avoid negativity
 
-    float m = errAbs/updateCBStateDist;
-    
-    if(cbLRate > 0 && !acUpdCoefThr)
+    if(cbLRate > 0 && !acByUpdCoefThr)
     {
+      float m = errAbs/updateCBStateDist;
       cbLRate =  fmin( cbLRate, cbLRateMax/m);
     }
+
     cbLRate = fmin( cbLRate,  40.);
   }
   cblearn(dx, dy);
 
 
   float r = errToCompare /errAbs;
-  exporter->exportCBMisc(cbLRate,errAbs,r,errToCompare,upd_coef_real,upd_coef_cb);
+  exporter->exportCBMisc(cbLRate,errAbs,r,errToCompare,upd_coef_real,upd_coef_cb,optimalLambda);
   //exporter->exportCBMisc(cbLRate,errAbs,log(cblr_upd),errToCompare);
 
   //cout<<"errAbs "<<errAbs<<", learn_rate  "<<cbLRate<<",  W norm "<<matrixNorm(wcb)<<endl;
@@ -291,6 +314,7 @@ void CB_model::resetLearnRate(float lr)
   }
 
   last_errDFmod = 0; 
+  cout<<" learning rate resetted"<<endl;
 }
 
 void CB_model::flushTuning()
@@ -403,6 +427,9 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * p
 
   s = params["acInstantUpd"];
   acInstantUpd = s != "" ? stoi(s) : 0; 
+
+  s = params["debug_printAC"];
+  debug_printAC = s != "" ? stoi(s) : 0; 
 
   arm = arm_;
   exporter = exporter_;

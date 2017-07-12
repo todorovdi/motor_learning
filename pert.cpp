@@ -275,10 +275,11 @@ int perturbationExperimentEnv::turnOnCues(int k, float * cues, int * addInfo)
       }
       else
       {
-        cueInd = p.cueSeq[ k % p.cueSeq.size() ];
+        int ind = k % p.cueSeq.size();
+        cueInd = p.cueSeq[ind].cue;
         if(addInfo)
         {
-          addInfo[0] = p.feedbackOn[k % p.cueSeq.size()]; // give no feedback
+          addInfo[0] = p.cueSeq[ind].feedbackOn; // give or not feedback
         }
       }
     }
@@ -832,7 +833,7 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
       iter = params.find(key);
       if(iter != params.end() )
       {
-        parseCueList(iter->second,p.cueList,p.numShows,p.feedbackOn);
+        p.parseCueList(iter->second);
         p.genCueSeq();
       }
 

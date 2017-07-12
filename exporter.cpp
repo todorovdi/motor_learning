@@ -64,14 +64,15 @@ void Exporter::exportContOpen(int k)
   foutContState.open( dir+prefix_for_cont+string("_cont_state_")+std::to_string(k)+"_"+suffix_for_cont+string(".dat") );
 }
 
-void Exporter::exportCBMisc(float lrate,float errAbs,float ratio,float prevErrAbs,float upd_coef_real, float upd_coef_cb)
+void Exporter::exportCBMisc(float lrate,float errAbs,float ratio,float prevErrAbs,float upd_coef_real, float upd_coef_cb, float optimalLambda)
 {
   foutCBMisc<<lrate<<'\t'   // 0
     <<errAbs<<'\t'          // 1
     <<ratio<<'\t'           // 2
     <<prevErrAbs<< '\t'     // 3
     <<upd_coef_real<<'\t'   // 4
-    <<upd_coef_cb<<endl;    // 5
+    <<upd_coef_cb<<'\t'     // 5
+    <<optimalLambda<<endl;    // 6
 }
 
 void Exporter::exportParams(parmap & params)

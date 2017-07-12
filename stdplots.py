@@ -442,7 +442,7 @@ def genCBTuningPlot(fig,ax,fname):
 def shadedErrorbar(ax,nums,errs,SEMs): 
     #eopacity=0.45   # emf files don't support opacity
     eopacity=1
-    shade=0.7
+    shade=0.8
     ax.fill_between(nums, errs-SEMs, errs+SEMs, facecolor=(shade, shade, shade, eopacity),edgecolor=(0,0,0,1),lw=0 )
     return ax.plot(nums, errs, color=pp.mainColor)
 
@@ -473,10 +473,16 @@ def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
         ax.plot(rates,label='rate')
 
     errAbsLarge = errMult * misc[:,1]
-    #errAbsSmall = errMultSmall * misc[:,1]
-    #ratios = misc[:,2]
-    #prevErrAbs = errMult * misc[:,3]
-    #(nrows, ncols) = misc.shape
+
+    if avg!= True:
+        #acOptimalRateMult=0.2
+        olmult=0.1
+        optimalLambda = errMult * misc[:,6]
+        ax.plot(olmult*optimalLambda,c='violet',label=str(olmult)+'*$\lambda_{opt}$')
+        #errAbsSmall = errMultSmall * misc[:,1]
+        #ratios = misc[:,2]
+        #prevErrAbs = errMult * misc[:,3]
+        #(nrows, ncols) = misc.shape
 
     #ax.plot(rates,label='rate',c='blue')
     if rateOnly == False:
@@ -545,15 +551,20 @@ def genCBMisc2Plot(fig,ax,fname):
     ax.set_ylim(ylmin,ylmax)
     ax.set_yticks(np.append(np.arange(ylmin,0,0.001),np.arange(0,ylmax,0.001) ) )
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
-    ax.set_title('CB misc plot',y=1.04)
+    ax.set_title('CB misc 2 plot',y=1.04)
+
+    acLowThrMult=float(pp.paramsEnv['acLowThrMult'])
+    acThrMult=float(pp.paramsEnv['acThrMult'])
+    errThr = float(pp.paramsEnv["cbLRateUpdAbsErr_threshold"]);
+    errThrSq= errThr*errThr;
 
     myell2 = [1,110./255.,66./255.]
-    ax.axhline(y=float(pp.paramsEnv["cbLRateUpdAbsErr_threshold"])*errMult,c=myell2,linewidth=1,
-            zorder=0,label=str(errMult)+'*errThreshold')
+    ax.axhline(y=errThrSq*acThrMult,c=myell2,linewidth=1,
+            zorder=0,label=str(acThrMult)+'*acThrMult^2')
 
     myDarkRed = [109./255, 33./255, 33./255]
-    ax.axhline(y=float(pp.paramsEnv["acUpdCoefThr"]),c=myDarkRed,linewidth=1,
-            zorder=0,label='acUpdCoefThr')
+    ax.axhline(y=acLowThrMult*errThrSq,c=myDarkRed,linewidth=1,
+            zorder=0,label=str(acLowThrMult)+'*acThrMult^2')
     
     ax.legend(loc='upper right')
 

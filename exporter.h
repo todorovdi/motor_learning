@@ -46,7 +46,7 @@ public:
     void exportContClose();
 
     void exportParams(parmap & params);
-    void exportCBMisc(float lrate,float errAbs,float ratio,float prevErrAbs,float ucr, float ucc);
+    void exportCBMisc(float lrate,float errAbs,float ratio,float prevErrAbs,float ucr, float ucc, float optimalLambda);
     
     // data write methods
     void exportDynData(unsigned int trialNum,float *y,float *d1,float *d2,float * gpe,float *gpi, float* addInfo);

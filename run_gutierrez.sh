@@ -35,8 +35,14 @@ fullSim()
   perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
   args_EB_control=$pdfSuffix
 
+  perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
+  args_EB_control2=$pdfSuffix
+
   perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
   args_nonEB_control=$pdfSuffix
+
+  perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
+  args_nonEB_control2=$pdfSuffix
 
   perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
   args_EB_HD=$pdfSuffix
@@ -50,7 +56,7 @@ fullSim()
   perturbSimple "--ini=$ini --percept_xrev1=1 --PD=1$addOptionsLoc" $1  $useOldData
   args_nonEB_PD=$pdfSuffix
 
-  python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" "---plotfname=guti_$addOptionsLoc" 
+  python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" "$args_nonEB_control2" "$args_EB_control2" "---plotfname=guti_$addOptionsLoc" 
 }
 
 

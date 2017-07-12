@@ -20,8 +20,9 @@ def makeNicerMulti(fig,ax):
     return
 
 def plotInds(ax,fnames2d,inds):
-    shadeSecond=0.45
-    colors = [ [0, 0, 0, 1.0], [shadeSecond,shadeSecond,shadeSecond,1] ]
+    shadeFirst=0.3
+    shadeSecond=0.6
+    colors = [ [shadeFirst, shadeFirst, shadeFirst, 1.0], [shadeSecond,shadeSecond,shadeSecond,1] ]
     labels = ['controls', 'patients'] 
 
     for fnames,label,color in zip(fnames2d,labels,colors):
@@ -48,24 +49,48 @@ def plotInds(ax,fnames2d,inds):
 def annotateG(ax,inds,xtickstep,twinyxtick=False):
     ax.set_xticks(range(inds[0],inds[-1])[::xtickstep] )
     ax.set_xlim([inds[0],inds[-1]])
-    ax.yaxis.grid(True)
 
+    # for poster
+    if poster_mode==True:
+        ax.set_xticklabels(range(0,700,xtickstep))
+
+    #ax.set_xlim([inds[0],inds[-1]])
+
+    ax.yaxis.grid(True)
     ax.set_ylim([-10,30])
     ax.set_yticks(np.arange(-10,30,10))
 
     ax.xaxis.grid(True, which='minor')
+    ax.xaxis.grid(True)
 
     if twinyxtick:
         ax_ = ax.twiny()
         ax_.set_xlim([inds[0],inds[-1]])
-        ax_.set_xticks(pp.phaseBegins[1:-1])
-        ax_.set_xticklabels(pp.phaseNames)
-        ax_.xaxis.grid(True,color='w')
+        #ax_.set_xticks(pp.phaseBegins[1:-1])
+        #ax_.set_xticklabels(pp.phaseNames)
+
+        ax_.set_xticks([50,150,310,520])
+        ax_.set_xticklabels(['KR']+pp.phaseNames)
+        if poster_mode==True:
+            ax_.tick_params(axis=u'x', which=u'both',length=0)
+
+        #xtickloc = []
+        #for i in range(pp.numPhases):
+        #    xtickk = float(pp.phaseBegins[i] + pp.phaseBegins[i+1] )/2.
+        #    xtickloc.append(xtickk)
+
+        #labels = ['BASELINE']+pp.phaseNames
+
+        #ax_.set_xticks(xtickloc)
+        #ax_.set_xticklabels(labels)
 
 
 def makePubPlot(fnames2d,pdf):
+    global poster_mode
 
-    globalFontSz=10
+    poster_mode=True
+
+    globalFontSz=14
     mpl.rcParams.update({'font.size': globalFontSz})
 
     wordTextWidth=6.78
@@ -77,19 +102,36 @@ def makePubPlot(fnames2d,pdf):
 
     print("-----shiny plotting code is exectuded here")
 
-    xrots = np.array( [0, 200, 232,  
-            232, 232+16*1, 
-            232+16*1, 232+16*2,
-            232+16*2, 232+16*3,
-            232+16*3, 232+16*5,  
-            232+16*5, 232+16*6,  
-            232+16*6, 232+16*7,  
-            232+16*7, 232+16*8,  
-            232+16*8, 232+16*8+32, 232+16*8+64, 
-            232+16*8+64, 232+16*8+64+48, 
-            232+16*8+64+48,  232+16*8+64+48+32, 
-            232+16*8+64+48+32,  232+16*8+64+48*2+32, 
-            232+16*8+64+48*2+32, 232+16*8+64+48*2+32*2] )
+    #xrots = np.array( [0, 200, 232,  
+    #        232, 232+16*1, 
+    #        232+16*1, 232+16*2,
+    #        232+16*2, 232+16*3,
+    #        232+16*3, 232+16*5,  
+    #        232+16*5, 232+16*6,  
+    #        232+16*6, 232+16*7,  
+    #        232+16*7, 232+16*8,  
+    #        232+16*8, 232+16*8+32, 232+16*8+64, 
+    #        232+16*8+64, 232+16*8+64+48, 
+    #        232+16*8+64+48,  232+16*8+64+48+32, 
+    #        232+16*8+64+48+32,  232+16*8+64+48*2+32, 
+    #        232+16*8+64+48*2+32, 232+16*8+64+48*2+32*2] )
+
+
+    xrots = np.array( [0, 200, 236,  
+            236, 236+18*1, 
+            236+18*1, 236+18*2,
+            236+18*2, 236+18*3,
+            236+18*3, 236+18*5,  
+            236+18*5, 236+18*6,  
+            236+18*6, 236+18*7,  
+            236+18*7, 236+18*8,  
+            236+18*8, 236+18*8+36, 236+18*8+72, 
+            236+18*8+72, 236+18*8+72+54, 
+            236+18*8+72+54,  236+18*8+72+54+36, 
+            236+18*8+72+54+36,  236+18*8+72+54*2+36, 
+            236+18*8+72+54*2+36, 236+18*8+72+54*2+36*2] )
+
+
     yrots = np.array([0, 0, 0, 
             5, 5, 
             10, 10, 
@@ -135,6 +177,9 @@ def makePubPlot(fnames2d,pdf):
     ax.set_ylabel(r"Error in degrees",labelpad=8)
     ax.set_xlabel("Movement Number", labelpad=8)
 
+    if poster_mode==True:
+        ax.set_ylabel(r"Reach Angle (deg)",labelpad=8)
+
     #fig.suptitle("Reach angle hand space minus target location",size=1.5*globalFontSz)#, y=0.99)
 
     pdf.savefig()
@@ -144,11 +189,16 @@ def makePubPlot(fnames2d,pdf):
     fig = plt.gcf()
     ax = plt.gca()
 
-    fig, axs = plt.subplots(ncols=1, nrows=3, 
-            figsize=(wordTextWidth, wordSingleFigHeight*3), 
-            sharex=False, sharey=False)
-
-    plt.subplots_adjust(left=0.12, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.3)
+    if poster_mode!=True:
+        fig, axs = plt.subplots(ncols=1, nrows=3, 
+                figsize=(wordTextWidth, wordSingleFigHeight*3), 
+                sharex=False, sharey=False)
+        plt.subplots_adjust(left=0.12, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.3)
+    else:
+        fig, axs = plt.subplots(ncols=1, nrows=3, 
+                figsize=(wordTextWidth, (wordSingleFigHeight*3.)*0.9 ), 
+                sharex=False, sharey=False,gridspec_kw={'height_ratios':[1.7,1,1]})
+        plt.subplots_adjust(left=0.12, right=0.98, bottom=0.055, top=0.97, wspace=0.2, hspace=0.58)
 
     #plt.subplots_adjust(left=0.11, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.4)
 
@@ -167,8 +217,11 @@ def makePubPlot(fnames2d,pdf):
     annotateG(ax,inds,100,True)
     ax.set_ylabel(r"Error in degrees",labelpad=8)
     ax.set_xlabel("Movement Number", labelpad=8)
+    if poster_mode==True:
+        ax.set_ylabel(r"Reach Angle (deg)",labelpad=5)
+        ax.set_xlabel("Trial Number", labelpad=5)
     
-    ax.text(xpanellabel, 1.06, 'A', transform=ax.transAxes,
+    ax.text(xpanellabel, 1.02, 'A', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
     ax = axs[1]
@@ -178,8 +231,11 @@ def makePubPlot(fnames2d,pdf):
     annotateG(ax,inds,50)
     ax.set_ylabel(r"Error in degrees",labelpad=8)
     ax.set_xlabel("Movement Number", labelpad=8)
+    if poster_mode==True:
+        ax.set_ylabel(r"Reach Angle (deg)",labelpad=5)
+        ax.set_xlabel("Trial Number", labelpad=5)
 
-    ax.text(xpanellabel, 1.06, 'B', transform=ax.transAxes,
+    ax.text(xpanellabel, 1.02, 'B', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
     ax = axs[2]
@@ -189,11 +245,15 @@ def makePubPlot(fnames2d,pdf):
     annotateG(ax,inds,50)
     ax.set_ylabel(r"Error in degrees",labelpad=8)
     ax.set_xlabel("Movement Number", labelpad=8)
+    if poster_mode==True:
+        ax.set_ylabel(r"Reach Angle (deg)",labelpad=5)
+        ax.set_xlabel("Trial Number", labelpad=5)
 
-    ax.text(xpanellabel, 1.06, 'C', transform=ax.transAxes,
+    ax.text(xpanellabel, 1.02, 'C', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
-    fig.suptitle("Reach angle hand space minus target location",size=globalFontSz*1.5)#, y=0.99)
+    if poster_mode!=True:
+        fig.suptitle("Reach angle hand space minus target location",size=globalFontSz*1.5)#, y=0.99)
 
     noExt=pp.out_dir_pdf + pp.plotfname
     svgname=noExt+'.svg'

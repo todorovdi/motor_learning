@@ -37,15 +37,27 @@ def prep(fnames):
 
 def annotateCommon(ax,ystep=5):
     n = pp.phaseBegins[-1]
-    ax.set_xticks(range(n)[::pp.xtickSkip] )
+    #ax.set_xticks(range(n)[::pp.xtickSkip] )
     ax.set_xlim([0,n])
     ax_ = ax.twiny()
     ax_.set_xlim([0, n])
-    ax_.set_xticks(pp.phaseBegins[1:-1])
-    ax_.set_xticklabels(pp.phaseNames)
+
+    xtickloc = []
+    for i in range(pp.numPhases):
+        xtickk = float(pp.phaseBegins[i] + pp.phaseBegins[i+1] )/2.
+        xtickloc.append(xtickk)
+
+    labels = ['BASELINE']+pp.phaseNames
+
+    ax_.set_xticks(xtickloc)
+    ax_.set_xticklabels(labels)
+    #ax_.set_xticks(pp.phaseBegins[1:-1])
+    #ax_.set_xticklabels(pp.phaseNames)
     ax_.xaxis.grid(True,color='w')
 
-    ax.yaxis.grid(True)
+    ax_.tick_params(axis=u'x', which=u'both',length=0)
+
+    ax.yaxis.grid(True,linestyle='--',dashes=(2,14))
 
     ymin = -40
     ymax = 40 
@@ -55,11 +67,11 @@ def annotateCommon(ax,ystep=5):
     ax.set_ylim([ymin,ymax])
     ax.set_yticks(np.arange(ymin,ymax,ystep))
 
-    ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
-    ax.xaxis.grid(True, which='minor')
+    ax.set_xticks(pp.phaseBegins[1:-1])
+    ax.xaxis.grid(True, linestyle='--',dashes=(1,8))
 
-    ax.set_xlabel("Movement Number", labelpad=8)
-    ax.set_ylabel(r"Error in degrees",labelpad=8)
+    ax.set_xlabel("Movement Number", labelpad=7)
+    ax.set_ylabel(r"Error in degrees",labelpad=7)
 
 def makeReach(fig,ax,fname):
     fileToPlot = fname
@@ -72,8 +84,8 @@ def makeReach(fig,ax,fname):
     #y_target = armData[:,4]
     #x_actual = armData[:,8]
     #y_actual = armData[:,9]
-    #x_cbtgt = armData[:,10]
-    #y_cbtgt = armData[:,11]
+    x_cbtgt = armData[:,10]
+    y_cbtgt = armData[:,11]
 
     #genReachPlot(fig,ax,xs,ys,nums,"Reaching plot",tgt=list(zip(x_target,y_target)),cbtgt=list(zip(x_cbtgt,y_cbtgt)),ptlabels=False)
 
@@ -88,6 +100,14 @@ def makeReach(fig,ax,fname):
     ax.set_yticks(np.arange(ymin,ymax,0.1))
 
     ax.scatter(xs,ys,c=range(len(xs)),lw=0.0,cmap='inferno',s=25)
+
+    cross_sz=0.03
+    cross_lw=1
+
+    x = x_cbtgt[1]
+    y = y_cbtgt[1]
+    ax.hlines(y,x-cross_sz,x+cross_sz,lw=cross_lw)
+    ax.vlines(x,y-cross_sz,y+cross_sz,lw=cross_lw)
 
     ax.grid()
 
@@ -111,8 +131,9 @@ def addTgtSz(ax):
     #ax.axhline(y=nsz,c=myell,linewidth=linew,zorder=0)
     #ax.axhline(y=-nsz,c=myell,linewidth=linew,zorder=0)
 
-    ax.axhline(y=tsz,c=pp.mainColor,linewidth=linew,ls='dashed',zorder=0)
-    ax.axhline(y=-tsz,c=pp.mainColor,linewidth=linew,ls='dashed',zorder=0)
+    ds=(15,15)
+    ax.axhline(y=tsz,c=pp.mainColor,linewidth=linew,ls='dashed',zorder=0,dashes=ds)
+    ax.axhline(y=-tsz,c=pp.mainColor,linewidth=linew,ls='dashed',zorder=0,dashes=ds)
 
     addNoiseSz(ax)
 
@@ -164,7 +185,8 @@ def makePubPlot(fnames2d,pdf):
         fig, axs = plt.subplots(ncols=numcols, nrows=numrows, 
                 figsize=(wordTextWidth/1.9, wordSingleFigHeight), sharex=True, sharey=False)
 
-        plt.subplots_adjust(left=0.1, right=0.98, bottom=0.15, top=0.84, wspace=0.4)
+        # reducing left reduces left margin
+        plt.subplots_adjust(left=0.17, right=0.98, bottom=0.15, top=0.84, wspace=0.4)
         #plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
 
         ymin = -40
@@ -211,7 +233,7 @@ def makePubPlot(fnames2d,pdf):
         fig, axs = plt.subplots(ncols=numcols, nrows=numrows, 
                 figsize=(wordTextWidth, wordSingleFigHeight), sharex=False, sharey=False)
 
-        plt.subplots_adjust(left=0.11, right=0.98, bottom=0.08, top=0.85, wspace=0.4, hspace=0.4)
+        plt.subplots_adjust(left=0.11, right=0.98, bottom=0.13, top=0.85, wspace=0.4, hspace=0.4)
 
         ax=axs[0]
         prep(fnames2d[0])
@@ -277,6 +299,11 @@ def makePubPlot(fnames2d,pdf):
      #   ax.set_title("", y=title_ycoord) 
      #   ax.text(-0.1, 1.15, 'B2', transform=ax.transAxes,
      # fontsize=16, fontweight='bold', va='top', ha='right')
+
+#################################################################
+#################################################################
+#################################################################
+#################################################################
  
     if pp.plotfname == 'difRotations_cbOnly':
         numcols=3
@@ -284,7 +311,7 @@ def makePubPlot(fnames2d,pdf):
         fig, axs = plt.subplots(ncols=numcols, nrows=numrows, 
                 figsize=(wordTextWidth, wordSingleFigHeight), sharex=False, sharey=True)
 
-        plt.subplots_adjust(left=0.06, right=0.90, bottom=0.08, top=0.90, wspace=0.1, hspace=0.4)
+        plt.subplots_adjust(left=0.06, right=0.90, bottom=0.08, top=0.86, wspace=0.1, hspace=0.4)
 
         ax=axs[0]
         makeReach(fig,ax,fnames2d[0][0])
@@ -299,6 +326,13 @@ def makePubPlot(fnames2d,pdf):
         ax.set_title("rotation=85$^\circ$")
 
         addColorBar(fig,ax,vals=range(pp.phaseBegins[-1]),wd=0.03 )
+
+        fig.suptitle("Adaptation dependence on rotation amplitude", size=1.2*globalFontSz,y=0.99)
+
+#################################################################
+#################################################################
+#################################################################
+#################################################################
 
     if pp.plotfname == 'mildPert_noAC':
         numcols=1
@@ -334,7 +368,7 @@ def makePubPlot(fnames2d,pdf):
         fig, axs = plt.subplots(ncols=numcols, nrows=numrows, 
                 figsize=(wordTextWidth, wordSingleFigHeight), sharex=False, sharey=False)
 
-        plt.subplots_adjust(left=0.11, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.4)
+        plt.subplots_adjust(left=0.11, right=0.98, bottom=0.12, top=0.85, wspace=0.4, hspace=0.4)
 
         ax=axs[0]
         prep(fnames2d[0])
@@ -342,7 +376,7 @@ def makePubPlot(fnames2d,pdf):
         #ax.errorbar(nums, errs, yerr=SEMs, capsize=capsz)
         shadedErrorbar(ax,nums,-1.*errs,SEMs)
         annotateCommon(ax)
-        ax.set_title("rotation 90, BG and CB", size=30, y=title_ycoord) 
+        ax.set_title("rotation 90, BG and CB", y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
         ax.set_yticks(np.arange(ymin,ymax,ystep))
 
@@ -352,7 +386,7 @@ def makePubPlot(fnames2d,pdf):
              #cap.set_capsize(2)
 
         addTgtSz(ax)
-        ax.text(-0.14, 1.06, 'A', transform=ax.transAxes,
+        ax.text(-0.17, 1.12, 'A', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
         #ax.legend(loc='upper right')
@@ -362,12 +396,12 @@ def makePubPlot(fnames2d,pdf):
         #ax.errorbar(nums, errs, yerr=SEMs,capsize=capsz)
         shadedErrorbar(ax,nums,-1.*errs,SEMs)
         annotateCommon(ax)
-        ax.set_title("BG and CB, x-mirror", size=30, y=title_ycoord) 
+        ax.set_title("BG and CB, x-mirror", y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
         ax.set_yticks(np.arange(ymin,ymax,ystep))
 
         addTgtSz(ax)
-        ax.text(-0.14, 1.06, 'B', transform=ax.transAxes,
+        ax.text(-0.17, 1.12, 'B', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
         #ax.legend(loc='upper right')
@@ -382,25 +416,27 @@ def makePubPlot(fnames2d,pdf):
         numcols=2
         numrows=2
         fig, axs = plt.subplots(ncols=numcols, nrows=numrows, 
-                figsize=(wordTextWidth, wordSingleFigHeight*2), sharex=False, sharey=False)
+                figsize=(wordTextWidth, wordSingleFigHeight*2), sharex=True, sharey=False)
         plt.tight_layout()
 
-        plt.subplots_adjust(left=0.11, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.4)
+        plt.subplots_adjust(left=0.11, right=0.98, bottom=0.08, top=0.92, wspace=0.4, hspace=0.20)
 
         ax=axs[0,0]
         prep(fnames2d[0])
         #ax.errorbar(nums, errs, yerr=SEMs)
         shadedErrorbar(ax,nums,-1.*errs,SEMs)
         annotateCommon(ax)
-        ax.set_title("BG and CB, rotation 90", y=title_ycoord) 
+        ax.set_title("BG and CB with AC, rotation 90", y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
         ax.set_yticks(np.append(np.arange(ymin,0,ystep),np.arange(0,ymax,ystep) ) )
 
         addTgtSz(ax)
-        ax.text(-0.1, 1.15, 'A1', transform=ax.transAxes,
+        ax.text(-0.1, 1, 'A1', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
         ax.legend(loc='upper right')
+
+        ax.set_xlabel("")
 
      #   fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[0] ]
         fnamesCBMisc=[ fname.replace('arm','CBMisc') for fname in fnames2d[0] ]
@@ -424,7 +460,7 @@ def makePubPlot(fnames2d,pdf):
         ax.set_yticks(np.arange(0,cbLRateLim,2))
         ax.set_title("", y=title_ycoord) 
 
-        ax.text(-0.1, 1.15, 'A2', transform=ax.transAxes,
+        ax.text(-0.1, 1, 'A2', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
         ax=axs[0,1]
@@ -432,15 +468,16 @@ def makePubPlot(fnames2d,pdf):
         #ax.errorbar(nums, errs, yerr=SEMs)
         shadedErrorbar(ax,nums,-1.*errs,SEMs)
         annotateCommon(ax)
-        ax.set_title("BG and CB, x-mirror", y=title_ycoord) 
+        ax.set_title("BG and CB with AC, x-mirror", y=title_ycoord) 
         ax.set_ylim([ymin,ymax])
         ax.set_yticks(np.append(np.arange(ymin,0,ystep),np.arange(0,ymax,ystep) ) )
 
-        ax.text(-0.1, 1.15, 'B1', transform=ax.transAxes,
+        ax.text(-0.1, 1, 'B1', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
         addTgtSz(ax)
         ax.legend(loc='upper right')
+        ax.set_xlabel("")
 
      #   fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames2d[1] ]
         fnamesCBMisc=[ fname.replace('arm','CBMisc') for fname in fnames2d[1] ]
@@ -464,7 +501,7 @@ def makePubPlot(fnames2d,pdf):
         ax.set_yticks(np.arange(0,cbLRateLim,2))
         ax.set_title("", y=title_ycoord) 
 
-        ax.text(-0.1, 1.15, 'B2', transform=ax.transAxes,
+        ax.text(-0.1, 1, 'B2', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
 
     if pp.plotfname == 'mildPert_AC':
@@ -490,7 +527,7 @@ def makePubPlot(fnames2d,pdf):
         ax.set_ylim([ymin,ymax])
         ax.set_yticks(np.append(np.arange(ymin,0,ystep),np.arange(0,ymax,ystep) ) )
         ax.set_title("BG and CB with AC, shift", y=title_ycoord) 
-        ax.text(-0.1, 1.15, 'A', transform=ax.transAxes,
+        ax.text(-0.1, 1, 'A', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
         ax.set_xlabel("")
 
@@ -516,7 +553,7 @@ def makePubPlot(fnames2d,pdf):
         ax.set_yticks(np.arange(0,cbLRateLim,2))
         ax.set_ylabel(r"CB learning rate", labelpad=15)
         ax.set_title("")
-        ax.text(-0.1, 1.15, 'B', transform=ax.transAxes,
+        ax.text(-0.1, 1, 'B', transform=ax.transAxes,
       fontsize=16, fontweight='bold', va='top', ha='right')
                                        
     noExt=pp.out_dir_pdf + pp.plotfname

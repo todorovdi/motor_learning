@@ -1,5 +1,6 @@
 #include "motor_learning.h"
 #include "environment.h"
+#include <cstdlib>
 
 //int MotorLearning::nc=1;
 
@@ -104,13 +105,20 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     // cycle over trials
     for(int k=indAdd;k<(ntrials+indAdd);k++)
     {
+      if(debug_printTrialNumbers)
+      {
+        cout<<" DEBUG: "<<k<<" trial started"<<endl;
+      }
 
       bg.resetForTrialBegin();
 
       int addInfoCue;
       int cueActive = env->turnOnCues(k,x,&addInfoCue);
       bg.setCues(x);
-      int feedbackGiven = addInfoCue;
+      int feedbackGiven = addInfoCue;   
+      // 0 means nos vis feedback, but reward may be given!
+      //
+
 
       if(learn_bg || !habit2PMCdirectly)
       {
@@ -140,6 +148,11 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       }
 
       bg.getPMC(y);
+
+      //if(exitIfExplore && y[cueActive] < 0.2 ) 
+      //{
+      //  std::exit(1);
+      //}
 
       float cbTgt_x, cbTgt_y, ang;
       env->getCurTgt(x,cbTgt_x, cbTgt_y,ang);
@@ -180,8 +193,8 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         exporter->exportTrial(k,x,R,Rpre[cueActive]);
       } 
 
-          //rnd();  // just to follow same seed as Slava's code
-      if(learn_bg && feedbackGiven)
+      //rnd();  // just to follow same seed as Slava's code
+      if(learn_bg && feedbackGiven!=2)
       { 
         float RPE = R- Rpre[cueActive];
         if( exploreAlways )
@@ -192,18 +205,23 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         bg.learn(RPE);
       } 
 
-      if(learn_cb && feedbackGiven)
+      //cout<<"trial"<<endl;
+      if(learn_cb && feedbackGiven==1)
       { 
         cb.learn();
       }
       else
       {
-        exporter->exportCBMisc(0,sc,0,0,0,0);
+        exporter->exportCBMisc(cb.getLearnRate(),sc,0,0,0,0,0);
       }
       cb.stateDegradeStep();    // should happen even with cb turned off!
+      if(feedbackGiven == 0)
+      {
+        percept->resetErrHist();
+      }
 
-    updateRpre(cueActive,R,0);   
-    //std::copy(y, y+na, prevy.begin());
+      updateRpre(cueActive,R,0);   
+      //std::copy(y, y+na, prevy.begin());
 
     }
     //if(doExport)
@@ -300,6 +318,9 @@ void MotorLearning::initParams(parmap & params)
 
     s = params["rewardSize"];
     rewardSize = s != "" ? stof(s) : 3; 
+
+    s = params["debug_printTrialNumbers"];
+    debug_printTrialNumbers = s != "" ? stoi(s) : 0; 
 
     nc=stoi(params["nc"]);
     na=stoi(params["na"]);

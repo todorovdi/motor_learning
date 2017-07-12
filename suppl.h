@@ -112,8 +112,6 @@ int genCortcalData(parmap & params);
 
 void shuffle(vector<int> & elements);
 
-void parseCueList(std::string str, vector<int> & cues, vector<int> & numShows, vector<int> & feedbackOn);
-
 inline int getActiveCueInd(float * x, int nc)
 {
   for(int i=0; i<nc; i++)
