@@ -293,7 +293,37 @@ if [ $# -ne 0 ]; then
   run_strongPert_AC=1
   run_mildPert_AC=1
 
-  runForPaper ""
+  #runForPaper ""
+
+  #ao=" $addOptions --learn_bg=0 --debug_printAC=1 --numTrials0=2 --numTrials2=2" 
+  #addOptionsLoc="--cue1=2 --endpoint_rotation1=30"$ao
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #mildPert=$pdfSuffix
+
+  ao=" $addOptions --learn_bg=0" 
+  #ao=" $addOptions --learn_bg=0 --numTrials0=2 --numTrials2=2" 
+  #ao=" $addOptions --learn_bg=0 --numTrials0=2 --numTrials2=2 --finalNoiseAmpl=0 --debug_printAC=1" 
+  #ao=" $addOptions --learn_bg=0 --numTrials0=2 --numTrials2=2 --debug_printAC=1" 
+
+  addOptionsLoc="--cue1=1"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  noPert=$pdfSuffix
+
+  addOptionsLoc="--cue1=2 --endpoint_rotation1=-80"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  strongPert=$pdfSuffix
+
+  addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  strongPert2=$pdfSuffix
+
+  addOptionsLoc="--cue1=2 --endpoint_rotation1=30"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  mildPert=$pdfSuffix
+
+  python $plotfile "$noPert" "$mildPert" "$strongPert" "$strongPert2" "---plotfname=perceptPert_AC_n=$1"
+  #python $plotfile "$mildPert" "$mildPert_0noise" "---plotfname=mildPert_AC_n=$1"
+
 
   ############################################################
   ############################################################

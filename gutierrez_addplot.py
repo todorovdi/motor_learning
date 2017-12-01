@@ -116,9 +116,9 @@ def makePubPlot(fnames2d,pdf):
 
     ax = axs[0,0]
     prep(fnames_EB_control_HD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='o', color='blue',markersize=msz,label='CHD',linestyle='None')
+    ax.errorbar(nums, errs, yerr=SEMs, marker='o', color='blue',markersize=msz,label='CHD',linestyle='None',capsize=pp.capsz)
     prep(fnames_EB_HD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='s', color='skyblue',markersize=msz,label='HD',linestyle='None')
+    ax.errorbar(nums, errs, yerr=SEMs, marker='s', color='skyblue',markersize=msz,label='HD',linestyle='None',capsize=pp.capsz)
     annotateCommon(ax)
     
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
@@ -127,9 +127,9 @@ def makePubPlot(fnames2d,pdf):
 
     ax = axs[0,1]
     prep(fnames_EB_control_PD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='d', color='blue',markersize=msz,label='CPD',linestyle='None')
+    ax.errorbar(nums, errs, yerr=SEMs, marker='d', color='blue',markersize=msz,label='CPD',linestyle='None',capsize=pp.capsz)
     prep(fnames_EB_PD)
-    ax.errorbar(nums, errs, yerr=SEMs, marker='^', color='skyblue',markersize=msz,label='PD',linestyle='None')
+    ax.errorbar(nums, errs, yerr=SEMs, marker='^', color='skyblue',markersize=msz,label='PD',linestyle='None',capsize=pp.capsz)
     annotateCommon(ax)
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
     #addTgtSz(ax)
@@ -139,9 +139,9 @@ def makePubPlot(fnames2d,pdf):
     fireblack = [0.6, 0.0, 0.0]
     ax = axs[1,0]
     prep(fnames_nonEB_control_HD)
-    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='o', color=fireblack,markersize=msz,label='CHD',linestyle='None')
+    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='o', color=fireblack,markersize=msz,label='CHD',linestyle='None',capsize=pp.capsz)
     prep(fnames_nonEB_HD)
-    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='s', color=lightcoral,markersize=msz,label='HD',linestyle='None')
+    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='s', color=lightcoral,markersize=msz,label='HD',linestyle='None',capsize=pp.capsz)
     annotateCommon(ax)
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
     ax.set_ylabel('Error (cm)')
@@ -150,9 +150,9 @@ def makePubPlot(fnames2d,pdf):
 
     ax = axs[1,1]
     prep(fnames_nonEB_control_PD)
-    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='d', color=fireblack,markersize=msz,label='CPD',linestyle='None')
+    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='d', color=fireblack,markersize=msz,label='CPD',linestyle='None',capsize=pp.capsz)
     prep(fnames_nonEB_PD)
-    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='^', color=lightcoral,markersize=msz,label='PD',linestyle='None')
+    ax.errorbar(nums, -1.*errs, yerr=SEMs, marker='^', color=lightcoral,markersize=msz,label='PD',linestyle='None',capsize=pp.capsz)
     annotateCommon(ax)
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)
     ax.set_xlabel("Movement Number", labelpad=8)

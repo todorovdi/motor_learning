@@ -254,8 +254,11 @@ def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one be
     global dirShift
     global phaseBegins
     global phaseNames
+    global capsz
 
     #print("Init params from file ",fname)
+
+    capsz=3
 
     paramsEnv = None
     paramsEnv = paramFileRead(fname) 

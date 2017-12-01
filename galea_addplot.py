@@ -73,10 +73,10 @@ def makePubPlot(fnames2d):
 
     ax = axs#[0,0]
     prep(fnames_noStim)
-    ax.errorbar(nums, errs, yerr=SEMs, color='black',label='sham')
+    ax.errorbar(nums, errs, yerr=SEMs, color='black',label='sham',capsize=pp.capsz)
 
     prep(fnames_tCDS)
-    ax.errorbar(nums, errs, yerr=SEMs, color='red',label='tCDS')
+    ax.errorbar(nums, errs, yerr=SEMs, color='red',label='tCDS',capsize=pp.capsz)
     annotateCommon(ax)
 
     ax.legend(bbox_to_anchor=(xlegendloc, ylegendloc), loc=legendloc, borderaxespad=0.)

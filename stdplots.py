@@ -439,12 +439,12 @@ def genCBTuningPlot(fig,ax,fname):
     ax.set_ylabel('dfwx dfwy',rotation=90)
     ax.set_ylim(0,36*2)
 
-def shadedErrorbar(ax,nums,errs,SEMs): 
+def shadedErrorbar(ax,nums,errs,SEMs,label_=''): 
     #eopacity=0.45   # emf files don't support opacity
     eopacity=1
     shade=0.8
     ax.fill_between(nums, errs-SEMs, errs+SEMs, facecolor=(shade, shade, shade, eopacity),edgecolor=(0,0,0,1),lw=0 )
-    return ax.plot(nums, errs, color=pp.mainColor)
+    return ax.plot(nums, errs, color=pp.mainColor,label=label_)
 
 def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
     if avg==False:
@@ -468,7 +468,7 @@ def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
         for i in range(n):
             SEMs[i] = stats.sem(allRates[:,i])
         #ax.errorbar(range(n),rates, yerr=SEMs,capsize=capsize)
-        shadedErrorbar(ax,range(n),rates,SEMs)
+        shadedErrorbar(ax,range(n),rates,SEMs,label_='Learn rate')
     else:
         ax.plot(rates,label='rate')
 
@@ -476,9 +476,9 @@ def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
 
     if avg!= True:
         #acOptimalRateMult=0.2
-        olmult=0.1
+        olmult=0.06
         optimalLambda = errMult * misc[:,6]
-        ax.plot(olmult*optimalLambda,c='violet',label=str(olmult)+'*$\lambda_{opt}$')
+        ax.plot(olmult*optimalLambda,c='violet',label=str(olmult)+'*$\lambda_{opt}$',marker='*',lw=0)
         #errAbsSmall = errMultSmall * misc[:,1]
         #ratios = misc[:,2]
         #prevErrAbs = errMult * misc[:,3]
@@ -545,8 +545,9 @@ def genCBMisc2Plot(fig,ax,fname):
     cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
 
     #ylmax = pp.cbMiscGraph_y_axis_max
-    ylmax = 0.008
-    ylmin = -ylmax
+    ylmax = 0.016
+    ylmin = -0.003
+    #ylmin = -ylmax
     #ylmin = 1.2*math.log(1/float(pp.paramsEnv["cbLRateUpdSpdDown"]))
     ax.set_ylim(ylmin,ylmax)
     ax.set_yticks(np.append(np.arange(ylmin,0,0.001),np.arange(0,ylmax,0.001) ) )

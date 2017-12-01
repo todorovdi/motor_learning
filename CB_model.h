@@ -34,6 +34,7 @@ class CB_model
   bool cbRetrainNeeded_LinfNorm;
 
   float prevErrAbs;
+  float predictedErrSq;
 
   //float lastErrRatio;
   bool cbLRateUpd_errDiffBased;
@@ -60,6 +61,7 @@ class CB_model
 
     float wcb[6][6];                 // current CB state
     float dfwx[6][6],dfwy[6][6];     // CB state corrections, corresponding to the current CB target
+    //float dfwx_p[6][6],dfwy_p[6][6];     // CB state corrections, corresponding to the current CB target
 
     vector<float> train_patPMC;
     float wcb_train[6][6];                 // CB state used for last training
@@ -99,6 +101,7 @@ class CB_model
         
         //float errDFmod(float dx, float dy);
         int get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb);
+        void predictNextErr(float * y);
 
         bool trainNeeded(float * y_, float newx=-1000, float newy=-1000); 
 
@@ -108,6 +111,8 @@ class CB_model
     private:
         void cblearn(float xdif, float ydif);
         void setArm(Arm * arm_);
+        float getCurErrDFmod(float dx,float dy);
+        //void saveTuning();
 };
 
 inline float matrixNorm(float matrix[][6])

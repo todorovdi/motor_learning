@@ -51,6 +51,11 @@ void CB_model::train(float x0, float y0, float * yy, bool flushW, bool useCurW, 
 
     std::copy(yy,yy+train_patPMC.size(),train_patPMC.begin());
     //cout<<" CB training"<<endl;
+
+    if(debug_printAC)
+    {
+      cout<<" train CB to get new DF "<<endl;
+    }
 }
 
 void CB_model::trainCurPt(float * yy, float ffield, bool flushW, bool useCurW)
@@ -68,6 +73,20 @@ void CB_model::stateDegradeStep()
       wcb[i][j]-= t;
     } 
   }
+}
+
+float CB_model::getCurErrDFmod(float dx,float dy)
+{
+  float r = 0;
+	for(int i=0;i<6;i++) 
+  {
+    for(int j=0;j<6;j++) 
+    { 
+      float t = (dx*dfwx[i][j]+dy*dfwy[i][j]);
+      r += t*t;
+    } 
+  }
+  return r;
 }
 
 // update W
@@ -168,10 +187,11 @@ int CB_model::get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb)
   float prevErrAbs = percept->getHistSz() > 1 ? percept->getErr(1,true) : -100;  
   float easq = errAbs*errAbs;
 
-   // note that the cost functions that CB aims to decrease is quadratic, thus it is 
-    // difference of SQUARES of moduli of vector errors, which is proportional to the prev learning rate
+  // note that the cost functions that CB aims to decrease is quadratic, thus it is 
+  // difference of SQUARES of moduli of vector errors, which is proportional to the prev learning rate
   float upd_coef_real = prevErrAbs * prevErrAbs - easq;
-  float upd_coef_cb = last_errDFmod * cbLRate;
+  //float upd_coef_cb = 2. * last_errDFmod * cbLRate;
+  float upd_coef_cb = prevErrAbs * prevErrAbs - predictedErrSq;
   if(pupd_coef_real && pupd_coef_cb)
   {
     *pupd_coef_real = upd_coef_real;
@@ -180,12 +200,19 @@ int CB_model::get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb)
   // if true we assume that CB did last correction. And it did it using
   // correct visual feedback (more or less)
   
-  float tt = cbLRateUpdAbsErr_threshold * cbLRateUpdAbsErr_threshold;
+  //float tt = cbLRateUpdAbsErr_threshold * cbLRateUpdAbsErr_threshold;
+  // (err+ rnd)^2 - err^2 =  rnd^2 + 2*err*rnd
+  float tt = (2*prevErrAbs + cbLRateUpdAbsErr_threshold)*cbLRateUpdAbsErr_threshold; 
   //tt *= 5; // too much
   //cout<<"tt "<<tt<<endl;
   bool b,bneg; 
   b = fabs( upd_coef_real - upd_coef_cb) < tt * acLowThrMult;   
   bneg = fabs( upd_coef_real - upd_coef_cb) >= tt * acThrMult;   
+
+  if(debug_printAC)
+  {
+    cout<< "tt is "<<tt<<endl;
+  }
     
   if(b) return 0;          // CB works ok
   else if(bneg) return 2;  // CB works bad
@@ -199,6 +226,11 @@ void CB_model::learn()
   float errAbs = percept->calcErr(&dx,&dy,true);
   float errToCompare = percept->getErr(cbErrDepth,true);      // if size of hist is less then cbErrDepth, the oldest possible error is returned
   float cblr_upd = 1.;
+
+  if(debug_printAC)
+  {
+    cout<< "current errAbs is "<<errAbs<<endl;
+  }
 
   // here we take into account that CB_model::learn() is called AFTER
   // the arm movement, so error history contains current error already
@@ -224,7 +256,13 @@ void CB_model::learn()
     { 
       //cout<<"AC works"<<endl;
       int acAns = get_ACHappiness(&upd_coef_real,&upd_coef_cb);
-      optimalLambda =  prevErrAbs * prevErrAbs / last_errDFmod;
+      float fullCorrSz = 2 * getCurErrDFmod(dx,dy);  // prediction of how much correction should we make to eliminate error completely
+      if( fullCorrSz < EPS )
+      {
+        cout<< "fullCorrSz is too small!!"<<endl;
+      }
+      optimalLambda =  errAbs * errAbs / fullCorrSz;
+      optimalLambda = fmin( optimalLambda,  40. / acOptimalRateMult);  // if for some reason fullCorrSz is too small, don't want to get very high values
       if(!acInstantUpd)
       {
         if(acAns==0)    // means succesful correction. Then correct more!
@@ -232,20 +270,20 @@ void CB_model::learn()
           cblr_upd = acOptimalRateMult * optimalLambda;
           if(debug_printAC)
           {
-            cout<<" AC increases Lrate, cblr_upd is"<<cblr_upd;
+            cout<<" AC increases Lrate to "<<cbLRate<<", cblr_upd (max for the cbLRate) is"<<cblr_upd;
             cout<<" optimalLbd is"<<optimalLambda<<endl;
           }
           cbLRate = fmin( cbLRate * cbLRateUpdSpdUp , cblr_upd);
         }
         else if(acAns==2)
         {
-          if(debug_printAC)
-          {
-            cout<<" AC reduces Lrate "<<endl;
-          }
           cblr_upd = 1./(cbLRateUpdSpdDown);
           cbLRate *= cblr_upd;
           //cbLRate = 0;
+          if(debug_printAC)
+          {
+            cout<<" AC reduces Lrate to "<<cbLRate<<endl;
+          }
         }
         else
         {
@@ -294,13 +332,30 @@ void CB_model::learn()
     cbLRate = fmin( cbLRate,  40.);
   }
   cblearn(dx, dy);
-
+  
 
   float r = errToCompare /errAbs;
   exporter->exportCBMisc(cbLRate,errAbs,r,errToCompare,upd_coef_real,upd_coef_cb,optimalLambda);
   //exporter->exportCBMisc(cbLRate,errAbs,log(cblr_upd),errToCompare);
 
   //cout<<"errAbs "<<errAbs<<", learn_rate  "<<cbLRate<<",  W norm "<<matrixNorm(wcb)<<endl;
+}
+
+void CB_model::predictNextErr(float * y)
+{
+  // supposing that the action does not change and that CB knows how the arm will move for the new CB state
+  // predict the next error
+  float nextpt[2],tgt_x,tgt_y;
+  moveArm(y,nextpt,0); 
+  percept->getTgt(&tgt_x,&tgt_y);
+  float t1,t2;
+  t1 = (tgt_x-nextpt[0]);
+  t2 = (tgt_y-nextpt[1]);
+  predictedErrSq = t1*t1 + t2*t2;
+  if(debug_printAC)
+  {
+    cout<<" predicted errSq is "<<predictedErrSq<<endl;
+  }
 }
 
 void CB_model::resetLearnRate(float lr)
@@ -314,7 +369,10 @@ void CB_model::resetLearnRate(float lr)
   }
 
   last_errDFmod = 0; 
-  cout<<" learning rate resetted"<<endl;
+  if(debug_printAC)
+  {
+    cout<<" learning rate resetted"<<endl;
+  }
 }
 
 void CB_model::flushTuning()
@@ -325,6 +383,10 @@ void CB_model::flushTuning()
             dfwx[i][j] = 0;
             dfwy[i][j] = 0;
         }
+  if(debug_printAC)
+  {
+    cout<<" tuning flushed"<<endl;
+  }
 }
 
 void CB_model::setRandomState(float a)
@@ -332,6 +394,11 @@ void CB_model::setRandomState(float a)
     for(int k=0;k<6;k++) 
         for(int l=0;l<6;l++) 
             wcb[k][l] = a*2*rnd() - a;
+
+  if(debug_printAC)
+  {
+    cout<<" random state set"<<endl;
+  }
 }
 
 void CB_model::setArm(Arm * arm_)
@@ -354,7 +421,11 @@ CB_model::CB_model()
 
 void CB_model::setCBtarget(float x, float y)
 {
-    x_cb_target=x, y_cb_target=y;
+  x_cb_target=x, y_cb_target=y;
+  if(debug_printAC)
+  {
+    cout<<" CB target sat "<<endl;
+  }
 }
 
 void CB_model::moveArm(float * y, float * out, float ffield)
@@ -438,6 +509,7 @@ void CB_model::init(parmap & params,Exporter *exporter_, Arm * arm_, Percept * p
   train_patPMC.resize(stoi(params["na"]));
 
   last_errDFmod = 0; 
+  predictedErrSq = 0;
 
   // set inital correction to 0.
   setRandomState(0.);

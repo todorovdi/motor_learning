@@ -209,6 +209,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       if(learn_cb && feedbackGiven==1)
       { 
         cb.learn();
+        cb.predictNextErr(y);  // try to predict next error as if we were using same motor program and no perception perturbation
       }
       else
       {

@@ -18,6 +18,9 @@ class Percept
   bool rotateErr;
   bool xreverseErr;
 
+  bool debug_printAC;
+
+
     public:
   float getErr(int ind, bool toBorder);   // ind>=0, returns errHist[-1-ind]
   int getHistSz();
@@ -25,6 +28,7 @@ class Percept
   void setErrorClamp(bool b);
 
   void setTgt(float x, float y);
+  void getTgt(float * px, float * py);
   void setEndpt(float x, float y);     
   void getEndpt(float * x, float * y);
 

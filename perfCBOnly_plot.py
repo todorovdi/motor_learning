@@ -58,7 +58,7 @@ def genMainPlot(fig,ax,fnames,nums):
     if(len(fnames) == 1):
         ax.plot(nums, angs)
     else:
-        ax.errorbar(nums, angs, yerr=SEMs)
+        ax.errorbar(nums, angs, yerr=SEMs,capsize=pp.capsz)
     annotateGraph(ax)
     ax.yaxis.grid(False)
 

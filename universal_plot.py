@@ -59,7 +59,7 @@ def genMainPlot(ax,fnames,nums):
     if(len(fnames) == 1 or pp.averageDataOnly):
         ax.plot(nums, angs)
     else:
-        ax.errorbar(nums, angs, yerr=SEMs)
+        ax.errorbar(nums, angs, yerr=SEMs,capsize=pp.capsz)
     annotateGraph(ax)
     ax.yaxis.grid(True)
 
@@ -83,6 +83,7 @@ def genMainPlot(ax,fnames,nums):
     ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
     ax.xaxis.grid(True, which='minor')
 
+    # set target and noize sizes. Eeither in length of degree units
     tsz = pp.target_radius
     ax.axhline(y=tsz,c="red",linewidth=0.5,zorder=0)
     ax.axhline(y=-tsz,c="red",linewidth=0.5,zorder=0)
@@ -305,6 +306,8 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
         
         fnames2d.append(fnames)
 
+        # get parameters, common for all simulations in question
+        # need only few of them
         paramsInitFromArmFname(fnames[0])
 
         if pp.onlyPubPlot:
@@ -334,6 +337,7 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
             
         from textwrap import wrap
 
+        # fen plot of the error 
         genMainPlot(ax,fnames,nums)
         #ax.set_title("bg_"+pp.paramsEnv["learn_bg"]+"__cb_"+pp.paramsEnv["learn_cb"],y=1.04)
         ax.set_title('\n'.join(wrap( pp.paramsEnv["pdfSuffix"], 60 )), y=1.04)

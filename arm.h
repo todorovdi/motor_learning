@@ -26,8 +26,8 @@ class Arm
 
     public:
         Arm();
-        void move(float * y, float* out, float  wcb[][6], float ffield, bool noiseOn=true);  
-        void init(parmap & params); //, int na, bool oldVerIni=false);
+        void move(float * y, float* out, float  wcb[][6], float ffield, bool noiseOn=true);   // note that there is no perception pertubations happening here, only endpoint noise is added
+        void init(parmap & params); 
         void getReachCenterPos(float &x, float&y);
 };
 

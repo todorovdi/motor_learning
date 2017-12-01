@@ -28,6 +28,11 @@ int Percept::getHistSz()
 }
 
 void Percept::resetErrHist(){
+    if(debug_printAC)
+    {
+      cout<<"Percept: error history was reset "<<endl;
+    }
+
     errHist.resize(0);
     //cout<<"reset hist"<<endl;
 }
@@ -53,6 +58,12 @@ void Percept::setTgt(float x, float y)
 {
     tgt_x = x;
     tgt_y = y;
+}
+
+void Percept::getTgt(float * px, float * py)
+{
+    *px = tgt_x;
+    *py = tgt_y;
 }
 
 float Percept::calcErr(float * pdx, float * pdy, bool toBorder)
@@ -117,4 +128,7 @@ void Percept::init(parmap & params)
 
     s = params["rotateErr"];
     rotateErr = s!="" ? stoi(s) : 0;
+
+    s = params["debug_printAC"];
+    debug_printAC = s != "" ? stoi(s) : 0; 
 }

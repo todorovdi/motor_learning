@@ -31,9 +31,9 @@ runSim()
 runAll()
 {
   #uodControls=9$useOldData
-  uodControls=$useOldData
-  uodPatients=$useOldData
-  uodPatientsAC=9
+  uodControls=$useOldData 
+  uodPatients=9
+  uodPatientsAC=$useOldData
 
   #$ao="$1 --cbLRateUpdAbsErr_threshold=$errThr"
   aocontrol="$1"
@@ -70,8 +70,8 @@ runAll()
   #runSim "--finalNoiseAmpl=$cbNoise --cbStateDepr=0.08 --cbLRate=$normRate$aoNoAC" $uodPatients
   #patientsIncNoiseDepr=$argSim
 
-  runSim "--finalNoiseAmpl=$cbNoise --cbStateDepr=0.16 --cbLRate=$normRate$aoNoAC" $uodPatients
-  patientsIncNoiseDepr=$argSim
+  #runSim "--finalNoiseAmpl=$cbNoise --cbStateDepr=0.16 --cbLRate=$normRate$aoNoAC" $uodPatients
+  #patientsIncNoiseDepr=$argSim
 
   #runSim "--finalNoiseAmpl=$cbNoise --cbStateDepr=0.14 --cbLRate=$normRate$aoNoAC" $uodPatients
 
@@ -79,13 +79,13 @@ runAll()
 
   #runSim "--finalNoiseAmpl=$cbNoise --cbStateDepr=0.1 --cbLRate=$normRate$aoNoAC" $uodPatients
 
-  python $plotfile \
-    "$controls" "$patientsIncNoiseDepr" \
-  "---plotfname=${experimentName}_noAC_incrNoiseDepr16_$ao"
+  #python $plotfile \
+  #  "$controls" "$patientsIncNoiseDepr" \
+  #"---plotfname=${experimentName}_noAC_incNoiseDepr16_$ao"
 
   #python $plotfile \
   #  "$controls" "$patientsIncNoiseDepr" \
-  #"---plotfname=${experimentName}_noAC_incrNoiseDepr14_$ao"
+  #"---plotfname=${experimentName}_noAC_incNoiseDepr14_$ao"
 
   ################
 
@@ -140,21 +140,21 @@ runAll()
   #runSim "$ao --cbStateDepr=$incDepr " $uodPatientsAC
   #patientsACincDepr=$argSim
 
-  #runSim "$ao --finalNoiseAmpl=0.026" $uodPatientsAC
-  #patientsACincNoise=$argSim
+  runSim "$ao --finalNoiseAmpl=$cbNoise" $uodPatientsAC
+  patientsACincNoise=$argSim
 
-  runSim "$ao --cbStateDepr=0.1 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
+  #runSim "$ao --cbStateDepr=0.1 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
 
-  runSim "$ao --cbStateDepr=0.13 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
+  runSim "$ao --cbStateDepr=$incDepr --finalNoiseAmpl=$cbNoise" $uodPatientsAC
   patientsACincNoiseIncDepr=$argSim
 
   # kills all
   #runSim "$ao --acLowThrMult=1 --acThrMult=6 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
 
-  runSim "$ao --acLowThrMult=2 --acThrMult=8 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
-  runSim "$ao --acLowThrMult=3 --acThrMult=8 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
-  runSim "$ao --acLowThrMult=4 --acThrMult=8 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
-  runSim "$ao --acLowThrMult=5 --acThrMult=8 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
+  #runSim "$ao --acLowThrMult=2 --acThrMult=8 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
+  #runSim "$ao --acLowThrMult=3 --acThrMult=8 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
+  #runSim "$ao --acLowThrMult=4 --acThrMult=8 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
+  #runSim "$ao --acLowThrMult=5 --acThrMult=8 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
 
   #runSim "$ao --acLowThrMult=0.8 --acThrMult=6 --finalNoiseAmpl=$cbNoise" $uodPatientsAC
 
@@ -178,23 +178,23 @@ runAll()
 
   #python $plotfile \
   #  "$controls" "$patientsIncNoise" \
-  #"---plotfname=${experimentName}_noAC_incrNoise_$ao"
+  #"---plotfname=${experimentName}_noAC_incNoise_$ao"
 
   #python $plotfile \
   #  "$controls" "$patientsIncDepr" \
-  #"---plotfname=${experimentName}_noAC_incrDepr_$ao"
+  #"---plotfname=${experimentName}_noAC_incDepr_$ao"
 
   #python $plotfile \
   #  "$controls" "$patientsIncDeprRate" \
-  #"---plotfname=${experimentName}_noAC_incrDeprRate_$ao"
+  #"---plotfname=${experimentName}_noAC_incDeprRate_$ao"
 
-  python $plotfile \
-    "$controls" "$patientsIncNoiseDepr" \
-  "---plotfname=${experimentName}_noAC_incrNoiseDepr_$ao"
+  #python $plotfile \
+  #  "$controls" "$patientsIncNoiseDepr" \
+  #"---plotfname=${experimentName}_noAC_incNoiseDepr_$ao"
 
   #python $plotfile \
   #  "$controls" "$patientsIncNoiseDeprRate" \
-  #"---plotfname=${experimentName}_noAC_incrNoiseDeprRate_$ao"
+  #"---plotfname=${experimentName}_noAC_incNoiseDeprRate_$ao"
 
   #python $plotfile \
   #  "$controlsAC" "$patientsACredRate" \
@@ -220,21 +220,21 @@ runAll()
   #  "$controlsAC" "$patientsACincNoiseIncRate2" \
   #"---plotfname=${experimentName}_AC_incNoiseIncRate2$ao"
 
-  python $plotfile \
-    "$controlsAC" "$patientsACincNoiseIncRate3" \
-  "---plotfname=${experimentName}_AC_incNoiseIncRate3$ao"
-
   #python $plotfile \
-  #  "$controlsAC" "$patientsACincNoise" \
-  #"---plotfname=${experimentName}_AC_incrNoise$ao"
+  #  "$controlsAC" "$patientsACincNoiseIncRate3" \
+  #"---plotfname=${experimentName}_AC_incNoiseIncRate3$ao"
 
   python $plotfile \
     "$controlsAC" "$patientsACincNoise" \
-  "---plotfname=${experimentName}_AC_incrNoiseIncDepr$ao"
+  "---plotfname=${experimentName}_AC_incNoise$ao"
 
   python $plotfile \
-    "$controlsAC" "$patientsACincNoiseRedThr" \
-  "---plotfname=${experimentName}_AC_incNoiseRedThr$ao"
+    "$controlsAC" "$patientsACincNoiseIncDepr" \
+  "---plotfname=${experimentName}_AC_incNoiseIncDepr$ao"
+
+  #python $plotfile \
+  #  "$controlsAC" "$patientsACincNoiseRedThr" \
+  #"---plotfname=${experimentName}_AC_incNoiseRedThr$ao"
 
   #python $plotfile \
   #  "$controlsAC" "$patientsACredErrThr" \
@@ -252,9 +252,9 @@ runAll()
   #  "$controlsAC" "$patientsACredLowThr" \
   #"---plotfname=${experimentName}_AC_redLowThr$ao"
 
-  python $plotfile \
-    "$controlsAC" "$patientsACredThr" \
-  "---plotfname=${experimentName}_AC_redThr$ao"
+  #python $plotfile \
+  #  "$controlsAC" "$patientsACredThr" \
+  #"---plotfname=${experimentName}_AC_redThr$ao"
 
   #python $plotfile \
   #  "$controlsAC" "$patientsACIncDeprRate" \
