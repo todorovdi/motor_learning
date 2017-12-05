@@ -46,7 +46,7 @@ void Exporter::exportInit(string prefix,string suffix,string begPut,bool minimum
     foutModParams.open  ( dir+prefix+string("_modParams")+suffix+string(".dat") );
 
     foutCBState.open  ( dir+prefix+string("_CBState")+suffix+string(".dat") );
-    foutCBTuning.open  ( dir+prefix+string("_CBTuning")+suffix+string(".dat") );
+    //foutCBTuning.open  ( dir+prefix+string("_CBTuning")+suffix+string(".dat") );
     foutCBMisc.open ( dir+prefix+string("_CBMisc")+suffix+string(".dat") ); 
     if(begPut != "")
     { 
@@ -282,12 +282,12 @@ void Exporter::CBExport(int k, float wcb[][6], float  dfwx[][6], float dfwy[][6]
       foutCBState<<wcb[i][j]<<'\t';
   foutCBState<<endl;
 
-  foutCBTuning<<k<<'\t';
-  for(int i = 0;i<6;i++)
-    for(int j =0;j<6;j++)
-      foutCBTuning<<dfwx[i][j]<<'\t';
-  for(int i = 0;i<6;i++)
-    for(int j =0;j<6;j++)
-      foutCBTuning<<dfwy[i][j]<<'\t';
-  foutCBTuning<<endl;
+  //foutCBTuning<<k<<'\t';
+  //for(int i = 0;i<6;i++)
+  //  for(int j =0;j<6;j++)
+  //    foutCBTuning<<dfwx[i][j]<<'\t';
+  //for(int i = 0;i<6;i++)
+  //  for(int j =0;j<6;j++)
+  //    foutCBTuning<<dfwy[i][j]<<'\t';
+  //foutCBTuning<<endl;
 }

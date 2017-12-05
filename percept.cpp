@@ -5,15 +5,27 @@ Percept::Percept()
     error_clamp_mode = false;
     reach_x = reach_y = tgt_x = tgt_y = -1000;
 
-    errHist.reserve(20);
-    errHist.resize(0);
+    errHist_x.reserve(20);
+    errHist_y.reserve(20);
+    errHist_x.resize(0);
+    errHist_y.resize(0);
 }
 
-float Percept::getErr(int ind, bool toBorder)   // ind>=0, returns errHist[-1-ind]
+// currently when toBorder=true we the coordinates are not ok, only the modulus is right
+float Percept::getErr(int ind, bool toBorder, float * px, float * py)   // ind>=0, returns errHist[-1-ind]
 {
 //if(ind < err
-  int ind_res = std::min<int>(ind,errHist.size()-1);
-  float err = ind_res >= 0 ? *(errHist.end() - ind_res -1) : -1000;
+  int ind_res = std::min<int>(ind,errHist_x.size()-1);
+  float err_x = ind_res >= 0 ? *(errHist_x.end() - ind_res -1) : -1000;
+  float err_y = ind_res >= 0 ? *(errHist_y.end() - ind_res -1) : -1000;
+
+  if(px && py)
+  {
+    *px = err_x;
+    *py = err_y;
+  }
+
+  float err = sqrt(err_x*err_x + err_y*err_y);
   if(vectorErrTgtBorder && toBorder && err > ( -1000. + EPS ) )
   {
     float t = rewardDist * vectorErrTgtBorderMult;
@@ -24,17 +36,19 @@ float Percept::getErr(int ind, bool toBorder)   // ind>=0, returns errHist[-1-in
 
 int Percept::getHistSz()
 {
-    return errHist.size();
+  return errHist_x.size();
 }
 
-void Percept::resetErrHist(){
-    if(debug_printAC)
-    {
-      cout<<"Percept: error history was reset "<<endl;
-    }
+void Percept::resetErrHist()
+{
+  if(debug_printAC)
+  {
+    cout<<"Percept: error history was reset "<<endl;
+  }
 
-    errHist.resize(0);
-    //cout<<"reset hist"<<endl;
+  errHist_x.resize(0);
+  errHist_y.resize(0);
+  //cout<<"reset hist"<<endl;
 }
 
 void Percept::setErrorClamp(bool b)
@@ -42,12 +56,15 @@ void Percept::setErrorClamp(bool b)
    error_clamp_mode = b; 
 }
 
+// set reaching endpoint, inclluding all perception perturbations
+// what the model actually sees
 void Percept::setEndpt(float x, float y)
 {
     reach_x = x;
     reach_y = y;
 }
 
+// returns perturbed endpoint 
 void Percept::getEndpt(float * x, float * y)
 {
     *x = reach_x;
@@ -66,6 +83,7 @@ void Percept::getTgt(float * px, float * py)
     *py = tgt_y;
 }
 
+// reach - tgt
 float Percept::calcErr(float * pdx, float * pdy, bool toBorder)
 { 
  // vectorErrTgtBorder
@@ -109,7 +127,9 @@ float Percept::calcErr(float * pdx, float * pdy, bool toBorder)
 void Percept::saveCurErr()
 {
     float dx,dy;
-    errHist.push_back(calcErr(&dx,&dy,false));
+    calcErr(&dx,&dy,false);
+    errHist_x.push_back(dx);
+    errHist_y.push_back(dy);
 }
 
 void Percept::init(parmap & params)

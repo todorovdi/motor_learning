@@ -394,12 +394,14 @@ def genCBStatePlot(fig,ax,fname):
     ax.set_ylabel('wcb[0 1 2 3 4 5][*]',rotation=90)
     ax.set_ylim(0,36)
 
-def genCBStateMaxPlot(fig,ax,fnames,avg=False,capsize=1):
+def genCBStateMaxPlot(fig,ax,fnames,fnamesTune=[],avg=False,capsize=1):
     if avg==False:
         fnames=[fnames]
     nfiles=len(fnames)
     n = pp.phaseBegins[-1]
+
     allmaxs = np.zeros(shape=(nfiles,n) )
+    #allsums = np.zeros(shape=(nfiles,n) )
     for i,fname in enumerate(fnames):
         data = np.loadtxt(fname)
         state = data[:,range(1,6*6+1)]
@@ -408,19 +410,37 @@ def genCBStateMaxPlot(fig,ax,fnames,avg=False,capsize=1):
         for r in range(nrows):
             s = state[r,:]
             allmaxs[i,r] =   math.fabs( max(s.min(), s.max(), key=abs) )   
+            #allsums[i,r] =   0.3*np.sum( np.absolute(s) ) 
+
+    #allmaxsTune = np.zeros(shape=(nfiles,n) )
+    #for i,fname in enumerate(fnamesTune):
+    #    data = np.loadtxt(fname)
+    #    tuning = data[:,range(1,6*6*2+1)]
+    #    (nrows, ncols) = tuning.shape
+
+    #    for r in range(nrows):
+    #        s = tuning[r,:]
+    #        allmaxsTune[i,r] =   math.fabs( max(s.min(), s.max(), key=abs) )   
+    #        #allsums[i,r] =   0.3*np.sum( np.absolute(s) ) 
 
     maxs = np.zeros(n)
+    #sums = np.zeros(n)
     for r in range(nrows):
         maxs[r] = np.mean(allmaxs[:,r])
+        #sums[r] = np.mean(allsums[:,r])
 
     if nfiles>1 and avg==True:
         SEMs = np.zeros(n)
+        SEMs2 = np.zeros(n)
         for i in range(nrows):
             SEMs[i] = stats.sem(allmaxs[:,i])
+            #SEMs2[i] = stats.sem(allsums[:,i])
         #ax.errorbar(range(n),maxs, yerr=SEMs,capsize=capsize)
-        shadedErrorbar(ax,range(n),maxs,SEMs)
+        shadedErrorbar(ax,range(n),maxs,SEMs,label_='maxs')
+        #shadedErrorbar(ax,range(n),sums,SEMs,label_='0.3*sums')
     else:
-        ax.plot(maxs)
+        ax.plot(maxs,label='maxs')   
+        #ax.plot(sums,label='0.3*sums')
     
     ax.xaxis.grid(True)
 
@@ -430,6 +450,7 @@ def genCBStateMaxPlot(fig,ax,fnames,avg=False,capsize=1):
     ax.set_ylim(0,pp.cbStateMax)
 
     ax.xaxis.grid(True, which='minor')
+    ax.legend(loc='upper right')
 
 def genCBTuningPlot(fig,ax,fname):
     # 300 -- w1 + w2 + wm
@@ -439,21 +460,32 @@ def genCBTuningPlot(fig,ax,fname):
     ax.set_ylabel('dfwx dfwy',rotation=90)
     ax.set_ylim(0,36*2)
 
-def shadedErrorbar(ax,nums,errs,SEMs,label_=''): 
-    #eopacity=0.45   # emf files don't support opacity
-    eopacity=1
-    shade=0.8
-    ax.fill_between(nums, errs-SEMs, errs+SEMs, facecolor=(shade, shade, shade, eopacity),edgecolor=(0,0,0,1),lw=0 )
-    return ax.plot(nums, errs, color=pp.mainColor,label=label_)
+def shadedErrorbar(ax,nums,errs,SEMs,label_='',colorMean='',colorSEM='',shade=0.67,lw=1): 
+    if(colorMean == ''):
+        colorMean = pp.mainColor
 
-def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
+    eopacity=1
+    if(colorSEM == ''):
+        colorSEM = (shade,shade,shade,eopacity)
+
+    #eopacity=0.45   # emf files don't support opacity
+    ax.fill_between(nums, errs-SEMs, errs+SEMs, facecolor=colorSEM,edgecolor=colorSEM,lw=0 )
+    return ax.plot(nums, errs, color=colorMean,label=label_,lw=lw)
+
+def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1,colorMean='',subrange=[]):
     if avg==False:
         fnames=[fnames]
     nfiles=len(fnames)
 
-    errMult = pp.cbMiscErrMult
+    if colorMean=='':
+        colorMean=pp.mainColor
 
     n = pp.phaseBegins[-1]
+    if len(subrange) == 0:
+        subrange = range(n)
+
+    errMult = pp.cbMiscErrMult
+
     allRates = np.zeros(shape=(nfiles,n) )
     for i,fname in enumerate(fnames):
         misc = np.loadtxt(fname)
@@ -468,16 +500,17 @@ def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
         for i in range(n):
             SEMs[i] = stats.sem(allRates[:,i])
         #ax.errorbar(range(n),rates, yerr=SEMs,capsize=capsize)
-        shadedErrorbar(ax,range(n),rates,SEMs,label_='Learn rate')
+        shadedErrorbar(ax,subrange,rates[subrange],SEMs[subrange],label_='Learn rate',colorMean=colorMean)
     else:
-        ax.plot(rates,label='rate')
+        ax.plot(rates[subrange],label='rate',color=colorMean)
 
     errAbsLarge = errMult * misc[:,1]
 
     if avg!= True:
         #acOptimalRateMult=0.2
-        olmult=0.06
-        optimalLambda = errMult * misc[:,6]
+        #olmult=0.06
+        olmult=float(pp.paramsEnv["acOptimalRateMult"])
+        optimalLambda = misc[:,6]
         ax.plot(olmult*optimalLambda,c='violet',label=str(olmult)+'*$\lambda_{opt}$',marker='*',lw=0)
         #errAbsSmall = errMultSmall * misc[:,1]
         #ratios = misc[:,2]
@@ -500,7 +533,7 @@ def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
                 label=str(errMult)+'*noise')
 
         myell2 = [1,110./255.,66./255.]
-        ax.axhline(y=float(pp.paramsEnv["cbLRateUpdAbsErr_threshold"])*errMult,c=myell2,linewidth=1,
+        ax.axhline(y=float(pp.paramsEnv["cbMotVarEst"])*errMult,c=myell2,linewidth=1,
                 zorder=0,label=str(errMult)+'*errThreshold')
 
         #myDarkRed = [109./255, 33./255, 33./255]
@@ -515,7 +548,7 @@ def genCBMiscPlot(fig,ax,fnames,rateOnly=False,avg=False,capsize=1):
     ax.set_ylim(ylmin,ylmax)
     ax.set_yticks(np.append(np.arange(ylmin,0,0.2),np.arange(0,ylmax,0.5) ) )
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
-    ax.set_title('CB misc plot',y=1.04)
+    ax.set_title('CB learn rate',y=1.04)
 
     ax.xaxis.grid(True, which='minor')
     ax.yaxis.grid(True)
@@ -524,7 +557,10 @@ def genCBMisc2Plot(fig,ax,fname):
     #errMultSmall = 5.
 
     errMult = pp.cbMiscErrMult
+    # for quadratic difference
     errMult = 0.03;
+    errMult = 0.3;
+    errMult = 1.;
 
     misc = np.loadtxt(fname)
     errAbsLarge = errMult  * misc[:,1]
@@ -533,8 +569,8 @@ def genCBMisc2Plot(fig,ax,fname):
     upd_real = misc[:,4]
     upd_cb = misc[:,5]
 
-    ax.plot(upd_real,label='upd_real',c='blue')
-    ax.plot(upd_cb,label='upd_cb',c='red')
+    ax.plot(upd_real,label='mismatch',c='blue')
+    ax.plot(upd_cb,label='$|err|_{CB}$',c='red')
     ax.plot(errAbsLarge,label=str(errMult)+'*cur_errAbs',c='green')
     #ax.plot(ratios,label='errAbs/errToCompare',c='red')
     #ax.plot(prevErrAbs,label=str(errMult)+'*prevErrAbs')
@@ -545,27 +581,32 @@ def genCBMisc2Plot(fig,ax,fname):
     cbUpdDst =float(pp.paramsEnv["updateCBStateDist"])  
 
     #ylmax = pp.cbMiscGraph_y_axis_max
-    ylmax = 0.016
-    ylmin = -0.003
+    # for quadratic difference
+    #ylmax = 0.016
+    #ylmin = -0.003
+    #ax.set_yticks(np.append(np.arange(ylmin,0,0.001),np.arange(0,ylmax,0.001) ) )
+
+    ylmax = 0.13
+    ylmin = -0.00
     #ylmin = -ylmax
     #ylmin = 1.2*math.log(1/float(pp.paramsEnv["cbLRateUpdSpdDown"]))
     ax.set_ylim(ylmin,ylmax)
-    ax.set_yticks(np.append(np.arange(ylmin,0,0.001),np.arange(0,ylmax,0.001) ) )
+    ax.set_yticks(np.append(np.arange(ylmin,0,0.01),np.arange(0,ylmax,0.01) ) )
     #legend = ax.legend(loc=(pos.x0+pos.width/2,pos.y0-20), shadow=True)
     ax.set_title('CB misc 2 plot',y=1.04)
 
     acLowThrMult=float(pp.paramsEnv['acLowThrMult'])
     acThrMult=float(pp.paramsEnv['acThrMult'])
-    errThr = float(pp.paramsEnv["cbLRateUpdAbsErr_threshold"]);
+    errThr = float(pp.paramsEnv["cbMotVarEst"]);
     errThrSq= errThr*errThr;
 
     myell2 = [1,110./255.,66./255.]
-    ax.axhline(y=errThrSq*acThrMult,c=myell2,linewidth=1,
-            zorder=0,label=str(acThrMult)+'*acThrMult^2')
+    ax.axhline(y=errThr*acThrMult,c=myell2,linewidth=1,
+            zorder=0,label=str(acThrMult)+'*cbMotVarEst')
 
     myDarkRed = [109./255, 33./255, 33./255]
-    ax.axhline(y=acLowThrMult*errThrSq,c=myDarkRed,linewidth=1,
-            zorder=0,label=str(acLowThrMult)+'*acThrMult^2')
+    ax.axhline(y=acLowThrMult*errThr,c=myDarkRed,linewidth=1,
+            zorder=0,label=str(acLowThrMult)+'*cbMotVarEst')
     
     ax.legend(loc='upper right')
 

@@ -189,7 +189,7 @@ def genFigurePert(fnames,outname):
 
         fig, axs = plt.subplots(ncols=2, nrows=2, figsize=(30, 20), sharex=False, sharey=False)
         ax = axs[0,0]
-        genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'))
+        genCBStateMaxPlot(fig,ax,fileToPlot.replace('arm','CBState'),fnamesTune=fileToPlot.replace('arm','CBTuning'))
         annotateGraph(ax)
         #genCBStatePlot(fig,ax,fileToPlot.replace('arm','CBState'))
         ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
@@ -361,7 +361,8 @@ def genFigurePertMulti(dat_basenames,plotfname=""):
 
                 ax = axs[2,ind]
                 fnamesCBState=[ fname.replace('arm','CBState') for fname in fnames ]
-                genCBStateMaxPlot(fig,ax,fnamesCBState,avg=True)
+                fnamesTune=[ fname.replace('arm','CBTuning') for fname in fnames ]
+                genCBStateMaxPlot(fig,ax,fnamesCBState,fnamesTune=fnamesTune,avg=True)
                 annotateGraph(ax)
                 ax.set_xticks(pp.phaseBegins[1:-1],minor=True)
 
@@ -511,11 +512,12 @@ def printParams(fig,pos):
     paramsToPlot.append("")
     paramsToPlot.append("trainCBEveryTrial")
     paramsToPlot.append("cbRetrainSpeedup")
+    paramsToPlot.append("criticPredictDepr")
 
     paramsToPlot.append("")
     paramsToPlot.append("cbLRate")
     paramsToPlot.append("cbStateDepr")
-    paramsToPlot.append("cbLRateMax")
+    #paramsToPlot.append("cbLRateMax")
     #paramsToPlot.append("randomCBStateInit")
     #paramsToPlot.append("randomCBStateInitAmpl")
     #paramsToPlot.append("retrainCB_useCurW")
@@ -523,14 +525,28 @@ def printParams(fig,pos):
     paramsToPlot.append("cbLRateUpdSpdUp")
     paramsToPlot.append("cbLRateUpdSpdDown")
     #paramsToPlot.append("cbLRateUpdSpdMax")
-
     #paramsToPlot.append("cbErrDepth")
-    paramsToPlot.append("cbLRateUpdAbsErr_threshold")
+    paramsToPlot.append("cbMotVarEst")
     #paramsToPlot.append("cbLRateUpdErrRatio_threshold")
     #paramsToPlot.append("cbLRateUpdTwoErrThreshold")
-    paramsToPlot.append("acThrMult")
     paramsToPlot.append("acLowThrMult")
+    paramsToPlot.append("acThrMult")
     paramsToPlot.append("acOptimalRateMult")
+    paramsToPlot.append("criticExact")
+    paramsToPlot.append("finalNoiseAmpl")
+
+    paramsToPlot.append("")
+    paramsToPlot.append("rwdFromcbLRate")
+    paramsToPlot.append("perfRewardSize")
+    paramsToPlot.append("rewardSize")
+    paramsToPlot.append("perfBasedReward")
+    #paramsToPlot.append("perfRwdMult")
+    paramsToPlot.append("perfFromAC")
+    #paramsToPlot.append("perfRwdErrChange_threshold")
+    paramsToPlot.append("gradedReward")
+    paramsToPlot.append("rwdGradePower")
+    #paramsToPlot.append("rwdFromcbLRate_thr")
+    paramsToPlot.append("rewardDist")
 
     paramsToPlot.append("")
     paramsToPlot.append("fake_prelearn")
@@ -554,17 +570,7 @@ def printParams(fig,pos):
     paramsToPlot.append("actPrelearnAng0")
     paramsToPlot.append("actPrelearnAng1")
 
-    paramsToPlot.append("gradedReward")
-    paramsToPlot.append("rwdGradePower")
-    #paramsToPlot.append("rwdFromcbLRate_thr")
 
-    paramsToPlot.append("")
-    paramsToPlot.append("perfRewardSize")
-    paramsToPlot.append("rewardSize")
-    paramsToPlot.append("perfBasedReward")
-    #paramsToPlot.append("perfRwdMult")
-    paramsToPlot.append("perfFromAC")
-    #paramsToPlot.append("perfRwdErrChange_threshold")
 
     #paramsToPlot.append("")
     #paramsToPlot.append("rwdFromcbLRate_add")
@@ -575,11 +581,10 @@ def printParams(fig,pos):
     paramsToPlot.append("resetCBState2")
 
     paramsToPlot.append("")
-    paramsToPlot.append("rewardDist")
     #paramsToPlot.append("vectorErrTgtBorder")
     paramsToPlot.append("minActionAngDeg")
     paramsToPlot.append("maxActionAngDeg")
-    paramsToPlot.append("finalNoiseAmpl")
+    paramsToPlot.append("linearArm")
 
     paramsToPlot.append("")
     paramsToPlot.append("sector_reward")

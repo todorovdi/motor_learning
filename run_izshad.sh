@@ -40,8 +40,8 @@ if [ $# -ne 0 ]; then
 
   nsess=$1
 
-  #addOptions=" --cbLRateUpdAbsErr_threshold=0.004 --finalNoiseAmpl=0.005"
-  #addOptions=" --cbLRateUpdAbsErr_threshold=0.004"
+  #addOptions=" --cbMotVarEst=0.004 --finalNoiseAmpl=0.005"
+  #addOptions=" --cbMotVarEst=0.004"
 
   runPair ""
   a_EBL=$args_EBL

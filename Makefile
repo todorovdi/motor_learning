@@ -11,7 +11,7 @@ addc_recalib = arm_inv.cc TrajectoriesAnglesVelocityAcceleration.cc geometry_blo
 
 pert: $(addc2) $(addh2)  pert.cpp pert.h 
 	g++ -std=c++11 -D BUILD_PERT  -O2 $(addc2) pert.cpp -o   $@        -lboost_system 
-	g++ -std=c++11 -D BUILD_PERT  -g $(addc2) pert.cpp -o   $@_dbg     -lboost_system   
+#	g++ -std=c++11 -D BUILD_PERT  -g $(addc2) pert.cpp -o   $@_dbg     -lboost_system   
 
 pert_recalib: learn.cpp suppl.h par.h $(addc_recalib)
 	g++ -D RECALIB -O2 learn.cpp $(addc_recalib) -o   $@   

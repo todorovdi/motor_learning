@@ -7,7 +7,9 @@
 
 class Percept
 {
-  vector<float> errHist;
+  vector<float> errHist_x;
+  vector<float> errHist_y;
+
   float tgt_x, tgt_y;
   float reach_x, reach_y;
   bool error_clamp_mode;
@@ -22,7 +24,7 @@ class Percept
 
 
     public:
-  float getErr(int ind, bool toBorder);   // ind>=0, returns errHist[-1-ind]
+  float getErr(int ind, bool toBorder=false, float * px=NULL, float * py=NULL);   // ind>=0, returns errHist[-1-ind]
   int getHistSz();
   void resetErrHist();
   void setErrorClamp(bool b);

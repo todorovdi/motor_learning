@@ -21,9 +21,6 @@ class CB_model
 
   float cbInitShiftSz; // stepsize used for computation of DF in cerebellum
   float x_cb_target, y_cb_target;  // current CB target
-  float updateCBStateDist;
-
-  float def_updateCBStateDist;
 
   float cbLRateUpdSpdUp;
   float cbLRateUpdSpdDown;
@@ -34,17 +31,21 @@ class CB_model
   bool cbRetrainNeeded_LinfNorm;
 
   float prevErrAbs;
-  float predictedErrSq;
+  float expectExactErrSq;
+  float expectExactErr_x;
+  float expectExactErr_y;   
+
+  float expectApproxErrSq;
+  float expectApproxErr_x;
+  float expectApproxErr_y;   
 
   //float lastErrRatio;
   bool cbLRateUpd_errDiffBased;
   bool cbLRateIsConst;
-  bool acByUpdCoefThr;
-
-  float acUpdCoefThr;
 
   int cbErrDepth;
-  float cbLRateUpdAbsErr_threshold;
+  float cbMotVarEst;
+  float criticMinErrToNotice;
   float cbLRateUpdErrRatio_threshold;
 
   int cbLRateUpdTwoErrThreshold;
@@ -53,9 +54,12 @@ class CB_model
   float acOptimalRateMult;
   float acThrMult;
   float acLowThrMult;
-  bool acInstantUpd;
   bool debug_printAC;
   bool debug_retrainCB;
+  bool criticExact;
+
+  bool criticCoordVer;
+  bool criticPredictDepr;
 
   vector<float> errHist;
 
@@ -87,6 +91,7 @@ class CB_model
         void moveArm(float * y, float * out, float ffield);   // pretty sefl-descriptive
         void resetLearnRate(float lr = -100);
 
+        // not implemented
         void set_tCDS(float val);
     
         float getLearnRate();
@@ -101,9 +106,11 @@ class CB_model
         
         //float errDFmod(float dx, float dy);
         int get_ACHappiness(float * pupd_coef_real, float * pupd_coef_cb);
-        void predictNextErr(float * y);
+        void predictNextErrExact(float * y);
+        void predictNextErrApprox(float * y);
 
         bool trainNeeded(float * y_, float newx=-1000, float newy=-1000); 
+        float getExpectedErrChange(float dx,float dy,float lambda,float * pdifx, float * pdify);
 
         CB_model();
         CB_model(Arm * arm_);

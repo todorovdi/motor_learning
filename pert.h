@@ -250,7 +250,7 @@ class perturbationExperimentEnv: public Environment
     bool rwdNormalizeBycbLRate;
     bool rwdFromcbLRate;
  
-    float cbLRateUpdAbsErr_threshold;
+    float cbMotVarEst;
 
     vector<expPhaseParams> phaseParams;
 
@@ -272,7 +272,6 @@ class perturbationExperimentEnv: public Environment
     float perfGradePower;
     float perfRwdMult;
     float perfRwdErrChange_threshold;
-    float acUpdCoefThr;
     float rwdFromcbLRate_thr;
     //float rwdFromcbLRate_mult;
     float rwdFromcbLRate_add;
@@ -288,10 +287,12 @@ class perturbationExperimentEnv: public Environment
 
     vector<phaseParamPrelearn> cue2prelearnParam;
 
+    //int cueActive;
+
     public:
     int turnOnCues(int trialNum, float * cues, int * addInfo = 0);
     float getSuccess(float * x,float * y,unsigned int k,float *addInfo);
-    float getReward(float success, float * x,float * y, float & param);  
+    float getReward(int k, float success, float * x,float * y, float & param);  
     void setParams(int argc, char** argv){}
     void prelearn(int nTrials, float * addInfo);
     void runSession();

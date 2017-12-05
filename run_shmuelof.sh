@@ -1,8 +1,10 @@
+pdfdir=output_for_paper
 execname="pert_prl"
+#execname="pert"
 runfile="./$execname"
 plotfile="universal_plot.py"
 experimentName=shmuelof
-ini="$experimentName.ini"
+ini="shmuAC.ini"
 
 bg_on_cb_on=1
 bg_off_cb_on=1
@@ -58,15 +60,19 @@ doTest()
   #perturbSimple "$addOptionsLoc" $nsess $useOldData
   #test2=$pdfSuffix
 
-  addOptionsLoc="$onlyBE$ao"
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  testBE=$pdfSuffix
+  if [ $runBE == '1' ];then
+    addOptionsLoc="$onlyBE$ao"
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    testBE=$pdfSuffix
+  fi
 
-  addOptionsLoc="$ao"
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  testBEVE=$pdfSuffix
+  if [ $runBEVE == '1' ];then
+    addOptionsLoc="$ao"
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    testBEVE=$pdfSuffix
+  fi
 
-  python "$plotfile" "$testBEVE" "$testBE" "---plotfname=shmuTest_${1}_$addOptions"
+  python "$plotfile" "$testBEVE" "$testBE" "---plotfname=shmuTest_${1}"
 }
 
 if [ $# -ne 0 ]; then
@@ -87,7 +93,9 @@ if [ $# -ne 0 ]; then
 
   addTrials=" --numTrials4=100"
   #onlyBE=" --learn_cb2=0 --errHistReset2=1"
-  onlyBE=" --cueList2=0:14:1|0:66:0 --errHistReset2=1"
+  #onlyBE=" --cueList2=0:14:1|0:66:0 --errHistReset2=1"
+  #onlyBE=" --cueList2=0:80:0"
+  onlyBE=" --learn_cb2=0"
 
   addOptions="" 
 
@@ -101,69 +109,57 @@ if [ $# -ne 0 ]; then
 
   runBE=1
   runBEVE=1
-  runLong=0
-  numPhasesTest=4
+  runLong=1
+  numPhasesTest=6
 
   ###########################
 
   addOptions=" --ini=$ini"
 
-  # works ok for runall=0
-  #addOptions=" --ini=shmuAC.ini --cbLRateUpdSpdDown=1.5"
-  #doSim " --wmmaxFP=0.05 --perfRewardSize=1   --rewardSize=1"
+  #doSim  " --finalNoiseAmpl=0.008"
+  # maybe best
+  doSim  " --finalNoiseAmpl=0.008 --cbMotVarEst=0.008"
+  #doSim  " --finalNoiseAmpl=0.008 --wmmax=0.25"
+  # also quite ok
+  #doSim  " --finalNoiseAmpl=0.008 --acOptimalRateMult=0.4"
 
-  #doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=0.5"
-  #doSim " --wmmaxFP=0.05 --perfRewardSize=3   --rewardSize=1"
-  #doSim " --wmmaxFP=0.05 --perfRewardSize=2   --rewardSize=2"
+  ##################################################
+  ##################################################
+  ##################################################
+  ##################################################
 
-  #addOptions=" --ini=shmuAC.ini --cbLRateUpdSpdDown=1.5 --gradedReward=0"
+  #doTest " --rewardSize=1.9 --perfRewardSize=1 --acLowThrMult=2 --acThrMult=1 --finalNoiseAmpl=0.008 --rewardDist=0.031 --debug_printAC=1"
+
+  #doTest " --acLowThrMult=4 --acThrMult=8 --linearArm=1"
+  #doTest " --acLowThrMult=2 --acThrMult=5 --perfRewardSize=0.65 --rewardSize=2 --wmmaxFP=0.1"
+  #doTest " --acLowThrMult=2 --acThrMult=5 --perfRewardSize=0.65 --rewardSize=2 --wmmaxFP=0.2"
+  #doTest " --acLowThrMult=2 --acThrMult=5 --perfRewardSize=0.65 --rewardSize=2 --wmmaxFP=0.3"
+  #doTest " --acLowThrMult=3 --acThrMult=5 --perfRewardSize=1 --rewardSize=3"
+  #doTest " --acLowThrMult=3 --acThrMult=5 --perfRewardSize=0.65 --rewardSize=2"
+  #doTest " --acLowThrMult=4 --acThrMult=8"
+  #doTest " --acLowThrMult=4 --acThrMult=8"
+  #doTest " --acLowThrMult=4 --acThrMult=8 --criticExact=1"
+
+  # BEVE loses correction in ASYMP too often
+  #doTest " --rewardSize=2 --perfRewardSize=1"
+
+  # bad
+  #doTest " --acThrMult=4"
+  #doTest " --cbLRateUpdSpdUp=1.3 --cbLRateUpdSpdDown=1.3"
+  #doTest " --perfRewardSize=0.65"
+
+  # it works ok, well, not quite
+  #doTest " --cbLRateUpdSpdUp=1.3 --cbLRateUpdSpdDown=1.3 --perfRewardSize=0.65"
 
 
-  #  --absRwdSz2=3
+  #Bad
+  #doSim  ""
+  #doSim  " --finalNoiseAmpl=0.008 --wmmax=0.2"
 
-  #addOptions=" ----errHistReset2=1ini=shmuAC.ini --cbLRateUpdSpdDown=1.5 --absRwdSz2=5"
-  #doSim " --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=1.5"
-  #doSim " --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=2.5"
-  #doSim " --wmmaxFP=0.1 --perfRewardSize=1   --rewardSize=3"
-
-  #addOptions=" --ini=shmuAC.ini --cbLRateUpdSpdDown=1.5 --absRwdSz2=3"
-  #doSim " --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=1.5"
-  #doSim " --wmmaxFP=0.1 --perfRewardSize=0.5 --rewardSize=2.5"
-  #doSim " --wmmaxFP=0.1 --perfRewardSize=1   --rewardSize=3"
-
-  ########################################################
-  ########################################################
-  ########################################################
-
-  #acOptimalRateMult = 0.6 
-  #addOptions=" --ini=shmuAC.ini --cbStateDepr=0.08 --acOptimalRateMult=0.2"
-
-
-  #addOptions=" --ini=shmuAC.ini --numTrials0=0 --numTrials1=1"
-  #doTest " --perfRewardSize=2     --rewardSize=1"
-
-  addOptions=" --ini=shmuAC.ini --wmmaxFP=0.5"
-
-  #if [ $? -eq 0 ]
-
-  #doTest " --perfRewardSize=3 --rewardSize=1"
-  #doTest " --perfRewardSize=3 --rewardSize=2"
-  #doTest " --perfRewardSize=3 --rewardSize=3"
-  #doTest " --perfRewardSize=3 --rewardSize=4"
-
-  #doTest " --perfRewardSize=2 --rewardSize=1"
-  #doTest " --perfRewardSize=2 --rewardSize=2"
-  #doTest " --perfRewardSize=2 --rewardSize=3"
-  #doTest " --perfRewardSize=2 --rewardSize=4"
-
-  doTest " --perfRewardSize=1 --rewardSize=1"
-  doTest " --perfRewardSize=1 --rewardSize=2"
-
-  doTest " --perfRewardSize=0.75 --rewardSize=1"
-  doTest " --perfRewardSize=0.75 --rewardSize=2"
-    
-  doTest " --perfRewardSize=0.5 --rewardSize=1"
-  doTest " --perfRewardSize=0.5 --rewardSize=2"
+  #doTest " --cbLRateUpdSpdUp=1.3 --cbLRateUpdSpdDown=1.3 --perfRewardSize=0.65 --rewardSize=1.5"
+  #doTest " --cbLRateUpdSpdUp=1.3 --cbLRateUpdSpdDown=1.3 --perfRewardSize=0.45 --rewardSize=1.5"
+  #doTest " --cbLRateUpdSpdUp=1.3 --cbLRateUpdSpdDown=1.3 --perfRewardSize=0.45 --rewardSize=1.3"
+  #doSim  " --rewardSize=2 --perfRewardSize=1"
 
   maxFP="0.5"
 

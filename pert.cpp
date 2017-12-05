@@ -92,7 +92,6 @@ void perturbationExperimentEnv::runSession()
         ml.setRpreSame(phaseParams[0].absRwdSz);   
 
         float cues[nc];
-        int cue;
         float x0,y0,angle;
         int offset = 0;
 
@@ -114,9 +113,10 @@ void perturbationExperimentEnv::runSession()
             }
             //cout<<"4"<<endl;
 
-            cue = turnOnCues(0,cues);
+            int cueActive = turnOnCues(0,cues);  // it not very good to do like that, since we have random
+            // activation of cues sometimes in turnOnCues
             getCurTgt(cues,x0,y0,angle);
-            initCBdir(x0,y0,cue2prelearnParam[cue].patPMC,
+            initCBdir(x0,y0,cue2prelearnParam[cueActive].patPMC,
                 p.resetCBState); 
           }
           if(p.resetCBState)
@@ -443,7 +443,7 @@ float perturbationExperimentEnv::getSuccess(float * x,float * y,unsigned int k,f
   return sc;
 }
 
-float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, float & param)
+float perturbationExperimentEnv::getReward(int k, float curErr, float * x,float * y, float & param)
 {
     expPhaseParams & p = phaseParams[experimentPhase];
 
@@ -485,16 +485,25 @@ float perturbationExperimentEnv::getReward(float curErr, float * x,float * y, fl
 
 //float lastErr =  percept.getErr(1,false);   // here we really want distance to the center
 //
-    bool b = curErr > cbLRateUpdAbsErr_threshold;
-    if(cbLRateUpdAbsErr_threshold)
+    bool b = curErr > cbMotVarEst;
+    if(cbMotVarEst)
     { 
-      b = b || errToCompare > cbLRateUpdAbsErr_threshold;
+      b = b || errToCompare > cbMotVarEst;
     }
 
     float errReduction = errToCompare - curErr;
 
+    bool bb;
+    if(p.cueSeq.size() == 0)
+      bb = true;
+    else
+    {
+      int ind = k % p.cueSeq.size();
+      bb = p.cueSeq[ind].feedbackOn == 1;
+    }
+
     // if visual feedback is off -- no reward from performance
-    if(rwdFromcbLRate && p.learn_cb)
+    if(rwdFromcbLRate && p.learn_cb && bb)
     {
       float lambda = ml.getCBLRate(); 
       relR = perfRewardSize*lambda + rwdFromcbLRate_add;
@@ -661,9 +670,6 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
 
     s = params["perfFromAC"];
     perfFromAC = s!="" ? stof(s) : 0.;
- 
-    s = params["acUpdCoefThr"];
-    acUpdCoefThr = s!="" ? stof(s) : 0.01;
 
     s = params["sector_reward"];
     sector_reward = s!="" ? stoi(s) : 0;
@@ -707,8 +713,8 @@ perturbationExperimentEnv::perturbationExperimentEnv(parmap & params_,int num_se
     s = params["rwdFromcbLRate"];
     rwdFromcbLRate = s!="" ? stoi(s) : 0;
 
-    s = params["cbLRateUpdAbsErr_threshold"];
-    cbLRateUpdAbsErr_threshold = s!="" ? stof(s) : 0;
+    s = params["cbMotVarEst"];
+    cbMotVarEst = s!="" ? stof(s) : 0;
 
     //s = params["rwdFromcbLRate_thr"];
     //rwdFromcbLRate_thr = s!="" ? stof(s) : 0;

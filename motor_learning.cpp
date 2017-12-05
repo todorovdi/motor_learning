@@ -107,46 +107,49 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
     {
       if(debug_printTrialNumbers)
       {
+        cout<<"------------------------------------\n";
         cout<<" DEBUG: "<<k<<" trial started"<<endl;
       }
 
+      // reset neuron activities in the BG model
       bg.resetForTrialBegin();
 
+      // environment turns on cue(s) an infroms the BG model about it
       int addInfoCue;
       int cueActive = env->turnOnCues(k,x,&addInfoCue);
       bg.setCues(x);
-      int feedbackGiven = addInfoCue;   
-      // 0 means nos vis feedback, but reward may be given!
-      //
 
+      int feedbackGiven = addInfoCue;   // 0 means nos vis feedback, but reward may be given! 
 
       if(learn_bg || !habit2PMCdirectly)
       {
-
-
         int nsteps = 0;
         float dt = 0;
         bool CONT_OUT = false;
-              // integrate the equations
 
+        // test output
         if (CONT_OUT) {bg.exportContOpen(k); }
 
-          for(float t=0; t<T; )
-          {   
-            dt = bg.do_step();
-            if (CONT_OUT) {bg.exportContState(t);}
-                        nsteps++;
-                        t+= dt;
-                        if(dt >= bgStepsizeIntStopThr)
-              break;
-          };
+        // integrate the equations
+        for(float t=0; t<T; )
+        {   
+          dt = bg.do_step();
+          if (CONT_OUT) {bg.exportContState(t);}
+                      nsteps++;
+                      t+= dt;
+                      if(dt >= bgStepsizeIntStopThr)
+            break;
+        };
+        // test output
         if (CONT_OUT) {bg.exportContClose();}
       } 
+      // in some modes we turn off BG and activate the habitual action directly (it saves simulation time)
       else if(!learn_bg && habit2PMCdirectly )
       {
         bg.habit2PMCdirectly(cueActive);   // works only for non-composite actions
       }
 
+      // retrive motor program that appeared in the BG as a result
       bg.getPMC(y);
 
       //if(exitIfExplore && y[cueActive] < 0.2 ) 
@@ -155,14 +158,20 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       //}
 
       float cbTgt_x, cbTgt_y, ang;
+      // ask environment what is the current target (in screen coord) CB is asked to reach
       env->getCurTgt(x,cbTgt_x, cbTgt_y,ang);
-      //cb.setCBtarget(cbTgt_x,cbTgt_y);
+
+      // update tuning tensor DF = 'CB training'
       if(learn_cb && trainCBEveryTrial)
       {
-        if(!cbRetrainSpeedup || cb.trainNeeded(y,cbTgt_x,cbTgt_y))
+        // training CB takes time so if parameters are barely changes we may avoid retraining 
+        // if parameters change enough (or we just force retraining every step), then do it
+        bool p = !cbRetrainSpeedup || cb.trainNeeded(y,cbTgt_x,cbTgt_y);
+        if(p)
         {
           cb.train(cbTgt_x, cbTgt_y, y,false,retrainCB_useCurW,ffield);  // flushW= false, useCurW = true
         }
+        // otherwise just set the target
         else
         {
           cb.setCBtarget(cbTgt_x,cbTgt_y);
@@ -171,21 +180,46 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
       }
 
       float addInfoItem[7];
+      // perform movement (the words success is here for historical reasons related to Piron et al 2016 paper)
       float sc = env->getSuccess(x,y,k,addInfoItem);   // here arm export happens
       //float endpt_percieved_x = addInfoItem[1];
       //float endpt_percieved_y = addInfoItem[2];
+      // extract percieved reaching endpoint
       float endpt_x = addInfoItem[3];
       float endpt_y = addInfoItem[4];
 
       float t; // is may be set in the following function (it passes as a reference argument) -- originally thought to be randomness, determining whether we get reward or not, based on success (Piron setup)
+      // ask the perception node to add current error to the error history 
       percept->saveCurErr();
 
-      float R = env->getReward(sc,x,y,t);
+      // make cerebellum update its state and learning rate (and some other things)
+      if(learn_cb && feedbackGiven==1)
+      { 
+        cb.predictNextErrExact(y);  // try to predict next error using CURRENT motor program as if we had no perception perturbation
+        //cb.predictNextErrApprox(y);  // try to predict next error using CURRENT motor program as if we had no perception perturbation
+        cb.learn();
+        //cb.predictNextErr(y);  // try to predict next error as if we were using same motor program and no perception perturbation
+      }
+      else
+      {
+        cb.stateDegradeStep();    // should happen even with cb turned off!
+        exporter->exportCBMisc(cb.getLearnRate(),sc,0,0,0,0,0);
+      }
+
+      //cout<<" before rwd"<<endl;
+
+      // ask environment whether we receive reward
+      // it is important to do that after we have performed CB learning, 
+      // so that we use current trial learning rate value for the performance reward
+      float R = env->getReward(k,sc,x,y,t);
       if( k==indAdd && setRpre_firstR )
       {
         setSingleRPre(cueActive,R);
       }
 
+      //cout<<" after rwd"<<endl;
+
+      // just data export
       if(doExport )
       { 
         bg.exportBGstate(k,0);
@@ -193,7 +227,7 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         exporter->exportTrial(k,x,R,Rpre[cueActive]);
       } 
 
-      //rnd();  // just to follow same seed as Slava's code
+      // provide BG with reward and update weights
       if(learn_bg && feedbackGiven!=2)
       { 
         float RPE = R- Rpre[cueActive];
@@ -205,22 +239,12 @@ float MotorLearning::makeTrials(unsigned int ntrials, float * addInfo, bool flus
         bg.learn(RPE);
       } 
 
-      //cout<<"trial"<<endl;
-      if(learn_cb && feedbackGiven==1)
-      { 
-        cb.learn();
-        cb.predictNextErr(y);  // try to predict next error as if we were using same motor program and no perception perturbation
-      }
-      else
-      {
-        exporter->exportCBMisc(cb.getLearnRate(),sc,0,0,0,0,0);
-      }
-      cb.stateDegradeStep();    // should happen even with cb turned off!
       if(feedbackGiven == 0)
       {
         percept->resetErrHist();
       }
 
+      // now we have different reward expectation
       updateRpre(cueActive,R,0);   
       //std::copy(y, y+na, prevy.begin());
 

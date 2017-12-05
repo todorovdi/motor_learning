@@ -8,6 +8,7 @@ except ModuleNotFoundError:
     import io as StringIO
 
 import math
+import os
  
 #if __name__ != "__main__":
 #    paramsEnv = ConfigParser.RawConfigParser(allow_no_value=True) 
@@ -325,3 +326,12 @@ def paramsInit(fname,origParamFile = True):  #origParamFile -- if use the one be
         print("---- old version of ini file found")
 
 
+def exportSvgEmf(plt,addText=""):
+    noExt=out_dir_pdf + plotfname + addText
+    svgname=noExt+'.svg'
+    print(svgname)
+    plt.savefig(svgname)#,bbox_inches='tight')
+
+    inkscapeArgs ='inkscape --without-gui --export-emf="'+noExt+'.emf" "'+svgname+'"'
+    print(inkscapeArgs)
+    os.system(inkscapeArgs)

@@ -42,7 +42,7 @@ runAcTest()
 
   python $plotfile \
     "$args_percept_cue_change_nobg" "$args_percept_small_rot_nobg" "$args_percept_large_rot_nobg" \
-    "---plotfname=ACTest_$1"
+    "---plotfname=CritTest_$1"
 }
 
 runCBfault()
@@ -135,12 +135,15 @@ runTables()
 runForPaper()
 {
   #params="--cbLRate=$cblc --cbStateDepr=$depr"
-  #ao=" $addOptions --learn_bg=0 --cbLRateIsConst=1 $params"$1 
-  ao=" $addOptions --learn_bg=0 --cbLRateIsConst=1"$1 
+  #ao="$addOptions --learn_bg=0 --cbLRateIsConst=1 $params"$1 
+
+  strongAo=" --numTrials1=100 --cbLRate=2"
 
   #####################   CB for small adaptation
 
   if [ $run_mildPert_cbOnly == '1' ]; then
+    ao="$addOptions --learn_bg=0 --cbLRateIsConst=1"$1 
+
     addOptionsLoc="--cue1=1"$ao
     perturbSimple "$addOptionsLoc" $nsess $useOldData
     shiftSmall=$pdfSuffix
@@ -161,6 +164,8 @@ runForPaper()
   ##perturbSimple "$addOptionsLoc" $nsess $useOldData
   ###rot90=$pdfSuffix
   if [ $run_strongPert_cbOnly == '1' ]; then
+    ao="$addOptions --learn_bg=0 --cbLRateIsConst=1$strongAo$1" 
+
     addOptionsLoc="--cue1=4"$ao
     perturbSimple "$addOptionsLoc" $nsess $useOldData
     shift90=$pdfSuffix
@@ -169,17 +174,25 @@ runForPaper()
     perturbSimple "$addOptionsLoc" $nsess $useOldData
     rot90=$pdfSuffix
 
+    #addOptionsLoc="--cue1=4 --cbLRate=2"$ao
+    #perturbSimple "$addOptionsLoc" $nsess $useOldData
+    #shift90_=$pdfSuffix
+
+    #addOptionsLoc="--cue1=2 --endpoint_rotation1=-90 --cbLRate=2"$ao
+    #perturbSimple "$addOptionsLoc" $nsess $useOldData
+    #rot90_=$pdfSuffix
+
     # guti NEBL
     addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
     perturbSimple "$addOptionsLoc" $nsess $useOldData
     xrev=$pdfSuffix
 
-    python $plotfile "$shift90" "$rot90" "$xrev" "---plotfname=strongPert_cbOnly$1"
+    python $plotfile "$shift90" "$rot90" "$xrev" "$shift90_" "$rot90_" "---plotfname=strongPert_cbOnly$1"
   fi
 
   #################### different rotations reaching plots
   if [ $run_difRotations == '1' ]; then
-    ao=" $addOptions --learn_bg=0 --cbLRateIsConst=1 --cbLRate=3.5 --cbStateDepr=0"$1 
+    ao="$addOptions --learn_bg=0 --cbLRateIsConst=1 --cbLRate=3.5 --cbStateDepr=0"$1 
 
     addOptionsLoc="--numTrials0=0 --numTrials2=0 --endpoint_rotation1=-60"$ao
     perturbSimple "$addOptionsLoc" $nsess $useOldData
@@ -195,20 +208,20 @@ runForPaper()
 
     python $plotfile "$rot1" "$rot2" "$rot3" "---plotfname=difRotations_cbOnly$1"
   fi
-  ################## BG + CB noAC shift 
-  if [ $run_mildPert_noAC == '1' ]; then
-    ao=" $addOptions --cbLRateIsConst=1"$1 
+  ################## BG + CB noCrit shift 
+  if [ $run_mildPert_noCrit == '1' ]; then
+    ao="$addOptions --cbLRateIsConst=1"$1 
 
     addOptionsLoc="--cue1=1"$ao
     perturbSimple "$addOptionsLoc" $nsess $useOldData
     mildPert=$pdfSuffix
 
-    python $plotfile "$mildPert" "$mildPert" "---plotfname=mildPert_noAC$1"
+    python $plotfile "$mildPert" "$mildPert" "---plotfname=mildPert_noCrit$1"
   fi
 
-  ############### BG + CB noAC strong pert 
-  if [ $run_strongPert_noAC == '1' ]; then
-    ao=" $addOptions --cbLRateIsConst=1"$1 
+  ############### BG + CB noCrit strong pert 
+  if [ $run_strongPert_noCrit == '1' ]; then
+    ao="$addOptions --cbLRateIsConst=1$strongAo$1" 
 
     addOptionsLoc="--cue1=2 --endpoint_rotation1=-90"$ao
     perturbSimple "$addOptionsLoc" $nsess $useOldData
@@ -218,12 +231,12 @@ runForPaper()
     perturbSimple "$addOptionsLoc" $nsess $useOldData
     strongPert2=$pdfSuffix
 
-    python $plotfile "$strongPert1" "$strongPert2" "---plotfname=strongPert_noAC$1"
+    python $plotfile "$strongPert1" "$strongPert2" "---plotfname=strongPert_noCrit$1"
   fi
 
-  ################### BG + CB with AC, strong pert 
-  if [ $run_strongPert_AC == '1' ]; then
-    ao=" $addOptions$1" 
+  ################### BG + CB with Crit, strong pert 
+  if [ $run_strongPert_Crit == '1' ]; then
+    ao="$addOptions$strongAo$1" 
 
     addOptionsLoc="--cue1=2 --endpoint_rotation1=-90$ao"
     perturbSimple "$addOptionsLoc" $nsess $useOldData
@@ -233,31 +246,78 @@ runForPaper()
     perturbSimple "$addOptionsLoc" $nsess $useOldData
     strongPert2=$pdfSuffix
 
-    python $plotfile "$strongPert1" "$strongPert2" "---plotfname=strongPert_AC$1"
+    python $plotfile "$strongPert1" "$strongPert2" "---plotfname=strongPert_Crit$1"
   fi
 
-  ################### BG + CB with AC for CB, shift
-  ###ao=" $addOptions --cbStateDepr=$depr$1 --cbLRate=0.2 --acOptimalRateMult=0.1" 
-  #ao=" $addOptions$1" 
-  ##ao=" $addOptions --cbStateDepr=$depr$1 --cbLRate=0.2" 
+  ################### BG + CB with Crit for CB, shift
+  ###ao="$addOptions --cbStateDepr=$depr$1 --cbLRate=0.2 --acOptimalRateMult=0.1" 
+  #ao="$addOptions$1" 
+  ##ao="$addOptions --cbStateDepr=$depr$1 --cbLRate=0.2" 
 
-  if [ $run_mildPert_AC == '1' ]; then
+  if [ $run_mildPert_Crit == '1' ]; then
+    ao="$addOptions$1"
     addOptionsLoc="--cue1=1"$ao
     perturbSimple "$addOptionsLoc" $nsess $useOldData
     mildPert=$pdfSuffix
 
-    python $plotfile "$mildPert" "$mildPert" "---plotfname=mildPert_AC$1"
+    python $plotfile "$mildPert" "$mildPert" "---plotfname=mildPert_Crit$1"
   fi
 
-  #################### BG + CB with AC for CB and dopamine, shift
+  #################### CB only with Crit shift and rotation
+
+  if [ $run_mildPert_CritCBOnly == '1' ]; then
+    ao="$addOptions --learn_bg=0"$1 
+
+    addOptionsLoc="--cue1=1"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    shiftSmall=$pdfSuffix
+
+    addOptionsLoc="--cue1=2 --endpoint_rotation1=30"$ao
+    perturbSimple "$addOptionsLoc" $nsess $useOldData
+    rotSmall=$pdfSuffix
+
+    python $plotfile  "$shiftSmall" "$rotSmall" "---plotfname=mildPert_CritcbOnly"
+  fi
 
   # Gutierrez pic goes here
 }
 
+runCritic()
+{
+  ao="$1$addOptions"
+
+  addOptionsLoc="--cue1=2 --endpoint_rotation1=5"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  mildPert=$pdfSuffix
+
+  addOptionsLoc="--cue1=2 --endpoint_rotation1=20"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  mildPert2=$pdfSuffix
+
+  addOptionsLoc="--cue1=1"$ao
+  perturbSimple "$addOptionsLoc" $nsess $useOldData
+  noPert=$pdfSuffix
+
+  #addOptionsLoc="--cue1=2 --endpoint_rotation1=-80"$ao
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #strongPert=$pdfSuffix
+
+  #addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #strongPert2=$pdfSuffix
+
+  #addOptionsLoc="--cue1=1 --percept_xrev1=1 --cbLHistReset1=1"$ao
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #strongPert2_=$pdfSuffix
+
+  #python $plotfile "$noPert" "$mildPert" "$strongPert" "$strongPert2" "$strongPert2_" "---plotfname=test_$1_n=$nsess"
+  python $plotfile "$noPert" "$mildPert" "$mildPert2" "---plotfname=sch_$1_n=$nsess"
+}
+
 if [ $# -ne 0 ]; then
 
-  delay="3.0s"
-  #delay="0.1s"
+  #delay="3.0s"
+  delay="0.1s"
   if [ $useOldData == '0' ]; then
     echo "!!! ----- Really delete corresponding *.dat files?" 
     echo "!!! ----- You have $delay to stop the script"
@@ -275,65 +335,124 @@ if [ $# -ne 0 ]; then
   nsess=$1
   useOldData=$2   # 9 means don't plot intermediate plots
 
-  addOptions="--ini=$ini"
+  addOptions=" --ini=$ini"
   #--cbStateDepr=0."
   addOptionsLoc=""$addOptions
+
+  #####################################
+  run_mildPert_cbOnly=1
+  run_strongPert_cbOnly=1
+  run_difRotations=1
+  run_mildPert_noCrit=1
+  run_strongPert_noCrit=1
+  run_strongPert_Crit=1
+  run_mildPert_Crit=1
+  run_mildPert_CritCBOnly=1
+
+  runForPaper ""
+  #####################################
+
+  #run_mildPert_cbOnly=0
+  #run_strongPert_cbOnly=0
+  #run_difRotations=0
+  #run_mildPert_noCrit=0
+  #run_strongPert_noCrit=0
+  #run_strongPert_Crit=0
+  #run_mildPert_Crit=0
+  #run_mildPert_CritCBOnly=1
+
+  #runForPaper " --acLowThrMult=1. --acThrMult=2.4"
+
+  #ao="$addOptions --learn_bg=0 --cbLRateUpdSpdDown=1.8 --numPhases=2 --linearArm=1"
+  ##ao="$addOptions --learn_bg=0 --cbLRateUpdSpdDown=1.8 --numTrials0=0 --linearArm=1 --debug_printCrit=1"
+  #ao="$addOptions --learn_bg=0 --cbLRateUpdSpdDown=1.8 --numPhases=2"
+
+  ##addOptionsLoc=$ao" --cue1=1 --finalNoiseAmpl=0 --criticPredictDepr=1"
+  ##perturbSimple "$addOptionsLoc" $nsess $useOldData
+  ##baselineTest1=$pdfSuffix
+
+  ##addOptionsLoc=$ao" --cue1=1 --finalNoiseAmpl=0"
+  ##perturbSimple "$addOptionsLoc" $nsess $useOldData
+  ##baselineTest1=$pdfSuffix
+
+  #addOptionsLoc=$ao" --endpoint_rotation1=30 --finalNoiseAmpl=0 --criticPredictDepr=1"
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #baselineTest1=$pdfSuffix
+
+  #addOptionsLoc=$ao" --endpoint_rotation1=30 --finalNoiseAmpl=0"
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #baselineTest2=$pdfSuffix
+
+  ##addOptionsLoc=$ao" --cue1=1 --finalNoiseAmpl=0 --cbStateDepr=0"
+  ##perturbSimple "$addOptionsLoc" $nsess $useOldData
+  ##baselineTest1=$pdfSuffix
+
+
+  #addOptionsLoc=$ao" --endpoint_rotation1=30 --finalNoiseAmpl=0 --criticPredictDepr=1 --cbRetrainSpeedup=1"
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #baselineTest1Sp=$pdfSuffix
+
+  #addOptionsLoc=$ao" --endpoint_rotation1=30 --finalNoiseAmpl=0 --cbRetrainSpeedup=1"
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #baselineTest2Sp=$pdfSuffix
+
+
+  #python $plotfile "$baselineTest1" "$baselineTest1Sp" "$baselineTest2" "$baselineTest2Sp" "---plotfname=baseline_n=$1"
+
+  #######################
+
+
+  #addOptionsLoc=$ao" --acLowThrMult=1.5 --acThrMult=2"
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #baselineTest2=$pdfSuffix
+
+  #addOptionsLoc=$ao" --acLowThrMult=1.7 --acThrMult=2"
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #baselineTest3=$pdfSuffix
+
+  #addOptionsLoc=$ao" --acLowThrMult=1.9 --acThrMult=2"
+  #perturbSimple "$addOptionsLoc" $nsess $useOldData
+  #baselineTest4=$pdfSuffix
+
+  #python $plotfile "$baselineTest1" "$baselineTest2" "$baselineTest3" "$baselineTest4" "---plotfname=baseline_n=$1"
+
+
+
+  #0.6, 2 = 0.8, 2 lower baseline
+  #but 0.8, 1.5 = 0.6, 1.5 rate dies completely
+  # with higher acThrMult we never kick the bad condition at all in the baseline
 
   #cblc=0.9
   #depr=0.04
 
-  addOptionsLoc="$addOptions --cue1=1 --learn_bg=0"$ao
   #perturbSimple "$addOptionsLoc" $nsess $useOldData
  
-  run_mildPert_cbOnly=1
-  run_strongPert_cbOnly=1
-  run_difRotations=0
-  run_mildPert_noAC=1
-  run_strongPert_noAC=1
-  run_strongPert_AC=1
-  run_mildPert_AC=1
 
-  #runForPaper ""
 
-  #ao=" $addOptions --learn_bg=0 --debug_printAC=1 --numTrials0=2 --numTrials2=2" 
+
+
+
+
+  #runForPaper " --linearArm=1"
+  #runForPaper " --cbRetrainSpeedup=1"
+  #runForPaper " --linearArm=1"
+
+  #addOptionsLoc="$addOptions --cue1=1 --learn_bg=0"$ao
+
+  #ao="$addOptions --learn_bg=0 --debug_printAC=1 --numTrials0=2 --numTrials2=2" 
   #addOptionsLoc="--cue1=2 --endpoint_rotation1=30"$ao
   #perturbSimple "$addOptionsLoc" $nsess $useOldData
   #mildPert=$pdfSuffix
 
-  ao=" $addOptions --learn_bg=0" 
-  #ao=" $addOptions --learn_bg=0 --numTrials0=2 --numTrials2=2" 
-  #ao=" $addOptions --learn_bg=0 --numTrials0=2 --numTrials2=2 --finalNoiseAmpl=0 --debug_printAC=1" 
-  #ao=" $addOptions --learn_bg=0 --numTrials0=2 --numTrials2=2 --debug_printAC=1" 
+  #ao="$addOptions --learn_bg=0" 
+  #ao="$addOptions --learn_bg=0 --numTrials0=2 --numTrials2=2" 
+  ao="$addOptions --learn_bg=0 --numTrials0=2 --numTrials2=2 --finalNoiseAmpl=0 --debug_printAC=1" 
+  #ao=" $addOptions --cbStateDepr=0 --learn_bg=0 --numTrials0=2 --numTrials2=2 --finalNoiseAmpl=0 --debug_printAC=1" 
+  #ao="$addOptions --learn_bg=0 --numTrials0=2 --numTrials2=2 --debug_printAC=1" 
 
-  addOptionsLoc="--cue1=1"$ao
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  noPert=$pdfSuffix
-
-  addOptionsLoc="--cue1=2 --endpoint_rotation1=-80"$ao
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  strongPert=$pdfSuffix
-
-  addOptionsLoc="--cue1=1 --percept_xrev1=1"$ao
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  strongPert2=$pdfSuffix
-
-  addOptionsLoc="--cue1=2 --endpoint_rotation1=30"$ao
-  perturbSimple "$addOptionsLoc" $nsess $useOldData
-  mildPert=$pdfSuffix
-
-  python $plotfile "$noPert" "$mildPert" "$strongPert" "$strongPert2" "---plotfname=perceptPert_AC_n=$1"
-  #python $plotfile "$mildPert" "$mildPert_0noise" "---plotfname=mildPert_AC_n=$1"
-
-
-  ############################################################
-  ############################################################
-  ############################################################
-  ############################################################
-  ############################################################
-  ############################################################
-  ############################################################
-  ############################################################
-  # --ini=modelPerf.ini --learn_bg=0 --defTgt1=45 --cue1=1
+  ao="$addOptions --learn_bg=0 --numTrials2=2 --finalNoiseAmpl=0 --debug_printAC=1" 
+  ao="$addOptions --learn_bg=0 --numTrials2=2 --debug_printAC=1" 
+  #ao=" $addOptions --learn_bg=0 --debug_printAC=1" 
 
   tgt=45
   rotSmall=-30
@@ -349,96 +468,6 @@ if [ $# -ne 0 ]; then
   cblc=1.5
 
   ao=" --ini=$ini"
-  # CB failure for reverasal even with pert
-  #addOptionsLoc="--ini=$ini --cue1=1 --percept_xrev1=1 --cbLRateIsConst=1 --learn_bg=0 --cbLRate=${cblc}"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-
-  # CB failure for reversal even without pert
-  #addOptionsLoc="--ini=$ini --percept_xrev1=1 --cbLRateIsConst=1 --learn_bg=0 --cbLRate=${cblc}"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-
-  #runTables ""
-  #runCBfault " --cbLRateReset1=0 --cbLRateReset2=0"
-  #runTables " --cbLRateReset1=0 --cbLRateReset2=0"
- 
-  cblc=5
-  #runCBfault " --wmmaxFP=0.7 --cbStateDepr=0.16"
-  #runCBfault ""
-
-  cblc=10
-  #runCBfault " --numTrials1=150"
-
-  cblc=5
-  rotLarge=85
-  #runCBfault " --numTrials1=150"
-
-  cblc=1.5
-  rotLarge=85
-  #runCBfault " --numTrials1=150"
-
-  #runCBfault ""
-  #runTables ""
-  rotLarge=80
-
-  #runCBfault ""
-
-  cblc=1.5
-  rotLarge=85
-  #runCBfault " --cbLRateReset1=0 --cbLRateReset2=0"
-
-  rotLarge=90
-  #runCBfault " --cbLRateReset1=0 --cbLRateReset2=0"
-
-  #addOptionsLoc="--cue1=1 --precept_xrev1=1"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-
-  #addOptionsLoc="--endpoint_rotation1=$rotLarge"$ao
-  #perturbSimple "$addOptionsLoc" $nsess $useOldData
-
-  #runCBfault ""
-  #runTables ""
-  
-  #runCBfault " --rewardDist=0.07 --cbStateDepr = 0"
-  #runCBfault " --rewardDist=0.07 --wmmaxFP=0.7"
-  #runCBfault " --rewardDist=0.07"
-
-  #runCBfault " --rewardDist=0.07"
-  #runCBfault " --rewardDist=0.05"
-  #runCBfault ""
-
-
-  #runAcTest ""
-
-  #runAcTest " --cbInitShiftSz=0.65"
-  #runAcTest " --cbInitShiftSz=0.05"
-  #runAcTest " --cbInitShiftSz=0.35"
-
-
-  #runTables ""
-
-  # works bad as after begin reset to small value, lambda cannot rise back
-  #runTables " --acInstantUpd=1 --acThrMult=1."  
-
-  # same thing, even worse -- the diff between expected correction and the real one is bigger (as expected is lower)
-  #runTables " --acInstantUpd=1 --acThrMult=1. --cbLRate=0.04 --acUpdCoefThr=0.002"  
-  #runTables " --acInstantUpd=1 --acThrMult=1. --cbLRate=0.04"  
-  #runTables " --acInstantUpd=1 --acThrMult=1. --acUpdCoefThr=0.002"  
-  #runTables " --acInstantUpd=1 --acThrMult=1. --acUpdCoefThr=0.004"  
-
-  #runTables " --acInstantUpd=1 --acThrMult=1. --acUpdCoefThr=0.002 --cbLRate=0.42"  
-
-  #runTables " --acThrMult=1."
-  #  --cbLRateUpdTwoErrThreshold=0
-
-  # works but with more noise
-  #runTables " --acThrMult=1."
-
-  # small pert ok, large -- to small CB turn off 
-  #runTables " --acThrMult=1. --cbLRateUpdSpdUp=20000."
-
-
-  #perturbSimple "--ini=modelPerf.ini --learn_bg=0 --acUpdCoefThr=0.0013 --cue1=1 --acInstantUpd=1 --acThrMult=1 --cbLRate=0.02" $nsess $useOldData
-  #Pyclewn gdb --args pert_dbg --ini=modelPerf.ini --learn_bg=0 --cue1=1 --acInstantUpd=1 --acThrMult=1 --cbLRate=0.42 --seed=1
 
 
   ./beep.sh

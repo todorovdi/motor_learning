@@ -32,31 +32,54 @@ shortSim()
 
 fullSim()
 {
-  perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
-  args_EB_control=$pdfSuffix
+  if [ $runNEB_control == '1' ]; then
+    perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
+    args_nonEB_control=$pdfSuffix
+  fi
 
-  perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
-  args_EB_control2=$pdfSuffix
+  if [ $runDoubleControl == '1' ]; then
+    #  --cue2=0   is redundant but is needed to separate two controls, otherwise we overwrite them
+    perturbSimple "--ini=$ini --percept_xrev1=1 --cue2=0$addOptionsLoc" $1  $useOldData
+    args_nonEB_control2=$pdfSuffix
+  fi
 
-  perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
-  args_nonEB_control=$pdfSuffix
+  if [ $runEB_control == '1' ]; then
+    perturbSimple "--ini=$ini$addOptionsLoc" $1 $useOldData
+    args_EB_control=$pdfSuffix
+  fi
 
-  perturbSimple "--ini=$ini --percept_xrev1=1$addOptionsLoc" $1  $useOldData
-  args_nonEB_control2=$pdfSuffix
+  if [ $runDoubleControl == '1' ]; then
+    perturbSimple "--ini=$ini --cue2=0$addOptionsLoc" $1 $useOldData
+    args_EB_control2=$pdfSuffix
+  fi
 
-  perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
-  args_EB_HD=$pdfSuffix
+  if [ $runEB_patients == '1' ]; then
+    perturbSimple "--ini=$ini --HD=1$addOptionsLoc" $1 $useOldData
+    args_EB_HD=$pdfSuffix
+  fi
 
-  perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1 $useOldData
-  args_EB_PD=$pdfSuffix
+  if [ $runDoublePatients == '1' ]; then
+    perturbSimple "--ini=$ini --PD=1$addOptionsLoc" $1 $useOldData
+    args_EB_PD=$pdfSuffix
+  fi
 
-  perturbSimple "--ini=$ini --percept_xrev1=1 --HD=1$addOptionsLoc" $1 $useOldData
-  args_nonEB_HD=$pdfSuffix
+  if [ $runNEB_patients == '1' ]; then
+    perturbSimple "--ini=$ini --percept_xrev1=1 --HD=1$addOptionsLoc" $1 $useOldData
+    args_nonEB_HD=$pdfSuffix
+  fi
 
-  perturbSimple "--ini=$ini --percept_xrev1=1 --PD=1$addOptionsLoc" $1  $useOldData
-  args_nonEB_PD=$pdfSuffix
+  if [ $runDoublePatients == '1' ]; then
+    perturbSimple "--ini=$ini --percept_xrev1=1 --PD=1$addOptionsLoc" $1  $useOldData
+    args_nonEB_PD=$pdfSuffix
+  fi
 
-  python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" "$args_nonEB_control2" "$args_EB_control2" "---plotfname=guti_$addOptionsLoc" 
+  if [ $2 != '' ]; then
+    fname=$2
+  else
+    fname=$addOptionsLoc
+  fi
+
+  python "$plotfile" "$args_nonEB_HD" "$args_nonEB_PD" "$args_nonEB_control" "$args_EB_HD" "$args_EB_PD" "$args_EB_control" "$args_nonEB_control2" "$args_EB_control2" "---plotfname=guti_$fname" 
 }
 
 
@@ -85,169 +108,126 @@ if [ $# -ne 0 ]; then
 
   echo "Starting experiment "$experimentName
 
-  addOptions=" --cbRetrainSpeedup=0 --wmmaxFP=0.55"
+  #addOptions=" --cbRetrainSpeedup=0 --wmmaxFP=0.55"
+  #addOptions=" --debug_printAC=1"
+  addOptions=""
 
   mp=0.63
   #1.6 because it is the baseline stationary CB learning rate
   rpre=`echo "scale=4;$mp*1.6" | bc -l`
+  #rpre=`echo "scale=4;$mp*2" | bc -l`
 
-  addOptionsLoc=" --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  fullSim $1
-
-  ###
-
-  #addOptions=" --cbRetrainSpeedup=0 --wmmaxFP=0.6"
-
-  #mp=0.63
-  ##1.6 because it is the baseline stationary CB learning rate
-  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
-
-  #addOptionsLoc=" --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  ##################################
-
-  #mp=0.4
-  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=10 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=12.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=15 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=17.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=20 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=25 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=30 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  runNEB_patients=1
+  runEB_control=1
+  runNEB_control=1
+  runEB_patients=1
+  runDoubleControl=1
+  runDoublePatients=1
 
 
-  ##
+  pertDist=0.13
+  distPow=0.046
 
-  #mp=0.5
-  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
+  initRate=0.8
+  rwdSz=18
+  rwdSz=24
+  # 1.5 power
+  rpre=`echo "scale=4;$perfRwd*$initRate-$distPow*$rwdSz" | bc -l`
+  echo "----------- computed Rpre is  $rpre"
+  #rpre=0.8
+  #1,1.5 contol EB dies, paitnets NEB ok
+  rpre=0
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=10 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  perfRwd=0.9
+  # more or less ok, but slighly worse than origin. But if we want to insist on parameter consistency maybe important
+  #addOptionsLoc=" --cbLRate=1"$addOptions 
+  #fullSim $1 "incStartRate"
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=12.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  #addOptionsLoc=" --cbLRate=1 --rewardSize=24"$addOptions 
+  #fullSim $1 "incRwd"
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=15 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  #addOptionsLoc=" --perfRewardSize=0.9"$addOptions 
+  #fullSim $1 "incperfRwd"
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=17.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  addOptionsLoc=""$addOptions 
+  fullSim $1 "origin"
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=20 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=2.1 --acThrMult=2.3 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1 "incBothThrs"                   
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=25 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.9 --acThrMult=2.1 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2.5 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1 "incSpdUp"                  
 
-  ##
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.9 --acThrMult=2.1 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=1.8 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1 "redSpdUp"                   
 
-  #mp=0.63
-  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
+  #perfRwd=1
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.9 --acThrMult=2.1 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1 "incPerfRwd"                   
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=8 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  #rwdSz=25
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.9 --acThrMult=2.1 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1 "incAbsRwd"                  
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=10 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  ########################
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=12.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=15 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=17.5 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=20 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  # so far the best, fits all three
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.9 --acThrMult=2.1 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1                    
 
 
-  ##12.2-13.472
-  ##
-  #mp=0.7
-  #rpre=`echo "scale=4;$mp*1.6" | bc -l`
+  # clost to be ok, origin of changes
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.7 --acThrMult=1.9 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1                    
 
-  #addOptionsLoc=" --perfRewardSize=$mp --rewardSize=15 --setRPre0=$rpre --setRPre1=$rpre"$addOptions
-  #fullSim $1
+  #initRate=1.3
+  ## more or less ok
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.7 --acThrMult=1.9 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1                    
+
+
+  # more or less ok, but less cool for controls NEBL
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.7 --acThrMult=1.9 --cbLRateUpdSpdDown=2.8 --cbLRateUpdSpdUp=2 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1                    
+
+
+  # much worse 
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=18"
+  #addOptionsLoc="   --acLowThrMult=1.5 --acThrMult=1.9 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2 --perfRewardSize=0.7 --cbLRate=0.8 $preset"$addOptions 
+  #fullSim $1                    
 
 
 
-  ###################
-  ###################
+################################   These two worked ok with rate resetted
 
-  #addOptionsLoc=" --gradedReward=1 --perfRewardSize=5"$addOptions
-  #fullSim $1
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.9 --acThrMult=2.1 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1                    
 
-  #addOptionsLoc=" --gradedReward=1 --perfRewardSize=7"$addOptions
-  #fullSim $1
+  #initRate=1.3
+  #preset=" --setRPre0=$rpre --setRPre1=$rpre --rewardSize=$rwdSz"
+  #addOptionsLoc="   --acLowThrMult=1.7 --acThrMult=1.9 --cbLRateUpdSpdDown=3.5 --cbLRateUpdSpdUp=2 --perfRewardSize=$perfRwd --cbLRate=$initRate $preset"$addOptions 
+  #fullSim $1                    
 
-  #addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
-  #fullSim $1
 
-  ############################
-  #addOptions=" --cbStateDepr=0.02"
+###############################
 
-  #addOptionsLoc=" --gradedReward=1"$addOptions
-  #fullSim $1
 
-  #addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
-  #fullSim $1
+  # too large perfRwd destabilise basline which kills EBC AF
 
-  #addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
-  #fullSim $1
 
-  ##addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
-  ##fullSim $1
 
-  #addOptions=" --cbStateDepr=0.01"
-
-  #addOptionsLoc=" --gradedReward=1"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --gradedReward=1 --cbLRate=0.3"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --gradedReward=1 --cbLRate=0.1"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --gradedReward=0 --rewardSize=1.5 --perfRewardSize=3 --setRpre1=1.5"$addOptions
-  #fullSim $1
-
-  #######################
-
-  #addOptionsLoc=" --trainCBEveryTrial=0"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --trainCBEveryTrial=1"$addOptions
-  #fullSim $1
-
-  ####################
-
-  #addOptionsLoc=" --trainCBEveryTrial=1"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --trainCBEveryTrial=1 --perfRwdMult=15"$addOptions
-  #fullSim $1
-
-  #addOptionsLoc=" --trainCBEveryTrial=1 --perfRwdMult=12"$addOptions
-  #fullSim $1
+  #for small learning rate we adapt too little thus have small AF in EB
+  #for large learning rate we can't turn it off in NEBL controls
 
   
   ./beep.sh
