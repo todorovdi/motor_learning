@@ -13,8 +13,9 @@ There are also .ini files that control the behavior
 In general the code implements a simulation environment -- one specifies most of the parameters in .ini file to define an experimental context.
 One can also override some of parameters from .ini files if one passes a command-line argument to the model
 
-you'll need python 2.7,matplotlib,scipy,numpy,  boost lib for c++
+you'll need python 2.7, matplotlib, scipy, numpy,  boost lib for c++
 you'll need to create output directories for the plots (that specified in .ini files) manually
+( ~/tmp_out_calc,  ./output_test, ./output_for_paper )
 
 bash scripts
   run_shmuelof.sh
@@ -25,8 +26,11 @@ are used to reproduce behavioral experiments from corresponding papers (see arti
 
 
 The general architecture follows the idea of "model as participant" -- there is some code
-that implements what is supposed to be happening inside human brain and body ( BG_model.cpp, CB_model.cpp, arm.cpp, motor_learning.cpp ) 
-and some other code that implements some sort of virtual reality -- reproduction of the experimental environment and its interactions with the participant ( like driving force in non-autonomous ODE, it determines which targets/cues are shown, what visuomotor perturbations are applied )
+that implements what is supposed to be happening inside human brain and body ( BG_model.cpp, CB_model.cpp, arm.cpp, percept.cpp, motor_learning.cpp ) 
+and some other code that implements some sort of virtual reality -- reproduction of the experimental environment and its interactions with the participant ( like driving force in non-autonomous ODE, it determines which targets/cues are shown, what visuomotor perturbations are applied )  -- pert.cpp
+  The main function is located in pert.cpp
+
+Some of the files are related to the arm model specifically, with few modifications they were taken from
 
 On the plotting side, there are some general purpose plotting code and there are *_addplot.py 
 files that produce plots for a particular experiment
@@ -36,4 +40,4 @@ files that produce plots for a particular experiment
 This code is released under the terms of the GNU General Public License v3.0.
 
 ### For inquiries 
-Please contact todorovdi@gmail.com
+Please contact todorovdi <at> gmail <dot> com
